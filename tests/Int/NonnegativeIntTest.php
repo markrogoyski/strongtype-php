@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace StrongType\Tests\Integer;
+namespace StrongType\Tests\Int;
 
 use StrongType\Exception\StrongTypeException;
-use StrongType\Integer\PositiveInt;
+use StrongType\Int\NonnegativeInt;
 
-class PositiveIntTest extends \PHPUnit\Framework\TestCase
+class NonnegativeIntTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @test         Valid value
@@ -17,7 +17,7 @@ class PositiveIntTest extends \PHPUnit\Framework\TestCase
     public function testValidValue(int $value)
     {
         // When
-        $positiveInt = new PositiveInt($value);
+        $nonnegativeInt = new NonnegativeInt($value);
 
         // Then
         $this->expectNotToPerformAssertions();
@@ -31,10 +31,10 @@ class PositiveIntTest extends \PHPUnit\Framework\TestCase
     public function testGetValue(int $value)
     {
         // Given
-        $positiveInt = new PositiveInt($value);
+        $nonnegativeInt = new NonnegativeInt($value);
 
         // When
-        $obtainedValue = $positiveInt->getValue();
+        $obtainedValue = $nonnegativeInt->getValue();
 
         // Then
         $this->assertSame($value, $obtainedValue);
@@ -48,10 +48,10 @@ class PositiveIntTest extends \PHPUnit\Framework\TestCase
     public function testDebugInfo(int $value)
     {
         // Given
-        $positiveInt = new PositiveInt($value);
+        $nonnegativeInt = new NonnegativeInt($value);
 
         // When
-        $debugInfo = $positiveInt->__debugInfo();
+        $debugInfo = $nonnegativeInt->__debugInfo();
 
         // Then
         $this->assertSame($value, $debugInfo['value']);
@@ -60,6 +60,7 @@ class PositiveIntTest extends \PHPUnit\Framework\TestCase
     public function dataProviderForValidValues(): array
     {
         return [
+            [0],
             [1],
             [2],
             [3],
@@ -79,10 +80,10 @@ class PositiveIntTest extends \PHPUnit\Framework\TestCase
     public function testStringRepresentation(int $value, string $expected)
     {
         // Given
-        $positiveInt = new PositiveInt($value);
+        $nonnegativeInt = new NonnegativeInt($value);
 
         // When
-        $stringRepresentation = (string) $positiveInt;
+        $stringRepresentation = (string) $nonnegativeInt;
 
         // Then
         $this->assertSame($expected, $stringRepresentation);
@@ -97,10 +98,10 @@ class PositiveIntTest extends \PHPUnit\Framework\TestCase
     public function testJsonSerialization(int $value, string $expected)
     {
         // Given
-        $positiveInt = new PositiveInt($value);
+        $nonnegativeInt = new NonnegativeInt($value);
 
         // When
-        $jsonSerialization = json_encode($positiveInt);
+        $jsonSerialization = json_encode($nonnegativeInt);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);
@@ -109,6 +110,7 @@ class PositiveIntTest extends \PHPUnit\Framework\TestCase
     public function dataProviderForValidValuesStringRepresentation(): array
     {
         return [
+            [0, '0'],
             [1, '1'],
             [2, '2'],
             [3, '3'],
@@ -130,13 +132,12 @@ class PositiveIntTest extends \PHPUnit\Framework\TestCase
         $this->expectException(StrongTypeException::class);
 
         // When
-        $positiveInt = new PositiveInt($value);
+        $nonnegativeInt = new NonnegativeInt($value);
     }
 
     public function dataProviderForInvalidValues(): array
     {
         return [
-            [0],
             [-1],
             [-2],
             [-10],

@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace StrongType\Integer;
+namespace StrongType\Int;
 
 use StrongType\Exception\StrongTypeException;
 
-class NonnegativeInt extends Integer
+class NonzeroInt extends Integer
 {
     public function __construct(int $value)
     {
         parent::__construct($value);
-        $this->validateNonnegativeInt();
+        $this->validateNonzeroInt();
     }
 
-    private function validateNonnegativeInt(): void
+    private function validateNonzeroInt(): void
     {
-        if ($this->value < 0) {
+        if ($this->value === 0) {
             throw new StrongTypeException();
         }
     }

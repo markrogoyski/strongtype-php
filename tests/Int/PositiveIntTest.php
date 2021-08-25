@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace StrongType\Tests\Integer;
+namespace StrongType\Tests\Int;
 
 use StrongType\Exception\StrongTypeException;
-use StrongType\Integer\NonpositiveInt;
+use StrongType\Int\PositiveInt;
 
-class NonpositiveIntTest extends \PHPUnit\Framework\TestCase
+class PositiveIntTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @test         Valid value
@@ -17,7 +17,7 @@ class NonpositiveIntTest extends \PHPUnit\Framework\TestCase
     public function testValidValue(int $value)
     {
         // When
-        $nonpositiveInt = new NonpositiveInt($value);
+        $positiveInt = new PositiveInt($value);
 
         // Then
         $this->expectNotToPerformAssertions();
@@ -31,10 +31,10 @@ class NonpositiveIntTest extends \PHPUnit\Framework\TestCase
     public function testGetValue(int $value)
     {
         // Given
-        $nonpositiveInt = new NonpositiveInt($value);
+        $positiveInt = new PositiveInt($value);
 
         // When
-        $obtainedValue = $nonpositiveInt->getValue();
+        $obtainedValue = $positiveInt->getValue();
 
         // Then
         $this->assertSame($value, $obtainedValue);
@@ -48,10 +48,10 @@ class NonpositiveIntTest extends \PHPUnit\Framework\TestCase
     public function testDebugInfo(int $value)
     {
         // Given
-        $nonpositiveInt = new NonpositiveInt($value);
+        $positiveInt = new PositiveInt($value);
 
         // When
-        $debugInfo = $nonpositiveInt->__debugInfo();
+        $debugInfo = $positiveInt->__debugInfo();
 
         // Then
         $this->assertSame($value, $debugInfo['value']);
@@ -60,14 +60,13 @@ class NonpositiveIntTest extends \PHPUnit\Framework\TestCase
     public function dataProviderForValidValues(): array
     {
         return [
-            [0],
-            [-1],
-            [-2],
-            [-3],
-            [-10],
-            [-1000],
-            [-8973298792],
-            [\PHP_INT_MIN],
+            [1],
+            [2],
+            [3],
+            [10],
+            [1000],
+            [8973298792],
+            [\PHP_INT_MAX],
         ];
     }
 
@@ -80,10 +79,10 @@ class NonpositiveIntTest extends \PHPUnit\Framework\TestCase
     public function testStringRepresentation(int $value, string $expected)
     {
         // Given
-        $nonpositiveInt = new NonpositiveInt($value);
+        $positiveInt = new PositiveInt($value);
 
         // When
-        $stringRepresentation = (string) $nonpositiveInt;
+        $stringRepresentation = (string) $positiveInt;
 
         // Then
         $this->assertSame($expected, $stringRepresentation);
@@ -98,10 +97,10 @@ class NonpositiveIntTest extends \PHPUnit\Framework\TestCase
     public function testJsonSerialization(int $value, string $expected)
     {
         // Given
-        $nonpositiveInt = new NonpositiveInt($value);
+        $positiveInt = new PositiveInt($value);
 
         // When
-        $jsonSerialization = json_encode($nonpositiveInt);
+        $jsonSerialization = json_encode($positiveInt);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);
@@ -110,14 +109,13 @@ class NonpositiveIntTest extends \PHPUnit\Framework\TestCase
     public function dataProviderForValidValuesStringRepresentation(): array
     {
         return [
-            [0, '0'],
-            [-1, '-1'],
-            [-2, '-2'],
-            [-3, '-3'],
-            [-10, '-10'],
-            [-1000, '-1000'],
-            [-8973298792, '-8973298792'],
-            [\PHP_INT_MIN, \strval(\PHP_INT_MIN)],
+            [1, '1'],
+            [2, '2'],
+            [3, '3'],
+            [10, '10'],
+            [1000, '1000'],
+            [8973298792, '8973298792'],
+            [\PHP_INT_MAX, \strval(\PHP_INT_MAX)],
         ];
     }
 
@@ -132,18 +130,19 @@ class NonpositiveIntTest extends \PHPUnit\Framework\TestCase
         $this->expectException(StrongTypeException::class);
 
         // When
-        $nonpositiveInt = new NonpositiveInt($value);
+        $positiveInt = new PositiveInt($value);
     }
 
     public function dataProviderForInvalidValues(): array
     {
         return [
-            [1],
-            [2],
-            [10],
-            [1000],
-            [8973298792],
-            [\PHP_INT_MAX],
+            [0],
+            [-1],
+            [-2],
+            [-10],
+            [-1000],
+            [-8973298792],
+            [\PHP_INT_MIN],
         ];
     }
 }

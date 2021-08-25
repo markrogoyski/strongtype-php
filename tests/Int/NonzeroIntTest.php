@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace StrongType\Tests\Integer;
+namespace StrongType\Tests\Int;
 
 use StrongType\Exception\StrongTypeException;
-use StrongType\Integer\NonnegativeInt;
+use StrongType\Int\NonzeroInt;
 
-class NonnegativeIntTest extends \PHPUnit\Framework\TestCase
+class NonzeroIntTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @test         Valid value
@@ -17,7 +17,7 @@ class NonnegativeIntTest extends \PHPUnit\Framework\TestCase
     public function testValidValue(int $value)
     {
         // When
-        $nonnegativeInt = new NonnegativeInt($value);
+        $nonzeroInt = new NonzeroInt($value);
 
         // Then
         $this->expectNotToPerformAssertions();
@@ -31,10 +31,10 @@ class NonnegativeIntTest extends \PHPUnit\Framework\TestCase
     public function testGetValue(int $value)
     {
         // Given
-        $nonnegativeInt = new NonnegativeInt($value);
+        $nonzeroInt = new NonzeroInt($value);
 
         // When
-        $obtainedValue = $nonnegativeInt->getValue();
+        $obtainedValue = $nonzeroInt->getValue();
 
         // Then
         $this->assertSame($value, $obtainedValue);
@@ -48,10 +48,10 @@ class NonnegativeIntTest extends \PHPUnit\Framework\TestCase
     public function testDebugInfo(int $value)
     {
         // Given
-        $nonnegativeInt = new NonnegativeInt($value);
+        $nonzeroInt = new NonzeroInt($value);
 
         // When
-        $debugInfo = $nonnegativeInt->__debugInfo();
+        $debugInfo = $nonzeroInt->__debugInfo();
 
         // Then
         $this->assertSame($value, $debugInfo['value']);
@@ -60,7 +60,13 @@ class NonnegativeIntTest extends \PHPUnit\Framework\TestCase
     public function dataProviderForValidValues(): array
     {
         return [
-            [0],
+            [\PHP_INT_MIN],
+            [-8973298792],
+            [-1000],
+            [-10],
+            [-3],
+            [-2],
+            [-1],
             [1],
             [2],
             [3],
@@ -80,10 +86,10 @@ class NonnegativeIntTest extends \PHPUnit\Framework\TestCase
     public function testStringRepresentation(int $value, string $expected)
     {
         // Given
-        $nonnegativeInt = new NonnegativeInt($value);
+        $nonzeroInt = new NonzeroInt($value);
 
         // When
-        $stringRepresentation = (string) $nonnegativeInt;
+        $stringRepresentation = (string) $nonzeroInt;
 
         // Then
         $this->assertSame($expected, $stringRepresentation);
@@ -98,10 +104,10 @@ class NonnegativeIntTest extends \PHPUnit\Framework\TestCase
     public function testJsonSerialization(int $value, string $expected)
     {
         // Given
-        $nonnegativeInt = new NonnegativeInt($value);
+        $nonzeroInt = new NonzeroInt($value);
 
         // When
-        $jsonSerialization = json_encode($nonnegativeInt);
+        $jsonSerialization = json_encode($nonzeroInt);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);
@@ -110,7 +116,13 @@ class NonnegativeIntTest extends \PHPUnit\Framework\TestCase
     public function dataProviderForValidValuesStringRepresentation(): array
     {
         return [
-            [0, '0'],
+            [\PHP_INT_MIN, \strval(\PHP_INT_MIN)],
+            [-8973298792, '-8973298792'],
+            [-1000, '-1000'],
+            [-10, '-10'],
+            [-3, '-3'],
+            [-2, '-2'],
+            [-1, '-1'],
             [1, '1'],
             [2, '2'],
             [3, '3'],
@@ -132,18 +144,13 @@ class NonnegativeIntTest extends \PHPUnit\Framework\TestCase
         $this->expectException(StrongTypeException::class);
 
         // When
-        $nonnegativeInt = new NonnegativeInt($value);
+        $nonzeroInt = new NonzeroInt($value);
     }
 
     public function dataProviderForInvalidValues(): array
     {
         return [
-            [-1],
-            [-2],
-            [-10],
-            [-1000],
-            [-8973298792],
-            [\PHP_INT_MIN],
+            [0],
         ];
     }
 }

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace StrongType\Tests\Integer;
+namespace StrongType\Tests\Int;
 
 use StrongType\Exception\StrongTypeException;
-use StrongType\Integer\NegativeInt;
+use StrongType\Int\NegativeInt;
 
 class NegativeIntTest extends \PHPUnit\Framework\TestCase
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace StrongType\Integer;
+namespace StrongType\Int;
 
 abstract class Integer implements \JsonSerializable
 {
