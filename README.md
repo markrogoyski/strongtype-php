@@ -7,7 +7,7 @@ Quick Reference
 -----------
 
 #### Integers
-| Iterator | Description | Details |
+| StrongType | Description | Details |
 | ----------- | ----------- | ----------- |
 | [`NegativeInt`](#Integer) | Negative integer| < 0 |
 | [`NonnegativeInt`](#Integer) | Nonnegative integer| >= 0 |
