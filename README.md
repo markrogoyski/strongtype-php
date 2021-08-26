@@ -6,14 +6,23 @@ Strong types for your PHP code.
 Quick Reference
 -----------
 
-#### Integers
+#### Ints
 | StrongType | Description | Details |
 | ----------- | ----------- | ----------- |
-| [`NegativeInt`](#Integer) | Negative integer| < 0 |
-| [`NonnegativeInt`](#Integer) | Nonnegative integer| >= 0 |
-| [`NonpositiveInt`](#Integer) | Nonpositive integer| <= 0 |
-| [`NonzeroInt`](#Integer) | Nonzero integer| < 0 or > 0 |
-| [`PositiveInt`](#Integer) | Positive integer| > 0 |
+| [`NegativeInt`](#Ints) | Negative integer| < 0 |
+| [`NonnegativeInt`](#Ints) | Nonnegative integer| >= 0 |
+| [`NonpositiveInt`](#Ints) | Nonpositive integer| <= 0 |
+| [`NonzeroInt`](#Ints) | Nonzero integer| < 0 or > 0 |
+| [`PositiveInt`](#Ints) | Positive integer| > 0 |
+
+#### Floats
+| StrongType | Description | Details |
+| ----------- | ----------- | ----------- |
+| [`NegativeFloat`](#Floats) | Negative float| < 0.0 |
+| [`NonnegativeFloat`](#Floats) | Nonnegative float| >= 0.0 |
+| [`NonpositiveFloat`](#Floats) | Nonpositive float| <= 0.0 |
+| [`NonzeroFloat`](#Floats) | Nonzero float| < 0.0 or > 0.0 |
+| [`PositiveFloat`](#Floats) | Positive float| > 0.0 |
 
 Quick Overview
 -----------
@@ -104,7 +113,7 @@ Usage
 -----
 
 
-## Integer
+## Ints
 
 ```php
 use StrongType\Integer\{NegativeInt, NonnegativeInt, NonpositiveInt, NonzeroInt, PositiveInt};
@@ -116,6 +125,20 @@ $nonnegativeInt = new NonnegativeInt(4);
 $nonpositiveInt = new NonpositiveInt(0);
 
 $nonzeroInt = new NonzeroInt(5);
+```
+
+## Floats
+
+```php
+use StrongType\Float\{NegativeFloat, NonnegativeFloat, NonpositiveFloat, NonzeroFloat, PositiveFloat};
+
+$positiveFloat = new PositiveFloat(5);
+$negativeFloat = new NegativeFloat(-5);
+
+$nonnegativeFloat = new NonnegativeFloat(4);
+$nonpositiveFloat = new NonpositiveFloat(0);
+
+$nonzeroFloat = new NonzeroFloat(5);
 ```
 
 Standards

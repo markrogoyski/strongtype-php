@@ -2,7 +2,8 @@
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" bootstrap="bootstrap.php" colors="true" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd">
   <testsuites>
     <testsuite name="All">
-      <directory suffix="Test.php">Number</directory>
+      <directory suffix="Test.php">Float</directory>
+      <directory suffix="Test.php">Int</directory>
     </testsuite>
   </testsuites>
   <coverage processUncoveredFiles="true">
