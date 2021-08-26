@@ -17,7 +17,7 @@ class NegativeFloat extends FloatingPoint
     private function validateNegativeFloat(): void
     {
         if ($this->value >= 0.0) {
-            throw new StrongTypeException();
+            throw new StrongTypeException("NegativeFloat type must be < 0.0, got {$this->value}");
         }
     }
 }

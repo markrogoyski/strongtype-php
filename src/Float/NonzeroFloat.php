@@ -17,7 +17,7 @@ class NonzeroFloat extends FloatingPoint
     private function validateNonzeroFloat(): void
     {
         if ($this->value === 0.0) {
-            throw new StrongTypeException();
+            throw new StrongTypeException("NonzeroFloat type must not be 0.0, got {$this->value}");
         }
     }
 }

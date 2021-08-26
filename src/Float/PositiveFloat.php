@@ -17,7 +17,7 @@ class PositiveFloat extends FloatingPoint
     private function validatePositiveFloat(): void
     {
         if ($this->value <= 0.0) {
-            throw new StrongTypeException();
+            throw new StrongTypeException("PositiveFloat type must be > 0.0, got {$this->value}");
         }
     }
 }

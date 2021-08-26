@@ -17,7 +17,7 @@ class NonzeroInt extends Integer
     private function validateNonzeroInt(): void
     {
         if ($this->value === 0) {
-            throw new StrongTypeException();
+            throw new StrongTypeException("NonzeroInt type must not be 0, got {$this->value}");
         }
     }
 }

@@ -17,7 +17,7 @@ class NonpositiveInt extends Integer
     private function validateNonpositiveInt(): void
     {
         if ($this->value > 0) {
-            throw new StrongTypeException();
+            throw new StrongTypeException("NonpositiveInt type must be <= 0, got {$this->value}");
         }
     }
 }

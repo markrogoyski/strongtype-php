@@ -17,7 +17,7 @@ class PositiveInt extends Integer
     private function validatePositiveInt(): void
     {
         if ($this->value <= 0) {
-            throw new StrongTypeException();
+            throw new StrongTypeException("PositiveInt type must be > 0, got {$this->value}");
         }
     }
 }
