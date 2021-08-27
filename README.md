@@ -131,13 +131,14 @@ Usage
 ```php
 use StrongType\Int\{NegativeInt, NonnegativeInt, NonpositiveInt, NonzeroInt, PositiveInt};
 
-$positiveInt = new PositiveInt(5);
-$negativeInt = new NegativeInt(-5);
-
+$positiveInt    = new PositiveInt(5);
+$negativeInt    = new NegativeInt(-5);
 $nonnegativeInt = new NonnegativeInt(4);
 $nonpositiveInt = new NonpositiveInt(0);
+$nonzeroInt     = new NonzeroInt(5);
 
-$nonzeroInt = new NonzeroInt(5);
+// All int types have a getValue method
+$intValue = $positiveInt->getValue();
 ```
 
 ## Floats
@@ -145,13 +146,31 @@ $nonzeroInt = new NonzeroInt(5);
 ```php
 use StrongType\Float\{NegativeFloat, NonnegativeFloat, NonpositiveFloat, NonzeroFloat, PositiveFloat};
 
-$positiveFloat = new PositiveFloat(5);
-$negativeFloat = new NegativeFloat(-5);
-
+$positiveFloat    = new PositiveFloat(5);
+$negativeFloat    = new NegativeFloat(-5);
 $nonnegativeFloat = new NonnegativeFloat(4);
 $nonpositiveFloat = new NonpositiveFloat(0);
+$nonzeroFloat     = new NonzeroFloat(5);
 
-$nonzeroFloat = new NonzeroFloat(5);
+// All float types have a getValue method
+$floatValue = $positiveFloat->getValue();
+```
+
+## Strings
+```php
+use StrongType\String\{AlphanumericString, AlphaString, BinaryString, EmptyString, HexString, LowercaseAlphaString, NonemptyString, NumericString, UppercaseAlphaString};
+
+$alphanumericString   = new AlphanumericString('abc123');
+$alphaString          = new AlphaString('Hello');
+$binaryString         = new BinaryString('1010');
+$emptyString          = new EmptyString();
+$hexString            = new HexString('EF49');
+$lowercaseAlphaString = new LowercaseAlphaString('hello');
+$nonemptyString       = new NonemptyString('Hello, world.');
+$numericString        = new NumericString('123');
+
+// All string types have a getValue method
+$stringValue = $alphanumericString->getValue();
 ```
 
 Standards
