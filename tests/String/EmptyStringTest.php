@@ -10,6 +10,18 @@ use StrongType\String\EmptyString;
 class EmptyStringTest extends \PHPUnit\Framework\TestCase
 {
     /**
+     * @test Valid empty value
+     */
+    public function testValidEmptyValue()
+    {
+        // When
+        $emptyString = new EmptyString();
+
+        // Then
+        $this->assertSame('', $emptyString->getValue());
+    }
+
+    /**
      * @test         Valid value
      * @dataProvider dataProviderForValidValues
      * @param        string $value

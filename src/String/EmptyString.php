@@ -8,7 +8,7 @@ use StrongType\Exception\StrongTypeException;
 
 class EmptyString extends StringType
 {
-    public function __construct(string $value)
+    public function __construct(string $value = '')
     {
         parent::__construct($value);
         $this->validateEmptyString();
