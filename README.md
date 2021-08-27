@@ -6,7 +6,7 @@ Strong types for your PHP code.
 Quick Reference
 -----------
 
-#### Ints
+### Ints
 | StrongType | Description | Details |
 | ----------- | ----------- | ----------- |
 | [`NegativeInt`](#Ints) | Negative integer| < 0 |
@@ -15,7 +15,7 @@ Quick Reference
 | [`NonzeroInt`](#Ints) | Nonzero integer| < 0 or > 0 |
 | [`PositiveInt`](#Ints) | Positive integer| > 0 |
 
-#### Floats
+### Floats
 | StrongType | Description | Details |
 | ----------- | ----------- | ----------- |
 | [`NegativeFloat`](#Floats) | Negative float| < 0.0 |
@@ -24,7 +24,7 @@ Quick Reference
 | [`NonzeroFloat`](#Floats) | Nonzero float| < 0.0 or > 0.0 |
 | [`PositiveFloat`](#Floats) | Positive float| > 0.0 |
 
-#### Strings
+### Strings
 | StrongType | Description | Details |
 | ----------- | ----------- | ----------- |
 | [`AlphanumericString`](#Strings) | Alphanumeric string | [a-zA-Z0-9]+ |
