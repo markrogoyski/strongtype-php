@@ -4,6 +4,7 @@
     <testsuite name="All">
       <directory suffix="Test.php">Float</directory>
       <directory suffix="Test.php">Int</directory>
+      <directory suffix="Test.php">String</directory>
     </testsuite>
   </testsuites>
   <coverage processUncoveredFiles="true">

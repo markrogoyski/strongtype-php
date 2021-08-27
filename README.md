@@ -24,6 +24,19 @@ Quick Reference
 | [`NonzeroFloat`](#Floats) | Nonzero float| < 0.0 or > 0.0 |
 | [`PositiveFloat`](#Floats) | Positive float| > 0.0 |
 
+#### Strings
+| StrongType | Description | Details |
+| ----------- | ----------- | ----------- |
+| [`AlphanumericString`](#Strings) | Alphanumeric string | [a-zA-Z0-9]+ |
+| [`AlphaString`](#Strings) | Alphabetic string| [a-zA-Z]+ |
+| [`BinaryString`](#Strings) | Binary digit string | [01]+ |
+| [`EmptyString`](#Strings) | Empty string | "" |
+| [`HexString`](#Strings) | Hexadecimal string | [a-fA-F0-9]+ |
+| [`LowercaseAlphaString`](#Strings) | Lowercase alphabetic string | [a-z]+ |
+| [`NonemptyString`](#Strings) | Nonempty string | Anything but "" |
+| [`NumericString`](#Strings) | Numeric string | [0-9]+ |
+| [`UppercaseAlphaString`](#Strings) | Uppercase alphabetic string | [A-Z]+ |
+
 Quick Overview
 -----------
 PHP has basic scalar types. But even with them, you often find yourself writing repetitive validations on them.
@@ -116,7 +129,7 @@ Usage
 ## Ints
 
 ```php
-use StrongType\Integer\{NegativeInt, NonnegativeInt, NonpositiveInt, NonzeroInt, PositiveInt};
+use StrongType\Int\{NegativeInt, NonnegativeInt, NonpositiveInt, NonzeroInt, PositiveInt};
 
 $positiveInt = new PositiveInt(5);
 $negativeInt = new NegativeInt(-5);
