@@ -5,6 +5,7 @@
       <directory suffix="Test.php">Float</directory>
       <directory suffix="Test.php">Int</directory>
       <directory suffix="Test.php">String</directory>
+      <directory suffix="Test.php">Arrays</directory>
     </testsuite>
   </testsuites>
   <coverage processUncoveredFiles="true">
