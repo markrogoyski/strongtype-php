@@ -21,7 +21,7 @@ class ArrayOfObjects extends NonemptyArray
     private function validateArrayOfObjects(): void
     {
         foreach ($this->values as $value) {
-            if (!is_object($value)) {
+            if (!\is_object($value)) {
                 throw new StrongTypeException('ArrayOfObjects type values must be objects, got ' . Stringify::value($value) . ' as a value');
             }
         }

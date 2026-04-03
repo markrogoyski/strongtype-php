@@ -21,7 +21,7 @@ class ArrayOfResources extends NonemptyArray
     private function validateArrayOfResources(): void
     {
         foreach ($this->values as $value) {
-            if (!is_resource($value)) {
+            if (!\is_resource($value)) {
                 throw new StrongTypeException('ArrayOfResources type values must be resources, got ' . Stringify::value($value) . ' as a value');
             }
         }

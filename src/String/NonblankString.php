@@ -16,7 +16,7 @@ class NonblankString extends NonemptyString
 
     private function validateNonblankString(): void
     {
-        if (trim($this->value) === '') {
+        if (\trim($this->value) === '') {
             throw new StrongTypeException("NonblankString type must not be blank, got '{$this->value}'");
         }
     }

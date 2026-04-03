@@ -113,7 +113,7 @@ class EmptyStringTest extends \PHPUnit\Framework\TestCase
         $emptyString = new EmptyString($value);
 
         // When
-        $jsonSerialization = json_encode($emptyString);
+        $jsonSerialization = \json_encode($emptyString);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);

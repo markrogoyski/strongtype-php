@@ -112,7 +112,7 @@ class ArrayOfStringsTest extends \PHPUnit\Framework\TestCase
         $arrayOfStrings = new ArrayOfStrings($values);
 
         // When
-        $jsonSerialization = json_encode($arrayOfStrings);
+        $jsonSerialization = \json_encode($arrayOfStrings);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);

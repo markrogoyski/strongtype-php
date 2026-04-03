@@ -103,7 +103,7 @@ class LowercaseAlphaStringTest extends \PHPUnit\Framework\TestCase
         $lowercaseAlphaString = new LowercaseAlphaString($value);
 
         // When
-        $jsonSerialization = json_encode($lowercaseAlphaString);
+        $jsonSerialization = \json_encode($lowercaseAlphaString);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);

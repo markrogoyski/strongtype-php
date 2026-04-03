@@ -16,7 +16,7 @@ class EmptyString extends StringType
 
     private function validateEmptyString(): void
     {
-        if (strlen($this->value) > 0) {
+        if (\strlen($this->value) > 0) {
             throw new StrongTypeException("EmptyString type must be empty, got {$this->value}");
         }
     }

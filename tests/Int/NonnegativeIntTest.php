@@ -101,7 +101,7 @@ class NonnegativeIntTest extends \PHPUnit\Framework\TestCase
         $nonnegativeInt = new NonnegativeInt($value);
 
         // When
-        $jsonSerialization = json_encode($nonnegativeInt);
+        $jsonSerialization = \json_encode($nonnegativeInt);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);

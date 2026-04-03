@@ -123,7 +123,7 @@ class HexStringTest extends \PHPUnit\Framework\TestCase
         $hexString = new HexString($value);
 
         // When
-        $jsonSerialization = json_encode($hexString);
+        $jsonSerialization = \json_encode($hexString);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);

@@ -8,10 +8,10 @@ class Stringify
 {
     public static function value(mixed $value): string
     {
-        if (is_float($value) && is_nan($value)) {
+        if (\is_float($value) && \is_nan($value)) {
             return 'NAN';
         }
 
-        return print_r($value, true);
+        return \print_r($value, true);
     }
 }

@@ -107,7 +107,7 @@ class NonemptyArrayTest extends \PHPUnit\Framework\TestCase
         $nonemptyArray = new NonemptyArray($values);
 
         // When
-        $jsonSerialization = json_encode($nonemptyArray);
+        $jsonSerialization = \json_encode($nonemptyArray);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);

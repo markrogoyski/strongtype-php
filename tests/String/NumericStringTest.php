@@ -103,7 +103,7 @@ class NumericStringTest extends \PHPUnit\Framework\TestCase
         $numericString = new NumericString($value);
 
         // When
-        $jsonSerialization = json_encode($numericString);
+        $jsonSerialization = \json_encode($numericString);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);

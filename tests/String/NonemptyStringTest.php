@@ -129,7 +129,7 @@ class NonemptyStringTest extends \PHPUnit\Framework\TestCase
         $nonemptyString = new NonemptyString($value);
 
         // When
-        $jsonSerialization = json_encode($nonemptyString);
+        $jsonSerialization = \json_encode($nonemptyString);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);

@@ -16,7 +16,7 @@ class AlphaString extends NonemptyString
 
     private function validateAlphaString(): void
     {
-        if (!ctype_alpha($this->value)) {
+        if (!\ctype_alpha($this->value)) {
             throw new StrongTypeException("AlphaString type must only contain alphabetic characters, got {$this->value}");
         }
     }

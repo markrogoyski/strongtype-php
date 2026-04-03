@@ -122,7 +122,7 @@ class ArrayOfArraysTest extends \PHPUnit\Framework\TestCase
         $arrayOfArrays = new ArrayOfArrays($values);
 
         // When
-        $jsonSerialization = json_encode($arrayOfArrays);
+        $jsonSerialization = \json_encode($arrayOfArrays);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);

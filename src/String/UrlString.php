@@ -16,7 +16,7 @@ class UrlString extends NonemptyString
 
     private function validateUrlString(): void
     {
-        if (filter_var($this->value, \FILTER_VALIDATE_URL) === false) {
+        if (\filter_var($this->value, \FILTER_VALIDATE_URL) === false) {
             throw new StrongTypeException("UrlString type must be a valid URL, got {$this->value}");
         }
     }

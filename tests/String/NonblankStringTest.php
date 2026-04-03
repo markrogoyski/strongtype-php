@@ -107,7 +107,7 @@ class NonblankStringTest extends \PHPUnit\Framework\TestCase
         $nonblankString = new NonblankString($value);
 
         // When
-        $jsonSerialization = json_encode($nonblankString);
+        $jsonSerialization = \json_encode($nonblankString);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);

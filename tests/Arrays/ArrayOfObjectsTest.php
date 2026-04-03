@@ -95,7 +95,7 @@ class ArrayOfObjectsTest extends \PHPUnit\Framework\TestCase
         $arrayOfObjects = new ArrayOfObjects([new \stdClass()]);
 
         // When
-        $jsonSerialization = json_encode($arrayOfObjects);
+        $jsonSerialization = \json_encode($arrayOfObjects);
 
         // Then
         $this->assertSame('[{}]', $jsonSerialization);

@@ -88,7 +88,7 @@ class EmptyArrayTest extends \PHPUnit\Framework\TestCase
         $emptyArray = new EmptyArray([]);
 
         // When
-        $jsonSerialization = json_encode($emptyArray);
+        $jsonSerialization = \json_encode($emptyArray);
 
         // Then
         $this->assertSame('[]', $jsonSerialization);

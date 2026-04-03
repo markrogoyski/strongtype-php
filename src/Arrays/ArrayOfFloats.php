@@ -21,7 +21,7 @@ class ArrayOfFloats extends NonemptyArray
     private function validateArrayOfFloats(): void
     {
         foreach ($this->values as $value) {
-            if (!is_float($value)) {
+            if (!\is_float($value)) {
                 throw new StrongTypeException('ArrayOfFloats type values must be floats, got ' . Stringify::value($value) . ' as a value');
             }
         }

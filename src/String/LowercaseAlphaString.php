@@ -16,7 +16,7 @@ class LowercaseAlphaString extends AlphaString
 
     private function validateLowercaseAlphaString(): void
     {
-        if (!ctype_lower($this->value)) {
+        if (!\ctype_lower($this->value)) {
             throw new StrongTypeException("LowercaseAlphaString type must only contain lowercase characters, got {$this->value}");
         }
     }

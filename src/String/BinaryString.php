@@ -16,7 +16,7 @@ class BinaryString extends NonemptyString
 
     private function validateBinaryString(): void
     {
-        if (!preg_match('/^[01]+$/', $this->value)) {
+        if (!\preg_match('/^[01]+$/', $this->value)) {
             throw new StrongTypeException("BinaryString type must only contain binary digits, got {$this->value}");
         }
     }

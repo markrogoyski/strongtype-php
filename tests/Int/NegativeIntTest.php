@@ -100,7 +100,7 @@ class NegativeIntTest extends \PHPUnit\Framework\TestCase
         $negativeInt = new NegativeInt($value);
 
         // When
-        $jsonSerialization = json_encode($negativeInt);
+        $jsonSerialization = \json_encode($negativeInt);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);

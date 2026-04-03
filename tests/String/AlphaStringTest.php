@@ -105,7 +105,7 @@ class AlphaStringTest extends \PHPUnit\Framework\TestCase
         $alphaString = new AlphaString($value);
 
         // When
-        $jsonSerialization = json_encode($alphaString);
+        $jsonSerialization = \json_encode($alphaString);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);

@@ -111,7 +111,7 @@ class ArrayOfIntsTest extends \PHPUnit\Framework\TestCase
         $arrayOfInts = new ArrayOfInts($values);
 
         // When
-        $jsonSerialization = json_encode($arrayOfInts);
+        $jsonSerialization = \json_encode($arrayOfInts);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);

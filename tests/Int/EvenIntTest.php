@@ -101,7 +101,7 @@ class EvenIntTest extends \PHPUnit\Framework\TestCase
         $evenInt = new EvenInt($value);
 
         // When
-        $jsonSerialization = json_encode($evenInt);
+        $jsonSerialization = \json_encode($evenInt);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);

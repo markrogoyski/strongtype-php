@@ -101,7 +101,7 @@ class NegativeFloatTest extends \PHPUnit\Framework\TestCase
         $negativeFloat = new NegativeFloat($value);
 
         // When
-        $jsonSerialization = json_encode($negativeFloat);
+        $jsonSerialization = \json_encode($negativeFloat);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);

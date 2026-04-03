@@ -18,7 +18,7 @@ class JsonString extends NonemptyString
     {
         try {
             /** @psalm-suppress UnusedFunctionCall - called for validation side-effect */
-            json_decode($this->value, flags: \JSON_THROW_ON_ERROR);
+            \json_decode($this->value, flags: \JSON_THROW_ON_ERROR);
         } catch (\JsonException $e) {
             throw new StrongTypeException("JsonString type must be valid JSON, got {$this->value}");
         }

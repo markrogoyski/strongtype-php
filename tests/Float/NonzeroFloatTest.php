@@ -109,7 +109,7 @@ class NonzeroFloatTest extends \PHPUnit\Framework\TestCase
         $nonnegativeFloat = new NonzeroFloat($value);
 
         // When
-        $jsonSerialization = json_encode($nonnegativeFloat);
+        $jsonSerialization = \json_encode($nonnegativeFloat);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);

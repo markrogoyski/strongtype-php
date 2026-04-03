@@ -21,7 +21,7 @@ class ArrayOfStrings extends NonemptyArray
     private function validateArrayOfStrings(): void
     {
         foreach ($this->values as $value) {
-            if (!is_string($value)) {
+            if (!\is_string($value)) {
                 throw new StrongTypeException('ArrayOfStrings type values must be strings, got ' . Stringify::value($value) . ' as a value');
             }
         }

@@ -16,7 +16,7 @@ class Base64String extends NonemptyString
 
     private function validateBase64String(): void
     {
-        if (!preg_match('/^[A-Za-z0-9+\/]*={0,2}$/', $this->value)) {
+        if (!\preg_match('/^[A-Za-z0-9+\/]*={0,2}$/', $this->value)) {
             throw new StrongTypeException("Base64String type must be valid base64, got {$this->value}");
         }
     }

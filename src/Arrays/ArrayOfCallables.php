@@ -21,7 +21,7 @@ class ArrayOfCallables extends NonemptyArray
     private function validateArrayOfCallables(): void
     {
         foreach ($this->values as $value) {
-            if (!is_callable($value)) {
+            if (!\is_callable($value)) {
                 throw new StrongTypeException('ArrayOfCallables type values must be callables, got ' . Stringify::value($value) . ' as a value');
             }
         }

@@ -21,7 +21,7 @@ class ArrayOfInts extends NonemptyArray
     private function validateArrayOfInts(): void
     {
         foreach ($this->values as $value) {
-            if (!is_int($value)) {
+            if (!\is_int($value)) {
                 throw new StrongTypeException('ArrayOfInts type values must be ints, got ' . Stringify::value($value) . ' as a value');
             }
         }

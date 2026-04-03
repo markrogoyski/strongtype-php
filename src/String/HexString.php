@@ -16,7 +16,7 @@ class HexString extends NonemptyString
 
     private function validateHexString(): void
     {
-        if (!ctype_xdigit($this->value)) {
+        if (!\ctype_xdigit($this->value)) {
             throw new StrongTypeException("HexString type must only contain hexadecimal digits, got {$this->value}");
         }
     }

@@ -94,7 +94,7 @@ class TrueValueTest extends \PHPUnit\Framework\TestCase
         $trueValue = new TrueValue($value);
 
         // When
-        $jsonSerialization = json_encode($trueValue);
+        $jsonSerialization = \json_encode($trueValue);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);

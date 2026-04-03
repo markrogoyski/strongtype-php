@@ -108,7 +108,7 @@ class IpAddressStringTest extends \PHPUnit\Framework\TestCase
         $ipAddressString = new IpAddressString($value);
 
         // When
-        $jsonSerialization = json_encode($ipAddressString);
+        $jsonSerialization = \json_encode($ipAddressString);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);

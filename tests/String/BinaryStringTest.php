@@ -117,7 +117,7 @@ class BinaryStringTest extends \PHPUnit\Framework\TestCase
         $binaryString = new BinaryString($value);
 
         // When
-        $jsonSerialization = json_encode($binaryString);
+        $jsonSerialization = \json_encode($binaryString);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);

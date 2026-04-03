@@ -13,7 +13,7 @@ class StringifyTest extends \PHPUnit\Framework\TestCase
      */
     public function testNan()
     {
-        $this->assertSame('NAN', Stringify::value(NAN));
+        $this->assertSame('NAN', Stringify::value(\NAN));
     }
 
     /**
@@ -34,8 +34,8 @@ class StringifyTest extends \PHPUnit\Framework\TestCase
             'bool true'    => [true, '1'],
             'bool false'   => [false, ''],
             'null'         => [null, ''],
-            'INF'          => [INF, 'INF'],
-            'negative INF' => [-INF, '-INF'],
+            'INF'          => [\INF, 'INF'],
+            'negative INF' => [-\INF, '-INF'],
         ];
     }
 

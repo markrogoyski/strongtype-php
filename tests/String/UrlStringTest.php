@@ -107,7 +107,7 @@ class UrlStringTest extends \PHPUnit\Framework\TestCase
         $urlString = new UrlString($value);
 
         // When
-        $jsonSerialization = json_encode($urlString);
+        $jsonSerialization = \json_encode($urlString);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);

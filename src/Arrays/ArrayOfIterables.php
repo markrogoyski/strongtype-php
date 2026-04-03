@@ -21,7 +21,7 @@ class ArrayOfIterables extends NonemptyArray
     private function validateArrayOfIterables(): void
     {
         foreach ($this->values as $value) {
-            if (!is_iterable($value)) {
+            if (!\is_iterable($value)) {
                 throw new StrongTypeException('ArrayOfIterables type values must be iterables, got ' . Stringify::value($value) . ' as a value');
             }
         }

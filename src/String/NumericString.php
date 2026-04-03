@@ -16,7 +16,7 @@ class NumericString extends NonemptyString
 
     private function validateNumericString(): void
     {
-        if (!ctype_digit($this->value)) {
+        if (!\ctype_digit($this->value)) {
             throw new StrongTypeException("NumericString type must only contain numeric characters, got {$this->value}");
         }
     }

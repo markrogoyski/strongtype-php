@@ -15,7 +15,7 @@ class ArrayOfResourcesTest extends \PHPUnit\Framework\TestCase
     public function testValidValue()
     {
         // Given
-        $resource = tmpfile();
+        $resource = \tmpfile();
 
         // When
         $arrayOfResources = new ArrayOfResources([$resource]);
@@ -24,7 +24,7 @@ class ArrayOfResourcesTest extends \PHPUnit\Framework\TestCase
         $this->expectNotToPerformAssertions();
 
         // Cleanup
-        fclose($resource);
+        \fclose($resource);
     }
 
     /**
@@ -33,7 +33,7 @@ class ArrayOfResourcesTest extends \PHPUnit\Framework\TestCase
     public function testGetValue()
     {
         // Given
-        $resource = tmpfile();
+        $resource = \tmpfile();
         $values = [$resource];
         $arrayOfResources = new ArrayOfResources($values);
 
@@ -49,7 +49,7 @@ class ArrayOfResourcesTest extends \PHPUnit\Framework\TestCase
         }
 
         // Cleanup
-        fclose($resource);
+        \fclose($resource);
     }
 
     /**
@@ -58,7 +58,7 @@ class ArrayOfResourcesTest extends \PHPUnit\Framework\TestCase
     public function testDebugInfo()
     {
         // Given
-        $resource = tmpfile();
+        $resource = \tmpfile();
         $values = [$resource];
         $arrayOfResources = new ArrayOfResources($values);
 
@@ -69,7 +69,7 @@ class ArrayOfResourcesTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($values, $debugInfo['values']);
 
         // Cleanup
-        fclose($resource);
+        \fclose($resource);
     }
 
     /**
@@ -78,16 +78,16 @@ class ArrayOfResourcesTest extends \PHPUnit\Framework\TestCase
     public function testCountableInterface()
     {
         // Given
-        $resource1 = tmpfile();
-        $resource2 = tmpfile();
+        $resource1 = \tmpfile();
+        $resource2 = \tmpfile();
         $arrayOfResources = new ArrayOfResources([$resource1, $resource2]);
 
         // Then
         $this->assertCount(2, $arrayOfResources);
 
         // Cleanup
-        fclose($resource1);
-        fclose($resource2);
+        \fclose($resource1);
+        \fclose($resource2);
     }
 
     /**
@@ -96,8 +96,8 @@ class ArrayOfResourcesTest extends \PHPUnit\Framework\TestCase
     public function testIteratorInterface()
     {
         // Given
-        $resource1 = tmpfile();
-        $resource2 = tmpfile();
+        $resource1 = \tmpfile();
+        $resource2 = \tmpfile();
         $values = [$resource1, $resource2];
         $arrayOfResources = new ArrayOfResources($values);
 
@@ -127,8 +127,8 @@ class ArrayOfResourcesTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($finalCount, $i);
 
         // Cleanup
-        fclose($resource1);
-        fclose($resource2);
+        \fclose($resource1);
+        \fclose($resource2);
     }
 
     /**

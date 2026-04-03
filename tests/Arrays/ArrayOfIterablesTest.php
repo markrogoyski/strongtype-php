@@ -112,7 +112,7 @@ class ArrayOfIterablesTest extends \PHPUnit\Framework\TestCase
         $arrayOfIterables = new ArrayOfIterables($values);
 
         // When
-        $jsonSerialization = json_encode($arrayOfIterables);
+        $jsonSerialization = \json_encode($arrayOfIterables);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);

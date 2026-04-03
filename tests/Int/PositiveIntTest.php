@@ -100,7 +100,7 @@ class PositiveIntTest extends \PHPUnit\Framework\TestCase
         $positiveInt = new PositiveInt($value);
 
         // When
-        $jsonSerialization = json_encode($positiveInt);
+        $jsonSerialization = \json_encode($positiveInt);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);

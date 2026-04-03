@@ -21,7 +21,7 @@ class ArrayOfBools extends NonemptyArray
     private function validateArrayOfBools(): void
     {
         foreach ($this->values as $value) {
-            if (!is_bool($value)) {
+            if (!\is_bool($value)) {
                 throw new StrongTypeException('ArrayOfBools type values must be bools, got ' . Stringify::value($value) . ' as a value');
             }
         }

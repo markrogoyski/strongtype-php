@@ -19,8 +19,8 @@ class EmptyArray extends ArrayType
 
     private function validateEmptyArray(): void
     {
-        if (count($this->values) !== 0) {
-            throw new StrongTypeException('EmptyArray type must be empty, got ' . print_r($this->values, true));
+        if (\count($this->values) !== 0) {
+            throw new StrongTypeException('EmptyArray type must be empty, got ' . \print_r($this->values, true));
         }
     }
 }

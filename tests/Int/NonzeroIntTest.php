@@ -107,7 +107,7 @@ class NonzeroIntTest extends \PHPUnit\Framework\TestCase
         $nonzeroInt = new NonzeroInt($value);
 
         // When
-        $jsonSerialization = json_encode($nonzeroInt);
+        $jsonSerialization = \json_encode($nonzeroInt);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);

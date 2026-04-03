@@ -38,12 +38,12 @@ abstract class ArrayType implements \JsonSerializable, \Countable, \Iterator
 
     public function __toString(): string
     {
-        return json_encode($this->values, \JSON_THROW_ON_ERROR);
+        return \json_encode($this->values, \JSON_THROW_ON_ERROR);
     }
 
     public function count(): int
     {
-        return count($this->values);
+        return \count($this->values);
     }
 
     /**

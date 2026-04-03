@@ -16,7 +16,7 @@ class IpAddressString extends NonemptyString
 
     private function validateIpAddressString(): void
     {
-        if (filter_var($this->value, \FILTER_VALIDATE_IP) === false) {
+        if (\filter_var($this->value, \FILTER_VALIDATE_IP) === false) {
             throw new StrongTypeException("IpAddressString type must be a valid IP address, got {$this->value}");
         }
     }

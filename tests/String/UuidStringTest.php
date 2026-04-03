@@ -106,7 +106,7 @@ class UuidStringTest extends \PHPUnit\Framework\TestCase
         $uuidString = new UuidString($value);
 
         // When
-        $jsonSerialization = json_encode($uuidString);
+        $jsonSerialization = \json_encode($uuidString);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);

@@ -118,7 +118,7 @@ class ArrayOfFloatsTest extends \PHPUnit\Framework\TestCase
         $arrayOfFloats = new ArrayOfFloats($values);
 
         // When
-        $jsonSerialization = json_encode($arrayOfFloats);
+        $jsonSerialization = \json_encode($arrayOfFloats);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);

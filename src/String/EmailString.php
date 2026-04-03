@@ -16,7 +16,7 @@ class EmailString extends NonemptyString
 
     private function validateEmailString(): void
     {
-        if (filter_var($this->value, \FILTER_VALIDATE_EMAIL) === false) {
+        if (\filter_var($this->value, \FILTER_VALIDATE_EMAIL) === false) {
             throw new StrongTypeException("EmailString type must be a valid email address, got {$this->value}");
         }
     }

@@ -101,7 +101,7 @@ class UnitFloatTest extends \PHPUnit\Framework\TestCase
         $unitFloat = new UnitFloat($value);
 
         // When
-        $jsonSerialization = json_encode($unitFloat);
+        $jsonSerialization = \json_encode($unitFloat);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);

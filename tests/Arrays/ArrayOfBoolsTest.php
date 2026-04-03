@@ -118,7 +118,7 @@ class ArrayOfBoolsTest extends \PHPUnit\Framework\TestCase
         $arrayOfBools = new ArrayOfBools($values);
 
         // When
-        $jsonSerialization = json_encode($arrayOfBools);
+        $jsonSerialization = \json_encode($arrayOfBools);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);

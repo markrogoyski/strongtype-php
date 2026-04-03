@@ -107,7 +107,7 @@ class Base64StringTest extends \PHPUnit\Framework\TestCase
         $base64String = new Base64String($value);
 
         // When
-        $jsonSerialization = json_encode($base64String);
+        $jsonSerialization = \json_encode($base64String);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);

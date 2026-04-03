@@ -110,7 +110,7 @@ class JsonStringTest extends \PHPUnit\Framework\TestCase
         $jsonString = new JsonString($value);
 
         // When
-        $jsonSerialization = json_encode($jsonString);
+        $jsonSerialization = \json_encode($jsonString);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);

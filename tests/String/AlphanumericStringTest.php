@@ -114,7 +114,7 @@ class AlphanumericStringTest extends \PHPUnit\Framework\TestCase
         $alphanumericString = new AlphanumericString($value);
 
         // When
-        $jsonSerialization = json_encode($alphanumericString);
+        $jsonSerialization = \json_encode($alphanumericString);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);

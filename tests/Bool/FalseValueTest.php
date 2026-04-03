@@ -94,7 +94,7 @@ class FalseValueTest extends \PHPUnit\Framework\TestCase
         $falseValue = new FalseValue($value);
 
         // When
-        $jsonSerialization = json_encode($falseValue);
+        $jsonSerialization = \json_encode($falseValue);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);

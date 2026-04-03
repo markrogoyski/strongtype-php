@@ -100,7 +100,7 @@ class OddIntTest extends \PHPUnit\Framework\TestCase
         $oddInt = new OddInt($value);
 
         // When
-        $jsonSerialization = json_encode($oddInt);
+        $jsonSerialization = \json_encode($oddInt);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);

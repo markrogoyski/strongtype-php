@@ -107,7 +107,7 @@ class EmailStringTest extends \PHPUnit\Framework\TestCase
         $emailString = new EmailString($value);
 
         // When
-        $jsonSerialization = json_encode($emailString);
+        $jsonSerialization = \json_encode($emailString);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);

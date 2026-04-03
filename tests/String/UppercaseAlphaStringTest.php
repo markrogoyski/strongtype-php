@@ -103,7 +103,7 @@ class UppercaseAlphaStringTest extends \PHPUnit\Framework\TestCase
         $uppercaseAlphaString = new UppercaseAlphaString($value);
 
         // When
-        $jsonSerialization = json_encode($uppercaseAlphaString);
+        $jsonSerialization = \json_encode($uppercaseAlphaString);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);

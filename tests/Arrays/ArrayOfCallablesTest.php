@@ -117,7 +117,7 @@ class ArrayOfCallablesTest extends \PHPUnit\Framework\TestCase
         $arrayOfCallables = new ArrayOfCallables($values);
 
         // When
-        $jsonSerialization = json_encode($arrayOfCallables);
+        $jsonSerialization = \json_encode($arrayOfCallables);
 
         // Then
         $this->assertSame($expected, $jsonSerialization);

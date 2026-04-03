@@ -16,7 +16,7 @@ class NonemptyString extends StringType
 
     private function validateNonemptyString(): void
     {
-        if (strlen($this->value) === 0) {
+        if (\strlen($this->value) === 0) {
             throw new StrongTypeException("NonemptyString type must not be empty, got {$this->value}");
         }
     }

@@ -16,7 +16,7 @@ class UppercaseAlphaString extends AlphaString
 
     private function validateUppercaseAlphaString(): void
     {
-        if (!ctype_upper($this->value)) {
+        if (!\ctype_upper($this->value)) {
             throw new StrongTypeException("UppercaseAlphaString type must only contain uppercase characters, got {$this->value}");
         }
     }
