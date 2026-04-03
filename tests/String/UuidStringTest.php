@@ -57,7 +57,7 @@ class UuidStringTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($value, $debugInfo['value']);
     }
 
-    public function dataProviderForValidValues(): array
+    public static function dataProviderForValidValues(): array
     {
         return [
             ['550e8400-e29b-41d4-a716-446655440000'],
@@ -85,7 +85,7 @@ class UuidStringTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($expected, $stringRepresentation);
     }
 
-    public function dataProviderForValidValuesStringRepresentation(): array
+    public static function dataProviderForValidValuesStringRepresentation(): array
     {
         return [
             ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440000'],
@@ -112,7 +112,7 @@ class UuidStringTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($expected, $jsonSerialization);
     }
 
-    public function dataProviderForValidValuesJsonStringRepresentation(): array
+    public static function dataProviderForValidValuesJsonStringRepresentation(): array
     {
         return [
             ['550e8400-e29b-41d4-a716-446655440000', '"550e8400-e29b-41d4-a716-446655440000"'],
@@ -135,7 +135,7 @@ class UuidStringTest extends \PHPUnit\Framework\TestCase
         $uuidString = new UuidString($value);
     }
 
-    public function dataProviderForInvalidValues(): array
+    public static function dataProviderForInvalidValues(): array
     {
         return [
             [''],

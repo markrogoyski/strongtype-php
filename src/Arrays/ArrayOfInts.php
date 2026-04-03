@@ -28,6 +28,8 @@ class ArrayOfInts extends NonemptyArray
 
     public function current(): int
     {
-        return \current($this->values);
+        /** @var int $current */
+        $current = \current($this->values);
+        return $current;
     }
 }

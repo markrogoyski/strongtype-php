@@ -28,6 +28,8 @@ class ArrayOfFloats extends NonemptyArray
 
     public function current(): float
     {
-        return \current($this->values);
+        /** @var float $current */
+        $current = \current($this->values);
+        return $current;
     }
 }

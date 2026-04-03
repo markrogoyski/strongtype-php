@@ -57,7 +57,7 @@ class NonzeroIntTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($value, $debugInfo['value']);
     }
 
-    public function dataProviderForValidValues(): array
+    public static function dataProviderForValidValues(): array
     {
         return [
             [\PHP_INT_MIN],
@@ -113,7 +113,7 @@ class NonzeroIntTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($expected, $jsonSerialization);
     }
 
-    public function dataProviderForValidValuesStringRepresentation(): array
+    public static function dataProviderForValidValuesStringRepresentation(): array
     {
         return [
             [\PHP_INT_MIN, \strval(\PHP_INT_MIN)],
@@ -147,7 +147,7 @@ class NonzeroIntTest extends \PHPUnit\Framework\TestCase
         $nonzeroInt = new NonzeroInt($value);
     }
 
-    public function dataProviderForInvalidValues(): array
+    public static function dataProviderForInvalidValues(): array
     {
         return [
             [0],

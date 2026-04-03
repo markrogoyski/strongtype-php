@@ -57,7 +57,7 @@ class Base64StringTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($value, $debugInfo['value']);
     }
 
-    public function dataProviderForValidValues(): array
+    public static function dataProviderForValidValues(): array
     {
         return [
             ['aGVsbG8='],
@@ -86,7 +86,7 @@ class Base64StringTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($expected, $stringRepresentation);
     }
 
-    public function dataProviderForValidValuesStringRepresentation(): array
+    public static function dataProviderForValidValuesStringRepresentation(): array
     {
         return [
             ['aGVsbG8=', 'aGVsbG8='],
@@ -113,7 +113,7 @@ class Base64StringTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($expected, $jsonSerialization);
     }
 
-    public function dataProviderForValidValuesJsonStringRepresentation(): array
+    public static function dataProviderForValidValuesJsonStringRepresentation(): array
     {
         return [
             ['aGVsbG8=', '"aGVsbG8="'],
@@ -136,7 +136,7 @@ class Base64StringTest extends \PHPUnit\Framework\TestCase
         $base64String = new Base64String($value);
     }
 
-    public function dataProviderForInvalidValues(): array
+    public static function dataProviderForInvalidValues(): array
     {
         return [
             [''],

@@ -56,23 +56,17 @@ abstract class ArrayType implements \JsonSerializable, \Countable, \Iterator
         ];
     }
 
-    public function rewind()
+    public function rewind(): void
     {
         \reset($this->values);
     }
 
-    /**
-     * @return mixed
-     */
-    public function current()
+    public function current(): mixed
     {
         return \current($this->values);
     }
 
-    /**
-     * @return mixed
-     */
-    public function key()
+    public function key(): mixed
     {
         return \key($this->values);
     }

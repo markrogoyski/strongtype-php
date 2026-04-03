@@ -57,7 +57,7 @@ class TrueValueTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($value, $debugInfo['value']);
     }
 
-    public function dataProviderForValidValues(): array
+    public static function dataProviderForValidValues(): array
     {
         return [
             [true],
@@ -100,7 +100,7 @@ class TrueValueTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($expected, $jsonSerialization);
     }
 
-    public function dataProviderForValidValuesStringRepresentation(): array
+    public static function dataProviderForValidValuesStringRepresentation(): array
     {
         return [
             [true, 'true'],
@@ -121,7 +121,7 @@ class TrueValueTest extends \PHPUnit\Framework\TestCase
         $trueValue = new TrueValue($value);
     }
 
-    public function dataProviderForInvalidValues(): array
+    public static function dataProviderForInvalidValues(): array
     {
         return [
             [false],

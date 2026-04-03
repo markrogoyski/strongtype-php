@@ -28,6 +28,8 @@ class ArrayOfObjects extends NonemptyArray
 
     public function current(): object
     {
-        return \current($this->values);
+        /** @var object $current */
+        $current = \current($this->values);
+        return $current;
     }
 }

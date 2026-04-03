@@ -57,7 +57,7 @@ class EmptyArrayTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($values, $debugInfo['values']);
     }
 
-    public function dataProviderForValidValues(): array
+    public static function dataProviderForValidValues(): array
     {
         return [
             [[]],
@@ -120,7 +120,7 @@ class EmptyArrayTest extends \PHPUnit\Framework\TestCase
         $emptyArray = new EmptyArray($values);
     }
 
-    public function dataProviderForInvalidValues(): array
+    public static function dataProviderForInvalidValues(): array
     {
         return [
             [[1]],

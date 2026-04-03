@@ -28,6 +28,8 @@ class ArrayOfStrings extends NonemptyArray
 
     public function current(): string
     {
-        return \current($this->values);
+        /** @var string $current */
+        $current = \current($this->values);
+        return $current;
     }
 }

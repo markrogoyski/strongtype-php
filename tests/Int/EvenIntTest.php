@@ -57,7 +57,7 @@ class EvenIntTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($value, $debugInfo['value']);
     }
 
-    public function dataProviderForValidValues(): array
+    public static function dataProviderForValidValues(): array
     {
         return [
             [0],
@@ -107,7 +107,7 @@ class EvenIntTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($expected, $jsonSerialization);
     }
 
-    public function dataProviderForValidValuesStringRepresentation(): array
+    public static function dataProviderForValidValuesStringRepresentation(): array
     {
         return [
             [0, '0'],
@@ -135,7 +135,7 @@ class EvenIntTest extends \PHPUnit\Framework\TestCase
         $evenInt = new EvenInt($value);
     }
 
-    public function dataProviderForInvalidValues(): array
+    public static function dataProviderForInvalidValues(): array
     {
         return [
             [1],

@@ -57,7 +57,7 @@ class UppercaseAlphaStringTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($value, $debugInfo['value']);
     }
 
-    public function dataProviderForValidValues(): array
+    public static function dataProviderForValidValues(): array
     {
         return [
             ['A'],
@@ -83,7 +83,7 @@ class UppercaseAlphaStringTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($expected, $stringRepresentation);
     }
 
-    public function dataProviderForValidValuesStringRepresentation(): array
+    public static function dataProviderForValidValuesStringRepresentation(): array
     {
         return [
             ['A', 'A'],
@@ -109,7 +109,7 @@ class UppercaseAlphaStringTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($expected, $jsonSerialization);
     }
 
-    public function dataProviderForValidValuesJsonStringRepresentation(): array
+    public static function dataProviderForValidValuesJsonStringRepresentation(): array
     {
         return [
             ['A', '"A"'],
@@ -131,7 +131,7 @@ class UppercaseAlphaStringTest extends \PHPUnit\Framework\TestCase
         $uppercaseAlphaString = new UppercaseAlphaString($value);
     }
 
-    public function dataProviderForInvalidValues(): array
+    public static function dataProviderForInvalidValues(): array
     {
         return [
             [''],

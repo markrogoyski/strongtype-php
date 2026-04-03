@@ -62,7 +62,7 @@ class ArrayOfObjectsTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($values, $debugInfo['values']);
     }
 
-    public function dataProviderForValidValues(): array
+    public static function dataProviderForValidValues(): array
     {
         return [
             [[new \stdClass()]],
@@ -153,7 +153,7 @@ class ArrayOfObjectsTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($finalCount, $i);
     }
 
-    public function dataProviderForValidCountedValues(): array
+    public static function dataProviderForValidCountedValues(): array
     {
         return [
             [[new \stdClass()], 1],
@@ -176,7 +176,7 @@ class ArrayOfObjectsTest extends \PHPUnit\Framework\TestCase
         $arrayOfObjects = new ArrayOfObjects($values);
     }
 
-    public function dataProviderForInvalidValues(): array
+    public static function dataProviderForInvalidValues(): array
     {
         return [
             [[]],

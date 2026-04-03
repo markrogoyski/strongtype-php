@@ -62,7 +62,7 @@ class ArrayOfIntsTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($values, $debugInfo['values']);
     }
 
-    public function dataProviderForValidValues(): array
+    public static function dataProviderForValidValues(): array
     {
         return [
             [[1]],
@@ -90,7 +90,7 @@ class ArrayOfIntsTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($expected, $stringRepresentation);
     }
 
-    public function dataProviderForValidValuesStringRepresentation(): array
+    public static function dataProviderForValidValuesStringRepresentation(): array
     {
         return [
             [[1], '[1]'],
@@ -117,7 +117,7 @@ class ArrayOfIntsTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($expected, $jsonSerialization);
     }
 
-    public function dataProviderForValidValuesJsonStringRepresentation(): array
+    public static function dataProviderForValidValuesJsonStringRepresentation(): array
     {
         return [
             [[1], '[1]'],
@@ -178,7 +178,7 @@ class ArrayOfIntsTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($finalCount, $i);
     }
 
-    public function dataProviderForValidCountedValues(): array
+    public static function dataProviderForValidCountedValues(): array
     {
         return [
             [[1], 1],
@@ -202,7 +202,7 @@ class ArrayOfIntsTest extends \PHPUnit\Framework\TestCase
         $arrayOfInts = new ArrayOfInts($values);
     }
 
-    public function dataProviderForInvalidValues(): array
+    public static function dataProviderForInvalidValues(): array
     {
         return [
             [[]],

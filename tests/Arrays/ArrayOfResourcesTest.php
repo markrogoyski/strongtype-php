@@ -145,7 +145,7 @@ class ArrayOfResourcesTest extends \PHPUnit\Framework\TestCase
         $arrayOfResources = new ArrayOfResources($values);
     }
 
-    public function dataProviderForInvalidValues(): array
+    public static function dataProviderForInvalidValues(): array
     {
         return [
             [[]],

@@ -57,7 +57,7 @@ class NonnegativeFloatTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($value, $debugInfo['value']);
     }
 
-    public function dataProviderForValidValues(): array
+    public static function dataProviderForValidValues(): array
     {
         return [
             [0.0],
@@ -108,7 +108,7 @@ class NonnegativeFloatTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($expected, $jsonSerialization);
     }
 
-    public function dataProviderForValidValuesStringRepresentation(): array
+    public static function dataProviderForValidValuesStringRepresentation(): array
     {
         return [
             [0.0, '0'],
@@ -135,7 +135,7 @@ class NonnegativeFloatTest extends \PHPUnit\Framework\TestCase
         $nonnegativeFloat = new NonnegativeFloat($value);
     }
 
-    public function dataProviderForInvalidValues(): array
+    public static function dataProviderForInvalidValues(): array
     {
         return [
             [-1.0],

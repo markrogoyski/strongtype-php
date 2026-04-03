@@ -9,7 +9,7 @@ use StrongType\Exception\StrongTypeException;
 class ArrayOfArrays extends NonemptyArray
 {
     /**
-     * @param array[] $values
+     * @param array<mixed>[] $values
      */
     public function __construct(array $values)
     {
@@ -31,6 +31,8 @@ class ArrayOfArrays extends NonemptyArray
      */
     public function current(): array
     {
-        return \current($this->values);
+        /** @var array<mixed> $current */
+        $current = \current($this->values);
+        return $current;
     }
 }

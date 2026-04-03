@@ -9,7 +9,7 @@ use StrongType\Exception\StrongTypeException;
 class ArrayOfIterables extends NonemptyArray
 {
     /**
-     * @param iterable[] $values
+     * @param iterable<mixed>[] $values
      */
     public function __construct(array $values)
     {
@@ -31,6 +31,8 @@ class ArrayOfIterables extends NonemptyArray
      */
     public function current(): iterable
     {
-        return \current($this->values);
+        /** @var iterable<mixed> $current */
+        $current = \current($this->values);
+        return $current;
     }
 }

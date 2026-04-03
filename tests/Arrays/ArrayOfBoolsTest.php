@@ -62,7 +62,7 @@ class ArrayOfBoolsTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($values, $debugInfo['values']);
     }
 
-    public function dataProviderForValidValues(): array
+    public static function dataProviderForValidValues(): array
     {
         return [
             [[true]],
@@ -93,7 +93,7 @@ class ArrayOfBoolsTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($expected, $stringRepresentation);
     }
 
-    public function dataProviderForValidValuesStringRepresentation(): array
+    public static function dataProviderForValidValuesStringRepresentation(): array
     {
         return [
             [[true], '[true]'],
@@ -124,7 +124,7 @@ class ArrayOfBoolsTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($expected, $jsonSerialization);
     }
 
-    public function dataProviderForValidValuesJsonStringRepresentation(): array
+    public static function dataProviderForValidValuesJsonStringRepresentation(): array
     {
         return [
             [[true], '[true]'],
@@ -189,7 +189,7 @@ class ArrayOfBoolsTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($finalCount, $i);
     }
 
-    public function dataProviderForValidCountedValues(): array
+    public static function dataProviderForValidCountedValues(): array
     {
         return [
             [[true], 1],
@@ -212,7 +212,7 @@ class ArrayOfBoolsTest extends \PHPUnit\Framework\TestCase
         $arrayOfBools = new ArrayOfBools($values);
     }
 
-    public function dataProviderForInvalidValues(): array
+    public static function dataProviderForInvalidValues(): array
     {
         return [
             [[]],

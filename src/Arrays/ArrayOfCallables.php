@@ -28,6 +28,8 @@ class ArrayOfCallables extends NonemptyArray
 
     public function current(): callable
     {
-        return \current($this->values);
+        /** @var callable $current */
+        $current = \current($this->values);
+        return $current;
     }
 }

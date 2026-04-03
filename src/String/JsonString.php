@@ -16,8 +16,10 @@ class JsonString extends NonemptyString
 
     private function validateJsonString(): void
     {
-        json_decode($this->value);
-        if (json_last_error() !== \JSON_ERROR_NONE) {
+        try {
+            /** @psalm-suppress UnusedFunctionCall - called for validation side-effect */
+            json_decode($this->value, flags: \JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
             throw new StrongTypeException("JsonString type must be valid JSON, got {$this->value}");
         }
     }

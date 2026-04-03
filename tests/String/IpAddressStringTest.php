@@ -57,7 +57,7 @@ class IpAddressStringTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($value, $debugInfo['value']);
     }
 
-    public function dataProviderForValidValues(): array
+    public static function dataProviderForValidValues(): array
     {
         return [
             ['127.0.0.1'],
@@ -87,7 +87,7 @@ class IpAddressStringTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($expected, $stringRepresentation);
     }
 
-    public function dataProviderForValidValuesStringRepresentation(): array
+    public static function dataProviderForValidValuesStringRepresentation(): array
     {
         return [
             ['127.0.0.1', '127.0.0.1'],
@@ -114,7 +114,7 @@ class IpAddressStringTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($expected, $jsonSerialization);
     }
 
-    public function dataProviderForValidValuesJsonStringRepresentation(): array
+    public static function dataProviderForValidValuesJsonStringRepresentation(): array
     {
         return [
             ['127.0.0.1', '"127.0.0.1"'],
@@ -137,7 +137,7 @@ class IpAddressStringTest extends \PHPUnit\Framework\TestCase
         $ipAddressString = new IpAddressString($value);
     }
 
-    public function dataProviderForInvalidValues(): array
+    public static function dataProviderForInvalidValues(): array
     {
         return [
             [''],

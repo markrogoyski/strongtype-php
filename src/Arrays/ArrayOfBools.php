@@ -28,6 +28,8 @@ class ArrayOfBools extends NonemptyArray
 
     public function current(): bool
     {
-        return \current($this->values);
+        /** @var bool $current */
+        $current = \current($this->values);
+        return $current;
     }
 }

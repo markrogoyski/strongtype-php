@@ -62,7 +62,7 @@ class ArrayOfCallablesTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($values, $debugInfo['values']);
     }
 
-    public function dataProviderForValidValues(): array
+    public static function dataProviderForValidValues(): array
     {
         return [
             [[fn ($x) => $x + 1]],
@@ -95,7 +95,7 @@ class ArrayOfCallablesTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($expected, $stringRepresentation);
     }
 
-    public function dataProviderForValidValuesStringRepresentation(): array
+    public static function dataProviderForValidValuesStringRepresentation(): array
     {
         return [
             [[fn ($x) => $x + 1], '[{}]'],
@@ -123,7 +123,7 @@ class ArrayOfCallablesTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($expected, $jsonSerialization);
     }
 
-    public function dataProviderForValidValuesJsonStringRepresentation(): array
+    public static function dataProviderForValidValuesJsonStringRepresentation(): array
     {
         return [
             [[fn ($x) => $x + 1], '[{}]'],
@@ -185,7 +185,7 @@ class ArrayOfCallablesTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($finalCount, $i);
     }
 
-    public function dataProviderForValidCountedValues(): array
+    public static function dataProviderForValidCountedValues(): array
     {
         return [
             [[fn ($x) => $x + 1], 1],
@@ -206,7 +206,7 @@ class ArrayOfCallablesTest extends \PHPUnit\Framework\TestCase
         $arrayOfCallables = new ArrayOfCallables($values);
     }
 
-    public function dataProviderForInvalidValues(): array
+    public static function dataProviderForInvalidValues(): array
     {
         return [
             [[]],
