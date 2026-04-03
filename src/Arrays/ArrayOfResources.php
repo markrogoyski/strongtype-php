@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace StrongType\Arrays;
 
 use StrongType\Exception\StrongTypeException;
+use StrongType\Stringify;
 
 class ArrayOfResources extends NonemptyArray
 {
@@ -21,7 +22,7 @@ class ArrayOfResources extends NonemptyArray
     {
         foreach ($this->values as $value) {
             if (!is_resource($value)) {
-                throw new StrongTypeException('ArrayOfResources type values must be resources, got ' . print_r($value, true) . ' as a value');
+                throw new StrongTypeException('ArrayOfResources type values must be resources, got ' . Stringify::value($value) . ' as a value');
             }
         }
     }

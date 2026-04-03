@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace StrongType\Arrays;
 
 use StrongType\Exception\StrongTypeException;
+use StrongType\Stringify;
 
 class ArrayOfObjects extends NonemptyArray
 {
@@ -21,7 +22,7 @@ class ArrayOfObjects extends NonemptyArray
     {
         foreach ($this->values as $value) {
             if (!is_object($value)) {
-                throw new StrongTypeException('ArrayOfObjects type values must be objects, got ' . print_r($value, true) . ' as a value');
+                throw new StrongTypeException('ArrayOfObjects type values must be objects, got ' . Stringify::value($value) . ' as a value');
             }
         }
     }

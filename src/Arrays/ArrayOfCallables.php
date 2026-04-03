@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace StrongType\Arrays;
 
 use StrongType\Exception\StrongTypeException;
+use StrongType\Stringify;
 
 class ArrayOfCallables extends NonemptyArray
 {
@@ -21,7 +22,7 @@ class ArrayOfCallables extends NonemptyArray
     {
         foreach ($this->values as $value) {
             if (!is_callable($value)) {
-                throw new StrongTypeException('ArrayOfCallables type values must be callables, got ' . print_r($value, true) . ' as a value');
+                throw new StrongTypeException('ArrayOfCallables type values must be callables, got ' . Stringify::value($value) . ' as a value');
             }
         }
     }

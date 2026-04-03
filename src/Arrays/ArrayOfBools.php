@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace StrongType\Arrays;
 
 use StrongType\Exception\StrongTypeException;
+use StrongType\Stringify;
 
 class ArrayOfBools extends NonemptyArray
 {
@@ -21,7 +22,7 @@ class ArrayOfBools extends NonemptyArray
     {
         foreach ($this->values as $value) {
             if (!is_bool($value)) {
-                throw new StrongTypeException('ArrayOfBools type values must be bools, got ' . print_r($value, true) . ' as a value');
+                throw new StrongTypeException('ArrayOfBools type values must be bools, got ' . Stringify::value($value) . ' as a value');
             }
         }
     }

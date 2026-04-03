@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace StrongType\Arrays;
 
 use StrongType\Exception\StrongTypeException;
+use StrongType\Stringify;
 
 class ArrayOfFloats extends NonemptyArray
 {
@@ -21,7 +22,7 @@ class ArrayOfFloats extends NonemptyArray
     {
         foreach ($this->values as $value) {
             if (!is_float($value)) {
-                throw new StrongTypeException('ArrayOfFloats type values must be floats, got ' . print_r($value, true) . ' as a value');
+                throw new StrongTypeException('ArrayOfFloats type values must be floats, got ' . Stringify::value($value) . ' as a value');
             }
         }
     }

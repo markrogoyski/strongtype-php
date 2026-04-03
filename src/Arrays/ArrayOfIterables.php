@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace StrongType\Arrays;
 
 use StrongType\Exception\StrongTypeException;
+use StrongType\Stringify;
 
 class ArrayOfIterables extends NonemptyArray
 {
@@ -21,7 +22,7 @@ class ArrayOfIterables extends NonemptyArray
     {
         foreach ($this->values as $value) {
             if (!is_iterable($value)) {
-                throw new StrongTypeException('ArrayOfIterables type values must be iterables, got ' . print_r($value, true) . ' as a value');
+                throw new StrongTypeException('ArrayOfIterables type values must be iterables, got ' . Stringify::value($value) . ' as a value');
             }
         }
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace StrongType\Arrays;
 
 use StrongType\Exception\StrongTypeException;
+use StrongType\Stringify;
 
 class ArrayOfInts extends NonemptyArray
 {
@@ -21,7 +22,7 @@ class ArrayOfInts extends NonemptyArray
     {
         foreach ($this->values as $value) {
             if (!is_int($value)) {
-                throw new StrongTypeException('ArrayOfInts type values must be ints, got ' . print_r($value, true) . ' as a value');
+                throw new StrongTypeException('ArrayOfInts type values must be ints, got ' . Stringify::value($value) . ' as a value');
             }
         }
     }
