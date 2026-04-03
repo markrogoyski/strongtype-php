@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace StrongType\Arrays;
 
 use StrongType\Exception\StrongTypeException;
-use StrongType\Stringify;
+use StrongType\Util\Stringify;
 
 class ArrayOfArrays extends NonemptyArray
 {
