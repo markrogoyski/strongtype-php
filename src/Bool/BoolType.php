@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace StrongType\Bool;
 
-abstract class BoolType implements \JsonSerializable
+readonly abstract class BoolType implements \JsonSerializable, \Stringable
 {
-    protected bool $value;
-
-    public function __construct(bool $value)
+    public function __construct(public bool $value)
     {
-        $this->value = $value;
     }
 
     public function getValue(): bool
@@ -18,11 +15,13 @@ abstract class BoolType implements \JsonSerializable
         return $this->value;
     }
 
+    #[\Override]
     public function jsonSerialize(): bool
     {
         return $this->value;
     }
 
+    #[\Override]
     public function __toString(): string
     {
         return $this->value ? 'true' : 'false';

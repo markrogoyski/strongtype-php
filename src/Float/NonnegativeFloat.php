@@ -6,16 +6,12 @@ namespace StrongType\Float;
 
 use StrongType\Exception\StrongTypeException;
 
-class NonnegativeFloat extends FloatingPoint
+readonly class NonnegativeFloat extends FloatingPoint
 {
     public function __construct(float $value)
     {
         parent::__construct($value);
-        $this->validateNonegativeFloat();
-    }
 
-    private function validateNonegativeFloat(): void
-    {
         if ($this->value < 0.0) {
             throw new StrongTypeException("NonnegativeFloat type must be >= 0.0, got {$this->value}");
         }

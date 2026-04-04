@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace StrongType\Arrays;
 
 use StrongType\Exception\StrongTypeException;
-use StrongType\Util\Stringify;
 
 class ArrayOfArrays extends NonemptyArray
 {
@@ -15,21 +14,16 @@ class ArrayOfArrays extends NonemptyArray
     public function __construct(array $values)
     {
         parent::__construct($values);
-        $this->validateArrayOfArrays();
-    }
 
-    private function validateArrayOfArrays(): void
-    {
-        foreach ($this->values as $value) {
-            if (!\is_array($value)) {
-                throw new StrongTypeException('ArrayOfArrays type values must be arrays, got ' . Stringify::value($value) . ' as a value');
-            }
+        if (!\array_all($this->values, fn($v) => \is_array($v))) {
+            throw new StrongTypeException('ArrayOfArrays type values must be arrays');
         }
     }
 
     /**
      * @return array<mixed>
      */
+    #[\Override]
     public function current(): array
     {
         /** @var array<mixed> $current */

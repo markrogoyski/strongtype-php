@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace StrongType\Arrays;
 
 use StrongType\Exception\StrongTypeException;
-use StrongType\Util\Stringify;
 
 class ArrayOfInts extends NonemptyArray
 {
@@ -15,18 +14,13 @@ class ArrayOfInts extends NonemptyArray
     public function __construct(array $values)
     {
         parent::__construct($values);
-        $this->validateArrayOfInts();
-    }
 
-    private function validateArrayOfInts(): void
-    {
-        foreach ($this->values as $value) {
-            if (!\is_int($value)) {
-                throw new StrongTypeException('ArrayOfInts type values must be ints, got ' . Stringify::value($value) . ' as a value');
-            }
+        if (!\array_all($this->values, fn($v) => \is_int($v))) {
+            throw new StrongTypeException('ArrayOfInts type values must be ints');
         }
     }
 
+    #[\Override]
     public function current(): int
     {
         /** @var int $current */

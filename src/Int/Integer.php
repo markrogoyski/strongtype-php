@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace StrongType\Int;
 
-abstract class Integer implements \JsonSerializable
+readonly abstract class Integer implements \JsonSerializable, \Stringable
 {
-    protected int $value;
-
-    public function __construct(int $value)
+    public function __construct(public int $value)
     {
-        $this->value = $value;
     }
 
     public function getValue(): int
@@ -18,11 +15,13 @@ abstract class Integer implements \JsonSerializable
         return $this->value;
     }
 
+    #[\Override]
     public function jsonSerialize(): int
     {
         return $this->value;
     }
 
+    #[\Override]
     public function __toString(): string
     {
         return \strval($this->value);

@@ -7,17 +7,13 @@ namespace StrongType\Arrays;
 /**
  * @implements \Iterator<mixed, mixed>
  */
-abstract class ArrayType implements \JsonSerializable, \Countable, \Iterator
+abstract class ArrayType implements \JsonSerializable, \Countable, \Iterator, \Stringable
 {
-    /** @var mixed[]  */
-    protected array $values;
-
     /**
      * @param mixed[] $values
      */
-    public function __construct(array $values)
+    public function __construct(public protected(set) array $values)
     {
-        $this->values = $values;
     }
 
     /**
@@ -31,16 +27,19 @@ abstract class ArrayType implements \JsonSerializable, \Countable, \Iterator
     /**
      * @return mixed[]
      */
+    #[\Override]
     public function jsonSerialize(): array
     {
         return $this->values;
     }
 
+    #[\Override]
     public function __toString(): string
     {
         return \json_encode($this->values, \JSON_THROW_ON_ERROR);
     }
 
+    #[\Override]
     public function count(): int
     {
         return \count($this->values);
@@ -56,26 +55,31 @@ abstract class ArrayType implements \JsonSerializable, \Countable, \Iterator
         ];
     }
 
+    #[\Override]
     public function rewind(): void
     {
         \reset($this->values);
     }
 
+    #[\Override]
     public function current(): mixed
     {
         return \current($this->values);
     }
 
+    #[\Override]
     public function key(): mixed
     {
         return \key($this->values);
     }
 
+    #[\Override]
     public function next(): void
     {
         \next($this->values);
     }
 
+    #[\Override]
     public function valid(): bool
     {
         return \key($this->values) !== null;

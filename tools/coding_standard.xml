@@ -2,7 +2,7 @@
 <ruleset name="StrongTypePHP">
  <description>The coding standard for StrongType PHP.</description>
 
- <config name="php_version" value="80200"/>
+ <config name="php_version" value="80400"/>
 
  <rule ref="PSR12">
   <!-- Welcome to the future where we have HD wide-screen monitors -->

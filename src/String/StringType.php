@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace StrongType\String;
 
-abstract class StringType implements \JsonSerializable
+readonly abstract class StringType implements \JsonSerializable, \Stringable
 {
-    protected string $value;
-
-    public function __construct(string $value)
+    public function __construct(public string $value)
     {
-        $this->value = $value;
     }
 
     public function getValue(): string
@@ -18,11 +15,13 @@ abstract class StringType implements \JsonSerializable
         return $this->value;
     }
 
+    #[\Override]
     public function jsonSerialize(): string
     {
         return $this->value;
     }
 
+    #[\Override]
     public function __toString(): string
     {
         return \strval($this->value);

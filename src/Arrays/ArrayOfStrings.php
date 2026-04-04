@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace StrongType\Arrays;
 
 use StrongType\Exception\StrongTypeException;
-use StrongType\Util\Stringify;
 
 class ArrayOfStrings extends NonemptyArray
 {
@@ -15,18 +14,13 @@ class ArrayOfStrings extends NonemptyArray
     public function __construct(array $values)
     {
         parent::__construct($values);
-        $this->validateArrayOfStrings();
-    }
 
-    private function validateArrayOfStrings(): void
-    {
-        foreach ($this->values as $value) {
-            if (!\is_string($value)) {
-                throw new StrongTypeException('ArrayOfStrings type values must be strings, got ' . Stringify::value($value) . ' as a value');
-            }
+        if (!\array_all($this->values, fn($v) => \is_string($v))) {
+            throw new StrongTypeException('ArrayOfStrings type values must be strings');
         }
     }
 
+    #[\Override]
     public function current(): string
     {
         /** @var string $current */

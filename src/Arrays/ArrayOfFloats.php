@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace StrongType\Arrays;
 
 use StrongType\Exception\StrongTypeException;
-use StrongType\Util\Stringify;
 
 class ArrayOfFloats extends NonemptyArray
 {
@@ -15,18 +14,13 @@ class ArrayOfFloats extends NonemptyArray
     public function __construct(array $values)
     {
         parent::__construct($values);
-        $this->validateArrayOfFloats();
-    }
 
-    private function validateArrayOfFloats(): void
-    {
-        foreach ($this->values as $value) {
-            if (!\is_float($value)) {
-                throw new StrongTypeException('ArrayOfFloats type values must be floats, got ' . Stringify::value($value) . ' as a value');
-            }
+        if (!\array_all($this->values, fn($v) => \is_float($v))) {
+            throw new StrongTypeException('ArrayOfFloats type values must be floats');
         }
     }
 
+    #[\Override]
     public function current(): float
     {
         /** @var float $current */

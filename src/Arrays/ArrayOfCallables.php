@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace StrongType\Arrays;
 
 use StrongType\Exception\StrongTypeException;
-use StrongType\Util\Stringify;
 
 class ArrayOfCallables extends NonemptyArray
 {
@@ -15,18 +14,13 @@ class ArrayOfCallables extends NonemptyArray
     public function __construct(array $values)
     {
         parent::__construct($values);
-        $this->validateArrayOfCallables();
-    }
 
-    private function validateArrayOfCallables(): void
-    {
-        foreach ($this->values as $value) {
-            if (!\is_callable($value)) {
-                throw new StrongTypeException('ArrayOfCallables type values must be callables, got ' . Stringify::value($value) . ' as a value');
-            }
+        if (!\array_all($this->values, fn($v) => \is_callable($v))) {
+            throw new StrongTypeException('ArrayOfCallables type values must be callables');
         }
     }
 
+    #[\Override]
     public function current(): callable
     {
         /** @var callable $current */

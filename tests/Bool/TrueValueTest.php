@@ -115,7 +115,7 @@ class TrueValueTest extends \PHPUnit\Framework\TestCase
     public function testInvalidValue(bool $value)
     {
         // Then
-        $this->expectException(StrongTypeException::class);
+        $this->expectException(\TypeError::class);
 
         // When
         $trueValue = new TrueValue($value);

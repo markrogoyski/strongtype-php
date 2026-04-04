@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace StrongType\Float;
 
-abstract class FloatingPoint implements \JsonSerializable
+readonly abstract class FloatingPoint implements \JsonSerializable, \Stringable
 {
-    protected float $value;
-
-    public function __construct(float $value)
+    public function __construct(public float $value)
     {
-        $this->value = $value;
     }
 
     public function getValue(): float
@@ -18,11 +15,13 @@ abstract class FloatingPoint implements \JsonSerializable
         return $this->value;
     }
 
+    #[\Override]
     public function jsonSerialize(): float
     {
         return $this->value;
     }
 
+    #[\Override]
     public function __toString(): string
     {
         return \strval($this->value);

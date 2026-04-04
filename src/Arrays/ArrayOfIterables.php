@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace StrongType\Arrays;
 
 use StrongType\Exception\StrongTypeException;
-use StrongType\Util\Stringify;
 
 class ArrayOfIterables extends NonemptyArray
 {
@@ -15,21 +14,16 @@ class ArrayOfIterables extends NonemptyArray
     public function __construct(array $values)
     {
         parent::__construct($values);
-        $this->validateArrayOfIterables();
-    }
 
-    private function validateArrayOfIterables(): void
-    {
-        foreach ($this->values as $value) {
-            if (!\is_iterable($value)) {
-                throw new StrongTypeException('ArrayOfIterables type values must be iterables, got ' . Stringify::value($value) . ' as a value');
-            }
+        if (!\array_all($this->values, fn($v) => \is_iterable($v))) {
+            throw new StrongTypeException('ArrayOfIterables type values must be iterables');
         }
     }
 
     /**
      * @return iterable<mixed>
      */
+    #[\Override]
     public function current(): iterable
     {
         /** @var iterable<mixed> $current */
