@@ -6,14 +6,13 @@ namespace StrongType\Tests\Int;
 
 use StrongType\Exception\StrongTypeException;
 use StrongType\Int\EvenInt;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 
 class EvenIntTest extends \PHPUnit\Framework\TestCase
 {
-    /**
-     * @test         Valid value
-     * @dataProvider dataProviderForValidValues
-     * @param        int $value
-     */
+    #[Test]
+    #[DataProvider('dataProviderForValidValues')]
     public function testValidValue(int $value)
     {
         // When
@@ -23,11 +22,8 @@ class EvenIntTest extends \PHPUnit\Framework\TestCase
         $this->expectNotToPerformAssertions();
     }
 
-    /**
-     * @test         Get value
-     * @dataProvider dataProviderForValidValues
-     * @param        int $value
-     */
+    #[Test]
+    #[DataProvider('dataProviderForValidValues')]
     public function testGetValue(int $value)
     {
         // Given
@@ -40,11 +36,8 @@ class EvenIntTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($value, $obtainedValue);
     }
 
-    /**
-     * @test         Debug info
-     * @dataProvider dataProviderForValidValues
-     * @param        int $value
-     */
+    #[Test]
+    #[DataProvider('dataProviderForValidValues')]
     public function testDebugInfo(int $value)
     {
         // Given
@@ -71,12 +64,8 @@ class EvenIntTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    /**
-     * @test         String representation
-     * @dataProvider dataProviderForValidValuesStringRepresentation
-     * @param        int    $value
-     * @param        string $expected
-     */
+    #[Test]
+    #[DataProvider('dataProviderForValidValuesStringRepresentation')]
     public function testStringRepresentation(int $value, string $expected)
     {
         // Given
@@ -89,12 +78,8 @@ class EvenIntTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($expected, $stringRepresentation);
     }
 
-    /**
-     * @test         JSON serialization
-     * @dataProvider dataProviderForValidValuesStringRepresentation
-     * @param        int    $value
-     * @param        string $expected
-     */
+    #[Test]
+    #[DataProvider('dataProviderForValidValuesStringRepresentation')]
     public function testJsonSerialization(int $value, string $expected)
     {
         // Given
@@ -121,11 +106,8 @@ class EvenIntTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    /**
-     * @test         Invalid value
-     * @dataProvider dataProviderForInvalidValues
-     * @param        int $value
-     */
+    #[Test]
+    #[DataProvider('dataProviderForInvalidValues')]
     public function testInvalidValue(int $value)
     {
         // Then

@@ -5,21 +5,19 @@ declare(strict_types=1);
 namespace StrongType\Tests;
 
 use StrongType\Util\Stringify;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 
 class StringifyTest extends \PHPUnit\Framework\TestCase
 {
-    /**
-     * @test         NAN returns 'NAN' string without triggering a warning
-     */
+    #[Test]
     public function testNan()
     {
         $this->assertSame('NAN', Stringify::value(\NAN));
     }
 
-    /**
-     * @test         Scalar values are stringified via print_r
-     * @dataProvider dataProviderForScalarValues
-     */
+    #[Test]
+    #[DataProvider('dataProviderForScalarValues')]
     public function testScalarValues(mixed $value, string $expected)
     {
         $this->assertSame($expected, Stringify::value($value));
@@ -39,9 +37,7 @@ class StringifyTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    /**
-     * @test         Array values are stringified via print_r
-     */
+    #[Test]
     public function testArrayValue()
     {
         $result = Stringify::value([1, 2, 3]);

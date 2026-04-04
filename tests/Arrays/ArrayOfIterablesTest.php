@@ -6,14 +6,13 @@ namespace StrongType\Tests\Arrays;
 
 use StrongType\Exception\StrongTypeException;
 use StrongType\Arrays\ArrayOfIterables;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 
 class ArrayOfIterablesTest extends \PHPUnit\Framework\TestCase
 {
-    /**
-     * @test         Valid value
-     * @dataProvider dataProviderForValidValues
-     * @param        array $values
-     */
+    #[Test]
+    #[DataProvider('dataProviderForValidValues')]
     public function testValidValue(array $values)
     {
         // When
@@ -23,11 +22,8 @@ class ArrayOfIterablesTest extends \PHPUnit\Framework\TestCase
         $this->expectNotToPerformAssertions();
     }
 
-    /**
-     * @test         Get value
-     * @dataProvider dataProviderForValidValues
-     * @param        array $values
-     */
+    #[Test]
+    #[DataProvider('dataProviderForValidValues')]
     public function testGetValue(array $values)
     {
         // Given
@@ -45,11 +41,8 @@ class ArrayOfIterablesTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    /**
-     * @test         Debug info
-     * @dataProvider dataProviderForValidValues
-     * @param        array $values
-     */
+    #[Test]
+    #[DataProvider('dataProviderForValidValues')]
     public function testDebugInfo(array $values)
     {
         // Given
@@ -72,12 +65,8 @@ class ArrayOfIterablesTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    /**
-     * @test         String representation
-     * @dataProvider dataProviderForValidValuesStringRepresentation
-     * @param        array  $values
-     * @param        string $expected
-     */
+    #[Test]
+    #[DataProvider('dataProviderForValidValuesStringRepresentation')]
     public function testStringRepresentation(array $values, string $expected)
     {
         // Given
@@ -100,12 +89,8 @@ class ArrayOfIterablesTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    /**
-     * @test         JSON serialization
-     * @dataProvider dataProviderForValidValuesJsonStringRepresentation
-     * @param        array  $values
-     * @param        string $expected
-     */
+    #[Test]
+    #[DataProvider('dataProviderForValidValuesJsonStringRepresentation')]
     public function testJsonSerialization(array $values, string $expected)
     {
         // Given
@@ -128,12 +113,8 @@ class ArrayOfIterablesTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    /**
-     * @test         Countable interface
-     * @dataProvider dataProviderForValidCountedValues
-     * @param        array $values
-     * @param        int   $expectedCount
-     */
+    #[Test]
+    #[DataProvider('dataProviderForValidCountedValues')]
     public function testCountableInterface(array $values, int $expectedCount)
     {
         // Given
@@ -143,12 +124,8 @@ class ArrayOfIterablesTest extends \PHPUnit\Framework\TestCase
         $this->assertCount($expectedCount, $arrayOfIterables);
     }
 
-    /**
-     * @test         Iterator interface
-     * @dataProvider dataProviderForValidCountedValues
-     * @param        array $values
-     * @param        int   $expectedCount
-     */
+    #[Test]
+    #[DataProvider('dataProviderForValidCountedValues')]
     public function testIteratorInterface(array $values, int $expectedCount)
     {
         // Given
@@ -190,11 +167,8 @@ class ArrayOfIterablesTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    /**
-     * @test         Invalid value
-     * @dataProvider dataProviderForInvalidValues
-     * @param        array $values
-     */
+    #[Test]
+    #[DataProvider('dataProviderForInvalidValues')]
     public function testInvalidValue(array $values)
     {
         // Then

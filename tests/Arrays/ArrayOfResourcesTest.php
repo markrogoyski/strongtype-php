@@ -6,12 +6,12 @@ namespace StrongType\Tests\Arrays;
 
 use StrongType\Exception\StrongTypeException;
 use StrongType\Arrays\ArrayOfResources;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 
 class ArrayOfResourcesTest extends \PHPUnit\Framework\TestCase
 {
-    /**
-     * @test         Valid value
-     */
+    #[Test]
     public function testValidValue()
     {
         // Given
@@ -27,9 +27,7 @@ class ArrayOfResourcesTest extends \PHPUnit\Framework\TestCase
         \fclose($resource);
     }
 
-    /**
-     * @test         Get value
-     */
+    #[Test]
     public function testGetValue()
     {
         // Given
@@ -52,9 +50,7 @@ class ArrayOfResourcesTest extends \PHPUnit\Framework\TestCase
         \fclose($resource);
     }
 
-    /**
-     * @test         Debug info
-     */
+    #[Test]
     public function testDebugInfo()
     {
         // Given
@@ -72,9 +68,7 @@ class ArrayOfResourcesTest extends \PHPUnit\Framework\TestCase
         \fclose($resource);
     }
 
-    /**
-     * @test         Countable interface
-     */
+    #[Test]
     public function testCountableInterface()
     {
         // Given
@@ -90,9 +84,7 @@ class ArrayOfResourcesTest extends \PHPUnit\Framework\TestCase
         \fclose($resource2);
     }
 
-    /**
-     * @test         Iterator interface
-     */
+    #[Test]
     public function testIteratorInterface()
     {
         // Given
@@ -131,11 +123,8 @@ class ArrayOfResourcesTest extends \PHPUnit\Framework\TestCase
         \fclose($resource2);
     }
 
-    /**
-     * @test         Invalid value
-     * @dataProvider dataProviderForInvalidValues
-     * @param        array $values
-     */
+    #[Test]
+    #[DataProvider('dataProviderForInvalidValues')]
     public function testInvalidValue(array $values)
     {
         // Then

@@ -6,14 +6,13 @@ namespace StrongType\Tests\String;
 
 use StrongType\Exception\StrongTypeException;
 use StrongType\String\HexString;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 
 class HexStringTest extends \PHPUnit\Framework\TestCase
 {
-    /**
-     * @test         Valid value
-     * @dataProvider dataProviderForValidValues
-     * @param        string $value
-     */
+    #[Test]
+    #[DataProvider('dataProviderForValidValues')]
     public function testValidValue(string $value)
     {
         // When
@@ -23,11 +22,8 @@ class HexStringTest extends \PHPUnit\Framework\TestCase
         $this->expectNotToPerformAssertions();
     }
 
-    /**
-     * @test         Get value
-     * @dataProvider dataProviderForValidValues
-     * @param        string $value
-     */
+    #[Test]
+    #[DataProvider('dataProviderForValidValues')]
     public function testGetValue(string $value)
     {
         // Given
@@ -40,11 +36,8 @@ class HexStringTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($value, $obtainedValue);
     }
 
-    /**
-     * @test         Debug info
-     * @dataProvider dataProviderForValidValues
-     * @param        string $value
-     */
+    #[Test]
+    #[DataProvider('dataProviderForValidValues')]
     public function testDebugInfo(string $value)
     {
         // Given
@@ -75,12 +68,8 @@ class HexStringTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    /**
-     * @test         String representation
-     * @dataProvider dataProviderForValidValuesStringRepresentation
-     * @param        string $value
-     * @param        string $expected
-     */
+    #[Test]
+    #[DataProvider('dataProviderForValidValuesStringRepresentation')]
     public function testStringRepresentation(string $value, string $expected)
     {
         // Given
@@ -111,12 +100,8 @@ class HexStringTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    /**
-     * @test         JSON serialization
-     * @dataProvider dataProviderForValidValuesJsonStringRepresentation
-     * @param        string $value
-     * @param        string $expected
-     */
+    #[Test]
+    #[DataProvider('dataProviderForValidValuesJsonStringRepresentation')]
     public function testJsonSerialization(string $value, string $expected)
     {
         // Given
@@ -147,11 +132,8 @@ class HexStringTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    /**
-     * @test         Invalid value
-     * @dataProvider dataProviderForInvalidValues
-     * @param        string $value
-     */
+    #[Test]
+    #[DataProvider('dataProviderForInvalidValues')]
     public function testInvalidValue(string $value)
     {
         // Then

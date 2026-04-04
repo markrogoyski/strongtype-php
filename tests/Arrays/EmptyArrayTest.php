@@ -6,14 +6,13 @@ namespace StrongType\Tests\Arrays;
 
 use StrongType\Exception\StrongTypeException;
 use StrongType\Arrays\EmptyArray;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 
 class EmptyArrayTest extends \PHPUnit\Framework\TestCase
 {
-    /**
-     * @test         Valid value
-     * @dataProvider dataProviderForValidValues
-     * @param        array $values
-     */
+    #[Test]
+    #[DataProvider('dataProviderForValidValues')]
     public function testValidValue(array $values)
     {
         // When
@@ -23,11 +22,8 @@ class EmptyArrayTest extends \PHPUnit\Framework\TestCase
         $this->expectNotToPerformAssertions();
     }
 
-    /**
-     * @test         Get value
-     * @dataProvider dataProviderForValidValues
-     * @param        array $values
-     */
+    #[Test]
+    #[DataProvider('dataProviderForValidValues')]
     public function testGetValue(array $values)
     {
         // Given
@@ -40,11 +36,8 @@ class EmptyArrayTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($values, $obtainedValues);
     }
 
-    /**
-     * @test         Debug info
-     * @dataProvider dataProviderForValidValues
-     * @param        array $values
-     */
+    #[Test]
+    #[DataProvider('dataProviderForValidValues')]
     public function testDebugInfo(array $values)
     {
         // Given
@@ -64,9 +57,7 @@ class EmptyArrayTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    /**
-     * @test         String representation
-     */
+    #[Test]
     public function testStringRepresentation()
     {
         // Given
@@ -79,9 +70,7 @@ class EmptyArrayTest extends \PHPUnit\Framework\TestCase
         $this->assertSame('[]', $stringRepresentation);
     }
 
-    /**
-     * @test         JSON serialization
-     */
+    #[Test]
     public function testJsonSerialization()
     {
         // Given
@@ -94,9 +83,7 @@ class EmptyArrayTest extends \PHPUnit\Framework\TestCase
         $this->assertSame('[]', $jsonSerialization);
     }
 
-    /**
-     * @test         Countable interface
-     */
+    #[Test]
     public function testCountableInterface()
     {
         // Given
@@ -106,11 +93,8 @@ class EmptyArrayTest extends \PHPUnit\Framework\TestCase
         $this->assertCount(0, $emptyArray);
     }
 
-    /**
-     * @test         Invalid value
-     * @dataProvider dataProviderForInvalidValues
-     * @param        array $values
-     */
+    #[Test]
+    #[DataProvider('dataProviderForInvalidValues')]
     public function testInvalidValue(array $values)
     {
         // Then

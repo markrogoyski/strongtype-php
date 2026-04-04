@@ -6,14 +6,13 @@ namespace StrongType\Tests\Float;
 
 use StrongType\Exception\StrongTypeException;
 use StrongType\Float\UnitFloat;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 
 class UnitFloatTest extends \PHPUnit\Framework\TestCase
 {
-    /**
-     * @test         Valid value
-     * @dataProvider dataProviderForValidValues
-     * @param        float $value
-     */
+    #[Test]
+    #[DataProvider('dataProviderForValidValues')]
     public function testValidValue(float $value)
     {
         // When
@@ -23,11 +22,8 @@ class UnitFloatTest extends \PHPUnit\Framework\TestCase
         $this->expectNotToPerformAssertions();
     }
 
-    /**
-     * @test         Get value
-     * @dataProvider dataProviderForValidValues
-     * @param        float $value
-     */
+    #[Test]
+    #[DataProvider('dataProviderForValidValues')]
     public function testGetValue(float $value)
     {
         // Given
@@ -40,11 +36,8 @@ class UnitFloatTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($value, $obtainedValue);
     }
 
-    /**
-     * @test         Debug info
-     * @dataProvider dataProviderForValidValues
-     * @param        float $value
-     */
+    #[Test]
+    #[DataProvider('dataProviderForValidValues')]
     public function testDebugInfo(float $value)
     {
         // Given
@@ -71,12 +64,8 @@ class UnitFloatTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    /**
-     * @test         String representation
-     * @dataProvider dataProviderForValidValuesStringRepresentation
-     * @param        float  $value
-     * @param        string $expected
-     */
+    #[Test]
+    #[DataProvider('dataProviderForValidValuesStringRepresentation')]
     public function testStringRepresentation(float $value, string $expected)
     {
         // Given
@@ -89,12 +78,8 @@ class UnitFloatTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($expected, $stringRepresentation);
     }
 
-    /**
-     * @test         JSON serialization
-     * @dataProvider dataProviderForValidValuesStringRepresentation
-     * @param        float  $value
-     * @param        string $expected
-     */
+    #[Test]
+    #[DataProvider('dataProviderForValidValuesStringRepresentation')]
     public function testJsonSerialization(float $value, string $expected)
     {
         // Given
@@ -120,11 +105,8 @@ class UnitFloatTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    /**
-     * @test         Invalid value
-     * @dataProvider dataProviderForInvalidValues
-     * @param        float $value
-     */
+    #[Test]
+    #[DataProvider('dataProviderForInvalidValues')]
     public function testInvalidValue(float $value)
     {
         // Then

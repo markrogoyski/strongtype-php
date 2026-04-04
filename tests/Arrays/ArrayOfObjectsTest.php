@@ -6,14 +6,13 @@ namespace StrongType\Tests\Arrays;
 
 use StrongType\Exception\StrongTypeException;
 use StrongType\Arrays\ArrayOfObjects;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 
 class ArrayOfObjectsTest extends \PHPUnit\Framework\TestCase
 {
-    /**
-     * @test         Valid value
-     * @dataProvider dataProviderForValidValues
-     * @param        array $values
-     */
+    #[Test]
+    #[DataProvider('dataProviderForValidValues')]
     public function testValidValue(array $values)
     {
         // When
@@ -23,11 +22,8 @@ class ArrayOfObjectsTest extends \PHPUnit\Framework\TestCase
         $this->expectNotToPerformAssertions();
     }
 
-    /**
-     * @test         Get value
-     * @dataProvider dataProviderForValidValues
-     * @param        array $values
-     */
+    #[Test]
+    #[DataProvider('dataProviderForValidValues')]
     public function testGetValue(array $values)
     {
         // Given
@@ -45,11 +41,8 @@ class ArrayOfObjectsTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    /**
-     * @test         Debug info
-     * @dataProvider dataProviderForValidValues
-     * @param        array $values
-     */
+    #[Test]
+    #[DataProvider('dataProviderForValidValues')]
     public function testDebugInfo(array $values)
     {
         // Given
@@ -71,9 +64,7 @@ class ArrayOfObjectsTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    /**
-     * @test         String representation
-     */
+    #[Test]
     public function testStringRepresentation()
     {
         // Given
@@ -86,9 +77,7 @@ class ArrayOfObjectsTest extends \PHPUnit\Framework\TestCase
         $this->assertSame('[{}]', $stringRepresentation);
     }
 
-    /**
-     * @test         JSON serialization
-     */
+    #[Test]
     public function testJsonSerialization()
     {
         // Given
@@ -101,12 +90,8 @@ class ArrayOfObjectsTest extends \PHPUnit\Framework\TestCase
         $this->assertSame('[{}]', $jsonSerialization);
     }
 
-    /**
-     * @test         Countable interface
-     * @dataProvider dataProviderForValidCountedValues
-     * @param        array $values
-     * @param        int   $expectedCount
-     */
+    #[Test]
+    #[DataProvider('dataProviderForValidCountedValues')]
     public function testCountableInterface(array $values, int $expectedCount)
     {
         // Given
@@ -116,12 +101,8 @@ class ArrayOfObjectsTest extends \PHPUnit\Framework\TestCase
         $this->assertCount($expectedCount, $arrayOfObjects);
     }
 
-    /**
-     * @test         Iterator interface
-     * @dataProvider dataProviderForValidCountedValues
-     * @param        array $values
-     * @param        int   $expectedCount
-     */
+    #[Test]
+    #[DataProvider('dataProviderForValidCountedValues')]
     public function testIteratorInterface(array $values, int $expectedCount)
     {
         // Given
@@ -162,11 +143,8 @@ class ArrayOfObjectsTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    /**
-     * @test         Invalid value
-     * @dataProvider dataProviderForInvalidValues
-     * @param        array $values
-     */
+    #[Test]
+    #[DataProvider('dataProviderForInvalidValues')]
     public function testInvalidValue(array $values)
     {
         // Then

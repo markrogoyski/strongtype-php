@@ -6,14 +6,13 @@ namespace StrongType\Tests\Bool;
 
 use StrongType\Exception\StrongTypeException;
 use StrongType\Bool\FalseValue;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 
 class FalseValueTest extends \PHPUnit\Framework\TestCase
 {
-    /**
-     * @test         Valid value
-     * @dataProvider dataProviderForValidValues
-     * @param        bool $value
-     */
+    #[Test]
+    #[DataProvider('dataProviderForValidValues')]
     public function testValidValue(bool $value)
     {
         // When
@@ -23,11 +22,8 @@ class FalseValueTest extends \PHPUnit\Framework\TestCase
         $this->expectNotToPerformAssertions();
     }
 
-    /**
-     * @test         Get value
-     * @dataProvider dataProviderForValidValues
-     * @param        bool $value
-     */
+    #[Test]
+    #[DataProvider('dataProviderForValidValues')]
     public function testGetValue(bool $value)
     {
         // Given
@@ -40,11 +36,8 @@ class FalseValueTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($value, $obtainedValue);
     }
 
-    /**
-     * @test         Debug info
-     * @dataProvider dataProviderForValidValues
-     * @param        bool $value
-     */
+    #[Test]
+    #[DataProvider('dataProviderForValidValues')]
     public function testDebugInfo(bool $value)
     {
         // Given
@@ -64,12 +57,8 @@ class FalseValueTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    /**
-     * @test         String representation
-     * @dataProvider dataProviderForValidValuesStringRepresentation
-     * @param        bool   $value
-     * @param        string $expected
-     */
+    #[Test]
+    #[DataProvider('dataProviderForValidValuesStringRepresentation')]
     public function testStringRepresentation(bool $value, string $expected)
     {
         // Given
@@ -82,12 +71,8 @@ class FalseValueTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($expected, $stringRepresentation);
     }
 
-    /**
-     * @test         JSON serialization
-     * @dataProvider dataProviderForValidValuesStringRepresentation
-     * @param        bool   $value
-     * @param        string $expected
-     */
+    #[Test]
+    #[DataProvider('dataProviderForValidValuesStringRepresentation')]
     public function testJsonSerialization(bool $value, string $expected)
     {
         // Given
@@ -107,11 +92,8 @@ class FalseValueTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    /**
-     * @test         Invalid value
-     * @dataProvider dataProviderForInvalidValues
-     * @param        bool $value
-     */
+    #[Test]
+    #[DataProvider('dataProviderForInvalidValues')]
     public function testInvalidValue(bool $value)
     {
         // Then
