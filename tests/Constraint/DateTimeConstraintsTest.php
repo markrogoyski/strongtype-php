@@ -16,16 +16,24 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 
 #[DateFormat('Y-m-d')]
-readonly class DateFormatTestDT extends DateTime {}
+readonly class DateFormatTestDT extends DateTime
+{
+}
 
 #[TimeFormat]
-readonly class TimeFormatTestDT extends DateTime {}
+readonly class TimeFormatTestDT extends DateTime
+{
+}
 
 #[InFuture]
-readonly class FutureTestInt extends Integer {}
+readonly class FutureTestInt extends Integer
+{
+}
 
 #[InPast]
-readonly class PastTestInt extends Integer {}
+readonly class PastTestInt extends Integer
+{
+}
 
 class DateTimeConstraintsTest extends \PHPUnit\Framework\TestCase
 {

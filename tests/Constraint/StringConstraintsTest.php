@@ -27,24 +27,60 @@ use StrongType\String\StringType;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 
-#[Nonempty] readonly class NonemptyTestStr extends StringType {}
-#[Nonempty, Nonblank] readonly class NonblankTestStr extends StringType {}
-#[MinLength(3)] readonly class MinLenTestStr extends StringType {}
-#[MaxLength(5)] readonly class MaxLenTestStr extends StringType {}
-#[Pattern('/^[a-z]+$/')] readonly class PatternTestStr extends StringType {}
-#[Nonempty, Alpha] readonly class AlphaTestStr extends StringType {}
-#[Nonempty, Alphanumeric] readonly class AlnumTestStr extends StringType {}
-#[Nonempty, NumericDigits] readonly class DigitsTestStr extends StringType {}
-#[Nonempty, HexDigits] readonly class HexDigitsTestStr extends StringType {}
-#[Nonempty, Lowercase] readonly class LowerTestStr extends StringType {}
-#[Nonempty, Uppercase] readonly class UpperTestStr extends StringType {}
-#[Nonempty, Base64] readonly class Base64TestStr extends StringType {}
-#[Nonempty, Email] readonly class EmailTestStr extends StringType {}
-#[Nonempty, Url] readonly class UrlTestStr extends StringType {}
-#[Nonempty, IpAddress] readonly class IpTestStr extends StringType {}
-#[Nonempty, Json] readonly class JsonTestStr extends StringType {}
-#[Nonempty, ClassExists] readonly class ClassExistsTestStr extends StringType {}
-#[Nonempty, DateTimeParseable] readonly class DateTimeParseTestStr extends StringType {}
+#[Nonempty] readonly class NonemptyTestStr extends StringType
+{
+}
+#[Nonempty, Nonblank] readonly class NonblankTestStr extends StringType
+{
+}
+#[MinLength(3)] readonly class MinLenTestStr extends StringType
+{
+}
+#[MaxLength(5)] readonly class MaxLenTestStr extends StringType
+{
+}
+#[Pattern('/^[a-z]+$/')] readonly class PatternTestStr extends StringType
+{
+}
+#[Nonempty, Alpha] readonly class AlphaTestStr extends StringType
+{
+}
+#[Nonempty, Alphanumeric] readonly class AlnumTestStr extends StringType
+{
+}
+#[Nonempty, NumericDigits] readonly class DigitsTestStr extends StringType
+{
+}
+#[Nonempty, HexDigits] readonly class HexDigitsTestStr extends StringType
+{
+}
+#[Nonempty, Lowercase] readonly class LowerTestStr extends StringType
+{
+}
+#[Nonempty, Uppercase] readonly class UpperTestStr extends StringType
+{
+}
+#[Nonempty, Base64] readonly class Base64TestStr extends StringType
+{
+}
+#[Nonempty, Email] readonly class EmailTestStr extends StringType
+{
+}
+#[Nonempty, Url] readonly class UrlTestStr extends StringType
+{
+}
+#[Nonempty, IpAddress] readonly class IpTestStr extends StringType
+{
+}
+#[Nonempty, Json] readonly class JsonTestStr extends StringType
+{
+}
+#[Nonempty, ClassExists] readonly class ClassExistsTestStr extends StringType
+{
+}
+#[Nonempty, DateTimeParseable] readonly class DateTimeParseTestStr extends StringType
+{
+}
 
 class StringConstraintsTest extends \PHPUnit\Framework\TestCase
 {

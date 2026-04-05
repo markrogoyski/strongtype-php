@@ -18,15 +18,33 @@ use StrongType\Float\FloatingPoint;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 
-#[Positive] readonly class PositiveTestInt extends Integer {}
-#[Negative] readonly class NegativeTestInt extends Integer {}
-#[Nonnegative] readonly class NonnegativeTestInt extends Integer {}
-#[Nonpositive] readonly class NonpositiveTestInt extends Integer {}
-#[Nonzero] readonly class NonzeroTestInt extends Integer {}
-#[Even] readonly class EvenTestInt extends Integer {}
-#[Odd] readonly class OddTestInt extends Integer {}
-#[DivisibleBy(3)] readonly class DivisibleBy3TestInt extends Integer {}
-#[Positive] readonly class PositiveTestFloat extends FloatingPoint {}
+#[Positive] readonly class PositiveTestInt extends Integer
+{
+}
+#[Negative] readonly class NegativeTestInt extends Integer
+{
+}
+#[Nonnegative] readonly class NonnegativeTestInt extends Integer
+{
+}
+#[Nonpositive] readonly class NonpositiveTestInt extends Integer
+{
+}
+#[Nonzero] readonly class NonzeroTestInt extends Integer
+{
+}
+#[Even] readonly class EvenTestInt extends Integer
+{
+}
+#[Odd] readonly class OddTestInt extends Integer
+{
+}
+#[DivisibleBy(3)] readonly class DivisibleBy3TestInt extends Integer
+{
+}
+#[Positive] readonly class PositiveTestFloat extends FloatingPoint
+{
+}
 
 class NumericConstraintsTest extends \PHPUnit\Framework\TestCase
 {

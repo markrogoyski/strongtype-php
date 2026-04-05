@@ -31,7 +31,9 @@ final readonly class Palindrome implements ConstraintInterface
 }
 
 #[Nonempty, Palindrome]
-readonly class PalindromeString extends StringType {}
+readonly class PalindromeString extends StringType
+{
+}
 
 class CustomConstraintTest extends \PHPUnit\Framework\TestCase
 {

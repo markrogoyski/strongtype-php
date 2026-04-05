@@ -11,10 +11,14 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 
 #[Max(100)]
-readonly class MaxTestInt extends Integer {}
+readonly class MaxTestInt extends Integer
+{
+}
 
 #[Max(100, exclusive: true)]
-readonly class MaxExclusiveTestInt extends Integer {}
+readonly class MaxExclusiveTestInt extends Integer
+{
+}
 
 class MaxTest extends \PHPUnit\Framework\TestCase
 {

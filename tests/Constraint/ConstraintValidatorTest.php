@@ -16,19 +16,27 @@ use StrongType\String\StringType;
 use PHPUnit\Framework\Attributes\Test;
 
 // Test fixture: no attributes
-readonly class PlainInt extends Integer {}
+readonly class PlainInt extends Integer
+{
+}
 
 // Test fixture: single attribute
 #[Min(0)]
-readonly class NonNegTestInt extends Integer {}
+readonly class NonNegTestInt extends Integer
+{
+}
 
 // Test fixture: multiple attributes with priority ordering
 #[Min(1), Max(100)]
-readonly class RangeTestInt extends Integer {}
+readonly class RangeTestInt extends Integer
+{
+}
 
 // Test fixture: child inherits parent attributes
 #[Max(50)]
-readonly class SmallRangeTestInt extends RangeTestInt {}
+readonly class SmallRangeTestInt extends RangeTestInt
+{
+}
 
 class ConstraintValidatorTest extends \PHPUnit\Framework\TestCase
 {

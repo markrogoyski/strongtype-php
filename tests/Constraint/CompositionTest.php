@@ -19,13 +19,19 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 
 #[Min(1), Max(100)]
-readonly class TestPercentage extends Integer {}
+readonly class TestPercentage extends Integer
+{
+}
 
 #[Nonempty, Pattern('/^[a-z]+$/'), MaxLength(10)]
-readonly class TestShortSlug extends StringType {}
+readonly class TestShortSlug extends StringType
+{
+}
 
 #[Nonempty, Unique, ElementType('string')]
-class TestUniqueStrings extends ArrayType {}
+class TestUniqueStrings extends ArrayType
+{
+}
 
 class CompositionTest extends \PHPUnit\Framework\TestCase
 {

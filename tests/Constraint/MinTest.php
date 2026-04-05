@@ -12,13 +12,19 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 
 #[Min(0)]
-readonly class MinTestInt extends Integer {}
+readonly class MinTestInt extends Integer
+{
+}
 
 #[Min(5, exclusive: true)]
-readonly class MinExclusiveTestInt extends Integer {}
+readonly class MinExclusiveTestInt extends Integer
+{
+}
 
 #[Min(0.0)]
-readonly class MinTestFloat extends FloatingPoint {}
+readonly class MinTestFloat extends FloatingPoint
+{
+}
 
 class MinTest extends \PHPUnit\Framework\TestCase
 {
