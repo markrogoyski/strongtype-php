@@ -4,16 +4,9 @@ declare(strict_types=1);
 
 namespace StrongType\String;
 
-use StrongType\Exception\StrongTypeException;
+use StrongType\Constraint\Nonempty;
 
+#[Nonempty]
 readonly class NonemptyString extends StringType
 {
-    public function __construct(string $value)
-    {
-        parent::__construct($value);
-
-        if (\strlen($this->value) === 0) {
-            throw new StrongTypeException("NonemptyString type must not be empty, got {$this->value}");
-        }
-    }
 }

@@ -13,6 +13,9 @@
       <directory suffix="Test.php">String</directory>
       <directory suffix="Test.php">Arrays</directory>
       <directory suffix="Test.php">Bool</directory>
+      <directory suffix="Test.php">DateTime</directory>
+      <directory suffix="Test.php">Constraint</directory>
+      <file>NullableTest.php</file>
       <file>StringifyTest.php</file>
     </testsuite>
   </testsuites>

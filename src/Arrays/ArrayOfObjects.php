@@ -4,22 +4,14 @@ declare(strict_types=1);
 
 namespace StrongType\Arrays;
 
-use StrongType\Exception\StrongTypeException;
+use StrongType\Constraint\ElementType;
 
+/**
+ * @param object[] $values
+ */
+#[ElementType('object')]
 class ArrayOfObjects extends NonemptyArray
 {
-    /**
-     * @param object[] $values
-     */
-    public function __construct(array $values)
-    {
-        parent::__construct($values);
-
-        if (!\array_all($this->values, fn($v) => \is_object($v))) {
-            throw new StrongTypeException('ArrayOfObjects type values must be objects');
-        }
-    }
-
     #[\Override]
     public function current(): object
     {

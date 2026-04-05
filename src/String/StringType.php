@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace StrongType\String;
 
+use StrongType\Constraint\ConstraintValidator;
+
 readonly abstract class StringType implements \JsonSerializable, \Stringable
 {
     public function __construct(public string $value)
     {
+        ConstraintValidator::validate($this, $this->value);
     }
 
     public function getValue(): string

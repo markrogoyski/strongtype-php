@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace StrongType\Arrays;
 
+use StrongType\Constraint\ConstraintValidator;
+
 /**
  * @implements \Iterator<mixed, mixed>
  */
@@ -14,6 +16,7 @@ abstract class ArrayType implements \JsonSerializable, \Countable, \Iterator, \S
      */
     public function __construct(public protected(set) array $values)
     {
+        ConstraintValidator::validate($this, $this->values);
     }
 
     /**

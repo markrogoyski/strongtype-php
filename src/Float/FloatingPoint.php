@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace StrongType\Float;
 
+use StrongType\Constraint\ConstraintValidator;
+
 readonly abstract class FloatingPoint implements \JsonSerializable, \Stringable
 {
     public function __construct(public float $value)
     {
+        ConstraintValidator::validate($this, $this->value);
     }
 
     public function getValue(): float

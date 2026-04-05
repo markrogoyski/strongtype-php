@@ -4,16 +4,10 @@ declare(strict_types=1);
 
 namespace StrongType\Float;
 
-use StrongType\Exception\StrongTypeException;
+use StrongType\Constraint\Max;
+use StrongType\Constraint\Min;
 
+#[Min(0.0), Max(1.0)]
 readonly class UnitFloat extends FloatingPoint
 {
-    public function __construct(float $value)
-    {
-        parent::__construct($value);
-
-        if ($this->value < 0.0 || $this->value > 1.0) {
-            throw new StrongTypeException("UnitFloat type must be between 0.0 and 1.0 inclusive, got {$this->value}");
-        }
-    }
 }
