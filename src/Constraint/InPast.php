@@ -7,9 +7,10 @@ namespace StrongType\Constraint;
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final readonly class InPast implements ConstraintInterface
 {
+    #[\Override]
     public function validate(mixed $value, string $className): ?string
     {
-        $short = \substr($className, \strrpos($className, '\\') + 1);
+        $short = \substr($className, (int) \strrpos($className, '\\') + 1);
 
         if (\is_int($value) && $value >= \time()) {
             return "{$short} type must be in the past, got {$value}";
@@ -18,6 +19,7 @@ final readonly class InPast implements ConstraintInterface
         return null;
     }
 
+    #[\Override]
     public function priority(): int
     {
         return 100;

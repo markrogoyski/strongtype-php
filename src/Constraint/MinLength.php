@@ -11,9 +11,10 @@ final readonly class MinLength implements ConstraintInterface
     {
     }
 
+    #[\Override]
     public function validate(mixed $value, string $className): ?string
     {
-        $short = \substr($className, \strrpos($className, '\\') + 1);
+        $short = \substr($className, (int) \strrpos($className, '\\') + 1);
 
         if (\is_string($value) && \strlen($value) < $this->minLength) {
             return "{$short} type must have length >= {$this->minLength}, got {$value}";
@@ -22,6 +23,7 @@ final readonly class MinLength implements ConstraintInterface
         return null;
     }
 
+    #[\Override]
     public function priority(): int
     {
         return 50;

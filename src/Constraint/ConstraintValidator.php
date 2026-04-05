@@ -28,6 +28,7 @@ final class ConstraintValidator
     }
 
     /**
+     * @param class-string $class
      * @return list<ConstraintInterface>
      */
     private static function resolveConstraints(string $class): array

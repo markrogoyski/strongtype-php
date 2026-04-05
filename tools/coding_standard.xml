@@ -9,4 +9,9 @@
   <exclude name="Generic.Files.LineLength.TooLong"/>
  </rule>
 
+ <!-- Test files define fixture classes alongside test classes -->
+ <rule ref="PSR1.Classes.ClassDeclaration.MultipleClasses">
+  <exclude-pattern>tests/</exclude-pattern>
+ </rule>
+
 </ruleset>

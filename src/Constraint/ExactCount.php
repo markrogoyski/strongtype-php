@@ -11,9 +11,10 @@ final readonly class ExactCount implements ConstraintInterface
     {
     }
 
+    #[\Override]
     public function validate(mixed $value, string $className): ?string
     {
-        $short = \substr($className, \strrpos($className, '\\') + 1);
+        $short = \substr($className, (int) \strrpos($className, '\\') + 1);
 
         if (\is_array($value) && \count($value) !== $this->count) {
             return "{$short} type must have exactly {$this->count} elements, got " . \count($value);
@@ -22,6 +23,7 @@ final readonly class ExactCount implements ConstraintInterface
         return null;
     }
 
+    #[\Override]
     public function priority(): int
     {
         return 50;

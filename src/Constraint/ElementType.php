@@ -11,13 +11,14 @@ final readonly class ElementType implements ConstraintInterface
     {
     }
 
+    #[\Override]
     public function validate(mixed $value, string $className): ?string
     {
         if (!\is_array($value)) {
             return null;
         }
 
-        $short = \substr($className, \strrpos($className, '\\') + 1);
+        $short = \substr($className, (int) \strrpos($className, '\\') + 1);
 
         $checker = match ($this->type) {
             'string'   => fn(mixed $v): bool => \is_string($v),
@@ -39,6 +40,7 @@ final readonly class ElementType implements ConstraintInterface
         return null;
     }
 
+    #[\Override]
     public function priority(): int
     {
         return 100;

@@ -13,23 +13,27 @@ final readonly class Max implements ConstraintInterface
     ) {
     }
 
+    #[\Override]
     public function validate(mixed $value, string $className): ?string
     {
-        $short = \substr($className, \strrpos($className, '\\') + 1);
+        $short = \substr($className, (int) \strrpos($className, '\\') + 1);
 
-        if ($this->exclusive) {
-            if ($value >= $this->max) {
-                return "{$short} type must be < {$this->max}, got {$value}";
-            }
-        } else {
-            if ($value > $this->max) {
-                return "{$short} type must be <= {$this->max}, got {$value}";
+        if (\is_numeric($value)) {
+            if ($this->exclusive) {
+                if ($value >= $this->max) {
+                    return "{$short} type must be < {$this->max}, got {$value}";
+                }
+            } else {
+                if ($value > $this->max) {
+                    return "{$short} type must be <= {$this->max}, got {$value}";
+                }
             }
         }
 
         return null;
     }
 
+    #[\Override]
     public function priority(): int
     {
         return 50;

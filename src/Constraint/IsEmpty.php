@@ -7,9 +7,10 @@ namespace StrongType\Constraint;
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final readonly class IsEmpty implements ConstraintInterface
 {
+    #[\Override]
     public function validate(mixed $value, string $className): ?string
     {
-        $short = \substr($className, \strrpos($className, '\\') + 1);
+        $short = \substr($className, (int) \strrpos($className, '\\') + 1);
 
         if (\is_array($value) && \count($value) !== 0) {
             return "{$short} type must be empty, got " . \print_r($value, true);
@@ -18,6 +19,7 @@ final readonly class IsEmpty implements ConstraintInterface
         return null;
     }
 
+    #[\Override]
     public function priority(): int
     {
         return 50;

@@ -7,9 +7,10 @@ namespace StrongType\Constraint;
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final readonly class Nonblank implements ConstraintInterface
 {
+    #[\Override]
     public function validate(mixed $value, string $className): ?string
     {
-        $short = \substr($className, \strrpos($className, '\\') + 1);
+        $short = \substr($className, (int) \strrpos($className, '\\') + 1);
 
         if (\is_string($value) && \trim($value) === '') {
             return "{$short} type must not be blank, got {$value}";
@@ -18,6 +19,7 @@ final readonly class Nonblank implements ConstraintInterface
         return null;
     }
 
+    #[\Override]
     public function priority(): int
     {
         return 60;
