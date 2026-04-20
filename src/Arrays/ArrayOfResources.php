@@ -7,7 +7,7 @@ namespace StrongType\Arrays;
 use StrongType\Constraint\ElementType;
 
 /**
- * @param resource[] $values
+ * @extends NonemptyArray<array-key, resource>
  */
 #[ElementType('resource')]
 class ArrayOfResources extends NonemptyArray

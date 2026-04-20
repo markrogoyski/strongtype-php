@@ -41,8 +41,11 @@ $user = new Username('99bad');    // StrongTypeException
 | `ByteInt` | `0..255` | Unsigned byte range |
 | `PercentInt` | `0..100` | Percentage range |
 | `PortNumber` | `1..65535` | Valid port number |
+| `HttpStatusCode` | `100..599` | Valid HTTP status code range |
 
 ### Floats
+
+Float subtypes reject `INF`, `-INF`, and `NAN` by default (via the inherited `#[Finite]` constraint).
 
 | Type | Constraint | Details |
 | --- | --- | --- |
@@ -52,6 +55,9 @@ $user = new Username('99bad');    // StrongTypeException
 | `NonpositiveFloat` | `<= 0` | Zero or negative |
 | `NonzeroFloat` | `!= 0` | Any nonzero float |
 | `UnitFloat` | `0.0..1.0` | Unit interval |
+| `PercentFloat` | `0.0..100.0` | Percentage range |
+| `Latitude` | `-90.0..90.0` | Geographic latitude |
+| `Longitude` | `-180.0..180.0` | Geographic longitude |
 
 ### Strings
 
@@ -71,12 +77,24 @@ $user = new Username('99bad');    // StrongTypeException
 | `EmailString` | `FILTER_VALIDATE_EMAIL` | Valid email address |
 | `UrlString` | `FILTER_VALIDATE_URL` | Valid URL |
 | `IpAddressString` | `FILTER_VALIDATE_IP` | Valid IP address (v4 or v6) |
+| `Ipv4AddressString` | IPv4 filter | Valid IPv4 address only |
+| `Ipv6AddressString` | IPv6 filter | Valid IPv6 address only |
+| `CidrString` | CIDR notation | `ip/prefix` with prefix in valid range |
+| `MacAddressString` | MAC pattern | `xx:xx:xx:xx:xx:xx` |
 | `UuidString` | UUID pattern | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` |
+| `JwtString` | JWT pattern | `header.payload.signature` base64url segments |
+| `PhoneE164String` | E.164 pattern | `+` followed by 2–15 digits |
+| `CountryCodeAlpha2String` | `[A-Z]{2}` | ISO 3166-1 alpha-2 format (format only) |
+| `CountryCodeAlpha3String` | `[A-Z]{3}` | ISO 3166-1 alpha-3 format (format only) |
+| `CurrencyCodeString` | `[A-Z]{3}` | ISO 4217 format (format only) |
+| `LanguageCodeString` | `[a-z]{2}` | ISO 639-1 format (format only) |
+| `MimeTypeString` | RFC 6838 | `type/subtype` restricted-name format |
 | `SlugString` | Slug pattern | `lowercase-words-with-dashes` |
 | `SemverString` | Semver pattern | `MAJOR.MINOR.PATCH[-prerelease][+build]` |
 | `HexColorString` | Hex color pattern | `#RGB` or `#RRGGBB` |
 | `ClassString` | `class_exists` | Existing class, interface, or enum |
 | `DateTimeString` | `DateTimeImmutable` | Parseable date/time string |
+| `Rfc3339DateTimeString` | RFC 3339 | RFC 3339 date-time grammar with offset; `:60` accepted syntactically (leap-second tolerance) |
 | `EmptyString` | `strlen === 0` | Must be empty (default `''`) |
 
 ### Arrays
@@ -87,6 +105,8 @@ $user = new Username('99bad');    // StrongTypeException
 | `EmptyArray` | `count === 0` | Must be empty |
 | `UniqueArray` | No duplicates | Nonempty with unique values |
 | `FixedSizeArray` | `count === $size` | Exact element count (runtime) |
+| `ListArray` | `array_is_list` | Sequential integer keys starting at 0 |
+| `AssociativeArray` | Not a list | Nonempty with at least one non-list key |
 | `ArrayOfStrings` | Element type check | Nonempty, all strings |
 | `ArrayOfInts` | Element type check | Nonempty, all ints |
 | `ArrayOfFloats` | Element type check | Nonempty, all floats |
@@ -116,6 +136,8 @@ $user = new Username('99bad');    // StrongTypeException
 
 ### Nullable Wrapper
 
+`Nullable` requires a concrete StrongType class — the wrapped value is validated against that type whenever it is non-null, and the type itself is checked even when the value is `null`.
+
 ```php
 use StrongType\Nullable;
 use StrongType\Int\PositiveInt;
@@ -126,7 +148,37 @@ $null  = new Nullable(PositiveInt::class, null);  // wraps null
 $value->getValue();  // 5
 $null->getValue();   // null
 $null->isNull();     // true
+
+// Structural equality delegates to the wrapped type's equals().
+$value->equals(new Nullable(PositiveInt::class, 5));    // true
+$value->equals(new Nullable(PositiveInt::class, null)); // false
 ```
+
+### Base Class Methods
+
+Every strong type inherits four helpers from its base class:
+
+| Method | Returns | Description |
+| --- | --- | --- |
+| `tryFrom(mixed $value)` | `static \| null` | Returns an instance or `null` if the input is the wrong PHP type or fails validation. Does **not** widen across scalar types (strict matching) — except `FloatingPoint::tryFrom` accepts `int` and widens to `float`, mirroring PHP's native int-to-float param coercion. |
+| `equals(HasEquals $other)` | `bool` | Strict structural equality: same concrete class and same value (`ArrayType::equals` compares values **and** key-order, since insertion order is part of the array identity). |
+| `nullable(mixed $value)` | `Nullable` | Convenience shortcut for `new Nullable(static::class, $value)`. |
+| `ArrayType::withValues(array $values)` | `static` | Returns a new instance of the same concrete subclass with a different value array. Only defined on `ArrayType`. |
+
+```php
+use StrongType\Int\PositiveInt;
+
+$a = PositiveInt::tryFrom(5);     // PositiveInt(5)
+$b = PositiveInt::tryFrom(-1);    // null (constraint failure)
+$c = PositiveInt::tryFrom('5');   // null (wrong type — no coercion)
+
+$a->equals(new PositiveInt(5));   // true
+$a->equals(new PositiveInt(6));   // false
+
+PositiveInt::nullable(null);      // Nullable<PositiveInt>(null)
+```
+
+`FixedSizeArray::tryFrom` and `FixedSizeArray::nullable` throw `\LogicException` — the required `$size` parameter cannot be satisfied through these factories. Use `new FixedSizeArray($values, $size)` or `$existing->withValues($values)` instead.
 
 ## Setup
 
@@ -255,6 +307,7 @@ class UniqueIdList extends ArrayType {}
 | --- | --- | --- |
 | `Min` | `int\|float $min, bool $exclusive = false` | `>= $min` (or `> $min` if exclusive) |
 | `Max` | `int\|float $max, bool $exclusive = false` | `<= $max` (or `< $max` if exclusive) |
+| `InRange` | `int\|float $min, int\|float $max, bool $exclusiveMin = false, bool $exclusiveMax = false` | Combined min + max with optional open bounds |
 | `Positive` | none | `> 0` |
 | `Negative` | none | `< 0` |
 | `Nonnegative` | none | `>= 0` |
@@ -263,6 +316,8 @@ class UniqueIdList extends ArrayType {}
 | `Even` | none | `% 2 === 0` |
 | `Odd` | none | `% 2 !== 0` |
 | `DivisibleBy` | `int $divisor` | `% $divisor === 0` |
+| `Finite` | none | Rejects `INF`, `-INF`, `NAN` (already applied by default to all FloatingPoint subtypes) |
+| `InList` | `mixed ...$allowed` | Strict membership check against an allowlist |
 
 #### String Constraints (for StringType)
 
@@ -272,7 +327,8 @@ class UniqueIdList extends ArrayType {}
 | `Nonblank` | none | `trim() !== ''` |
 | `MinLength` | `int $minLength` | `strlen >= $minLength` |
 | `MaxLength` | `int $maxLength` | `strlen <= $maxLength` |
-| `Pattern` | `string $pattern` | `preg_match($pattern, $value)` |
+| `Pattern` | `string $pattern` | `preg_match($pattern, $value)` (repeatable) |
+| `NotPattern` | `string $pattern` | Value must **not** match pattern (repeatable) |
 | `Alpha` | none | `ctype_alpha` |
 | `Alphanumeric` | none | `ctype_alnum` |
 | `NumericDigits` | none | `ctype_digit` |
@@ -283,7 +339,12 @@ class UniqueIdList extends ArrayType {}
 | `Email` | none | `filter_var(FILTER_VALIDATE_EMAIL)` |
 | `Url` | none | `filter_var(FILTER_VALIDATE_URL)` |
 | `IpAddress` | none | `filter_var(FILTER_VALIDATE_IP)` |
+| `Ipv4` | none | `filter_var(FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)` |
+| `Ipv6` | none | `filter_var(FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)` |
+| `Cidr` | none | Valid IPv4 or IPv6 CIDR (`ip/prefix`) |
+| `Uuid` | none | UUID pattern `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` |
 | `Json` | none | `json_validate()` |
+| `Rfc3339` | none | RFC 3339 date-time grammar + calendar round-trip; `:60` accepted syntactically (not verified against IERS leap-second schedule) |
 | `ClassExists` | none | `class_exists \|\| interface_exists \|\| enum_exists` |
 | `DateTimeParseable` | none | `new DateTimeImmutable()` succeeds |
 
@@ -298,6 +359,8 @@ class UniqueIdList extends ArrayType {}
 | `ExactCount` | `int $count` | `count === $count` |
 | `Unique` | none | No duplicate values |
 | `ElementType` | `string $type` | Each element matches type |
+| `IsList` | none | `array_is_list` — sequential integer keys starting at 0 |
+| `IsAssociative` | none | `!array_is_list` — rejects sequential-integer-keyed arrays (including `[]`, since `array_is_list([])` is `true`) |
 
 The `ElementType` attribute accepts: `'string'`, `'int'`, `'float'`, `'bool'`, `'array'`, `'object'`, `'callable'`, `'resource'`, `'iterable'`, or any class/interface name for `instanceof` checks.
 

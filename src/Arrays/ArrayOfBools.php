@@ -7,16 +7,9 @@ namespace StrongType\Arrays;
 use StrongType\Constraint\ElementType;
 
 /**
- * @param bool[] $values
+ * @extends NonemptyArray<array-key, bool>
  */
 #[ElementType('bool')]
 class ArrayOfBools extends NonemptyArray
 {
-    #[\Override]
-    public function current(): bool
-    {
-        /** @var bool $current */
-        $current = \current($this->values);
-        return $current;
-    }
 }

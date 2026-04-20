@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace StrongType\String;
 
-use StrongType\Constraint\Pattern;
+use StrongType\Constraint\Uuid;
 
-#[Pattern('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i')]
+#[Uuid]
 readonly class UuidString extends NonemptyString
 {
 }

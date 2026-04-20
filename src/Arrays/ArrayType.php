@@ -5,22 +5,30 @@ declare(strict_types=1);
 namespace StrongType\Arrays;
 
 use StrongType\Constraint\ConstraintValidator;
+use StrongType\Exception\StrongTypeException;
+use StrongType\HasEquals;
 
 /**
- * @implements \Iterator<mixed, mixed>
+ * @template TKey of array-key
+ * @template TValue
+ * @implements \IteratorAggregate<TKey, TValue>
  */
-abstract class ArrayType implements \JsonSerializable, \Countable, \Iterator, \Stringable
+abstract class ArrayType implements \JsonSerializable, \Countable, \IteratorAggregate, \Stringable, HasEquals
 {
+    /** @var array<TKey, TValue> */
+    public protected(set) array $values;
+
     /**
-     * @param mixed[] $values
+     * @param array<TKey, TValue> $values
      */
-    public function __construct(public protected(set) array $values)
+    public function __construct(array $values)
     {
+        $this->values = $values;
         ConstraintValidator::validate($this, $this->values);
     }
 
     /**
-     * @return mixed[]
+     * @return array<TKey, TValue>
      */
     public function getValues(): array
     {
@@ -28,7 +36,7 @@ abstract class ArrayType implements \JsonSerializable, \Countable, \Iterator, \S
     }
 
     /**
-     * @return mixed[]
+     * @return array<TKey, TValue>
      */
     #[\Override]
     public function jsonSerialize(): array
@@ -49,7 +57,7 @@ abstract class ArrayType implements \JsonSerializable, \Countable, \Iterator, \S
     }
 
     /**
-     * @return mixed[]
+     * @return array{values: array<TKey, TValue>}
      */
     public function __debugInfo(): array
     {
@@ -58,33 +66,61 @@ abstract class ArrayType implements \JsonSerializable, \Countable, \Iterator, \S
         ];
     }
 
+    /**
+     * @return \ArrayIterator<TKey, TValue>
+     */
     #[\Override]
-    public function rewind(): void
+    public function getIterator(): \ArrayIterator
     {
-        \reset($this->values);
+        return new \ArrayIterator($this->values);
+    }
+
+    /**
+     * Subclasses with divergent constructors (e.g. FixedSizeArray) must override this method;
+     * the inherited implementation only works when the subclass constructor accepts exactly
+     * `array $values`.
+     *
+     * @psalm-suppress UnsafeInstantiation
+     */
+    public static function tryFrom(mixed $value): ?static
+    {
+        if (!\is_array($value)) {
+            return null;
+        }
+        if ((new \ReflectionClass(static::class))->isAbstract()) {
+            return null;
+        }
+        try {
+            return new static($value); // @phpstan-ignore new.static, return.type
+        } catch (StrongTypeException) {
+            return null;
+        }
     }
 
     #[\Override]
-    public function current(): mixed
+    public function equals(HasEquals $other): bool
     {
-        return \current($this->values);
+        if (!$other instanceof self || $other::class !== static::class) {
+            return false;
+        }
+        return $this->values === $other->values;
     }
 
-    #[\Override]
-    public function key(): mixed
+    public static function nullable(mixed $value): \StrongType\Nullable
     {
-        return \key($this->values);
+        return new \StrongType\Nullable(static::class, $value);
     }
 
-    #[\Override]
-    public function next(): void
+    /**
+     * Subclasses with divergent constructors (e.g. FixedSizeArray) must override this method;
+     * the inherited implementation only works when the subclass constructor accepts exactly
+     * `array $values`.
+     *
+     * @param array<TKey, TValue> $values
+     * @psalm-suppress UnsafeInstantiation
+     */
+    public function withValues(array $values): static
     {
-        \next($this->values);
-    }
-
-    #[\Override]
-    public function valid(): bool
-    {
-        return \key($this->values) !== null;
+        return new static($values); // @phpstan-ignore new.static, return.type
     }
 }

@@ -10,4 +10,16 @@ readonly class FalseValue extends BoolType
     {
         parent::__construct($value);
     }
+
+    /**
+     * @psalm-suppress MoreSpecificReturnType, LessSpecificReturnStatement
+     */
+    #[\Override]
+    public static function tryFrom(mixed $value): ?static
+    {
+        if ($value !== false) {
+            return null;
+        }
+        return parent::tryFrom($value);
+    }
 }

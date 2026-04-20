@@ -7,16 +7,9 @@ namespace StrongType\Arrays;
 use StrongType\Constraint\ElementType;
 
 /**
- * @param int[] $values
+ * @extends NonemptyArray<array-key, int>
  */
 #[ElementType('int')]
 class ArrayOfInts extends NonemptyArray
 {
-    #[\Override]
-    public function current(): int
-    {
-        /** @var int $current */
-        $current = \current($this->values);
-        return $current;
-    }
 }

@@ -7,16 +7,9 @@ namespace StrongType\Arrays;
 use StrongType\Constraint\ElementType;
 
 /**
- * @param object[] $values
+ * @extends NonemptyArray<array-key, object>
  */
 #[ElementType('object')]
 class ArrayOfObjects extends NonemptyArray
 {
-    #[\Override]
-    public function current(): object
-    {
-        /** @var object $current */
-        $current = \current($this->values);
-        return $current;
-    }
 }

@@ -8,21 +8,24 @@ use StrongType\Exception\StrongTypeException;
 
 readonly class Nullable implements \JsonSerializable, \Stringable
 {
-    private (\JsonSerializable&\Stringable)|null $strongType;
+    private (\JsonSerializable&\Stringable&HasEquals)|null $strongType;
 
     /**
-     * @param class-string<\JsonSerializable&\Stringable> $type
+     * @param class-string<\JsonSerializable&\Stringable&HasEquals> $type
      */
     public function __construct(
         private string $type,
         mixed $value,
     ) {
+        if (!\is_subclass_of($this->type, HasEquals::class) || !\is_subclass_of($this->type, \JsonSerializable::class)) {
+            throw new StrongTypeException("Nullable type must reference a valid StrongType class, got {$this->type}");
+        }
+        if ((new \ReflectionClass($this->type))->isAbstract()) {
+            throw new StrongTypeException("Nullable type must reference a concrete StrongType class, got abstract {$this->type}");
+        }
         if ($value === null) {
             $this->strongType = null;
         } else {
-            if (!\is_subclass_of($this->type, \JsonSerializable::class)) {
-                throw new StrongTypeException("Nullable type must reference a valid StrongType class, got {$this->type}");
-            }
             $this->strongType = new $this->type($value);
         }
     }
@@ -35,6 +38,17 @@ readonly class Nullable implements \JsonSerializable, \Stringable
     public function isNull(): bool
     {
         return $this->strongType === null;
+    }
+
+    public function equals(self $other): bool
+    {
+        if ($this->type !== $other->type) {
+            return false;
+        }
+        if ($this->strongType === null || $other->strongType === null) {
+            return $this->strongType === $other->strongType;
+        }
+        return $this->strongType->equals($other->strongType);
     }
 
     #[\Override]

@@ -58,6 +58,16 @@ Types are validated either via:
 
 Most built-in types have been refactored to use attributes. Types that keep manual constructors: `EmptyString` (default param), `FixedSizeArray` (runtime `$size` param), `TrueValue`/`FalseValue` (PHP `true`/`false` type hints), `Timestamp`, `FutureTimestamp`, `PastTimestamp`, `DateString`, `TimeString`.
 
+### Constructor Consistency Contract
+
+`Integer`, `FloatingPoint`, `StringType`, and `DateTime` are marked `@phpstan-consistent-constructor` / `@psalm-consistent-constructor`. The inherited static factories (`tryFrom`, `nullable`) instantiate via `new static(...)` and assume subclasses share the base constructor signature. Subclasses that diverge (add params, reorder, etc.) **must override** these factories or they will throw `ArgumentCountError` at runtime. (`withValues` is an `ArrayType`-only factory; it does not exist on the scalar bases.)
+
+`ArrayType` cannot carry the annotation because `FixedSizeArray` legitimately adds a `$size` param; the `new static` calls there are suppressed inline and `FixedSizeArray` overrides all three factories (`withValues` handles the extra arg; `tryFrom` and `nullable` throw `\LogicException` since they can't be satisfied without a size).
+
+`BoolType` cannot carry the annotation because `TrueValue` / `FalseValue` narrow `bool` to `true` / `false` literal types; those invalid values surface as `\TypeError` caught by `tryFrom`.
+
+User subclasses with divergent constructors must follow the same pattern: override the inherited factories.
+
 ### Constraint System
 
 - `ConstraintInterface`: `validate(mixed $value, string $className): ?string` returns null on success, error message on failure. `priority(): int` controls execution order (lower = first).

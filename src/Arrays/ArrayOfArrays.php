@@ -7,19 +7,9 @@ namespace StrongType\Arrays;
 use StrongType\Constraint\ElementType;
 
 /**
- * @param array<mixed>[] $values
+ * @extends NonemptyArray<array-key, array<mixed>>
  */
 #[ElementType('array')]
 class ArrayOfArrays extends NonemptyArray
 {
-    /**
-     * @return array<mixed>
-     */
-    #[\Override]
-    public function current(): array
-    {
-        /** @var array<mixed> $current */
-        $current = \current($this->values);
-        return $current;
-    }
 }

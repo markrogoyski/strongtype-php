@@ -7,16 +7,9 @@ namespace StrongType\Arrays;
 use StrongType\Constraint\ElementType;
 
 /**
- * @param float[] $values
+ * @extends NonemptyArray<array-key, float>
  */
 #[ElementType('float')]
 class ArrayOfFloats extends NonemptyArray
 {
-    #[\Override]
-    public function current(): float
-    {
-        /** @var float $current */
-        $current = \current($this->values);
-        return $current;
-    }
 }

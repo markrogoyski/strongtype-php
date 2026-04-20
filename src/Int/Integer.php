@@ -5,8 +5,14 @@ declare(strict_types=1);
 namespace StrongType\Int;
 
 use StrongType\Constraint\ConstraintValidator;
+use StrongType\Exception\StrongTypeException;
+use StrongType\HasEquals;
 
-readonly abstract class Integer implements \JsonSerializable, \Stringable
+/**
+ * @phpstan-consistent-constructor
+ * @psalm-consistent-constructor
+ */
+readonly abstract class Integer implements \JsonSerializable, \Stringable, HasEquals
 {
     public function __construct(public int $value)
     {
@@ -38,5 +44,34 @@ readonly abstract class Integer implements \JsonSerializable, \Stringable
         return [
             'value' => $this->value
         ];
+    }
+
+    public static function tryFrom(mixed $value): ?static
+    {
+        if (!\is_int($value)) {
+            return null;
+        }
+        if ((new \ReflectionClass(static::class))->isAbstract()) {
+            return null;
+        }
+        try {
+            return new static($value);
+        } catch (StrongTypeException) {
+            return null;
+        }
+    }
+
+    #[\Override]
+    public function equals(HasEquals $other): bool
+    {
+        if (!$other instanceof self || $other::class !== static::class) {
+            return false;
+        }
+        return $this->value === $other->value;
+    }
+
+    public static function nullable(mixed $value): \StrongType\Nullable
+    {
+        return new \StrongType\Nullable(static::class, $value);
     }
 }

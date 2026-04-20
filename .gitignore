@@ -2,5 +2,8 @@
 composer.lock
 composer.phar
 /.idea
+.DS_Store
+.phpunit.cache/
 .phpunit.result.cache
-tests/.phpunit.cache/test-results
+.php-cs-fixer.cache
+.phpcs-cache

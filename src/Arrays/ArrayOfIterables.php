@@ -7,19 +7,9 @@ namespace StrongType\Arrays;
 use StrongType\Constraint\ElementType;
 
 /**
- * @param iterable<mixed>[] $values
+ * @extends NonemptyArray<array-key, iterable<mixed>>
  */
 #[ElementType('iterable')]
 class ArrayOfIterables extends NonemptyArray
 {
-    /**
-     * @return iterable<mixed>
-     */
-    #[\Override]
-    public function current(): iterable
-    {
-        /** @var iterable<mixed> $current */
-        $current = \current($this->values);
-        return $current;
-    }
 }
