@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace StrongType\Tests;
 
 use PHPUnit\Framework\Attributes\Test;
+use StrongType\Int\PortNumber;
 use StrongType\Int\PositiveInt;
 use StrongType\Nullable;
 use StrongType\String\NonemptyString;
@@ -64,5 +65,17 @@ class NullableEqualsTest extends \PHPUnit\Framework\TestCase
         $b = new Nullable(NonemptyString::class, null);
 
         $this->assertFalse($a->equals($b));
+    }
+
+    #[Test]
+    public function testNotEqualDifferentTypesSameUnderlyingValue(): void
+    {
+        // PositiveInt(80) and PortNumber(80) carry identical scalar values but
+        // are different wrapped types. Nullable equality must stay type-strict.
+        $a = new Nullable(PositiveInt::class, 80);
+        $b = new Nullable(PortNumber::class, 80);
+
+        $this->assertFalse($a->equals($b));
+        $this->assertFalse($b->equals($a));
     }
 }

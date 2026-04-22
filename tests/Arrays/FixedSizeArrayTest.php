@@ -159,4 +159,35 @@ class FixedSizeArrayTest extends \PHPUnit\Framework\TestCase
             [[1, 2, 3], 4],
         ];
     }
+
+    #[Test]
+    public function testTryFromThrowsLogicException()
+    {
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('FixedSizeArray::tryFrom() is unsupported');
+
+        FixedSizeArray::tryFrom([1, 2, 3]);
+    }
+
+    #[Test]
+    public function testNullableThrowsLogicException()
+    {
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('FixedSizeArray::nullable() is unsupported');
+
+        FixedSizeArray::nullable([1, 2, 3]);
+    }
+
+    #[Test]
+    public function testWithValuesPreservesSizeProperty()
+    {
+        // Given
+        $original = new FixedSizeArray([1, 2, 3], 3);
+
+        // When
+        $replaced = $original->withValues([4, 5, 6]);
+
+        // Then
+        $this->assertSame(3, $replaced->size);
+    }
 }

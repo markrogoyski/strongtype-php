@@ -17,6 +17,8 @@ use StrongType\Bool\FalseValue;
 use StrongType\DateTime\DateString;
 use StrongType\DateTime\Timestamp;
 use StrongType\Arrays\NonemptyArray;
+use StrongType\Arrays\ListArray;
+use StrongType\Arrays\UniqueArray;
 
 class EqualsTest extends TestCase
 {
@@ -163,6 +165,27 @@ class EqualsTest extends TestCase
     {
         $a = new NonemptyArray(['a' => 1, 'b' => 2]);
         $b = new NonemptyArray(['b' => 2, 'a' => 1]);
+        $this->assertFalse($a->equals($b));
+    }
+
+    #[Test]
+    public function testArrayNotEqualAcrossSubclassesSameValues(): void
+    {
+        // Two different ArrayType subclasses with identical contents must not
+        // compare equal — equals() is type-strict.
+        $a = new ListArray([1, 2, 3]);
+        $b = new UniqueArray([1, 2, 3]);
+        $this->assertFalse($a->equals($b));
+        $this->assertFalse($b->equals($a));
+    }
+
+    #[Test]
+    public function testArrayNotEqualAcrossSubclassHierarchy(): void
+    {
+        // NonemptyArray and ListArray are both concrete ArrayType subclasses.
+        // Even with identical values, a cross-subclass compare must be false.
+        $a = new NonemptyArray([10, 20]);
+        $b = new ListArray([10, 20]);
         $this->assertFalse($a->equals($b));
     }
 }

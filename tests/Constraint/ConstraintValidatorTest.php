@@ -38,6 +38,70 @@ readonly class SmallRangeTestInt extends RangeTestInt
 {
 }
 
+// Sibling test fixtures: common parent, different own constraints.
+// Used to verify the per-class cache does not conflate siblings.
+#[Min(0)]
+readonly class SiblingParentInt extends Integer
+{
+}
+
+#[Max(10)]
+readonly class SiblingChildA extends SiblingParentInt
+{
+}
+
+#[Max(100)]
+readonly class SiblingChildB extends SiblingParentInt
+{
+}
+
+// Constraint fixtures for priority-collision test: both share priority 75
+// and each records its own invocation so order/presence can be asserted.
+final class PriorityCollisionTracker
+{
+    /** @var list<string> */
+    public static array $log = [];
+}
+
+#[\Attribute(\Attribute::TARGET_CLASS)]
+final readonly class TaggedCollisionA implements ConstraintInterface
+{
+    #[\Override]
+    public function validate(mixed $value, string $className): ?string
+    {
+        PriorityCollisionTracker::$log[] = 'A';
+        return null;
+    }
+
+    #[\Override]
+    public function priority(): int
+    {
+        return 75;
+    }
+}
+
+#[\Attribute(\Attribute::TARGET_CLASS)]
+final readonly class TaggedCollisionB implements ConstraintInterface
+{
+    #[\Override]
+    public function validate(mixed $value, string $className): ?string
+    {
+        PriorityCollisionTracker::$log[] = 'B';
+        return null;
+    }
+
+    #[\Override]
+    public function priority(): int
+    {
+        return 75;
+    }
+}
+
+#[TaggedCollisionA, TaggedCollisionB]
+readonly class CollisionTestInt extends Integer
+{
+}
+
 class ConstraintValidatorTest extends \PHPUnit\Framework\TestCase
 {
     #[Test]
@@ -135,5 +199,57 @@ class ConstraintValidatorTest extends \PHPUnit\Framework\TestCase
 
         $this->expectException(StrongTypeException::class);
         new PositiveInt(-1);
+    }
+
+    #[Test]
+    public function testSiblingSubclassesHaveIsolatedConstraintSets()
+    {
+        // Sibling cache keys are per-class, not per-parent. SiblingChildA
+        // accepts up to 10, SiblingChildB up to 100 — their shared parent
+        // constraints must compose with each child's own, independently.
+        $a = new SiblingChildA(5);
+        $b = new SiblingChildB(50);
+        $this->assertSame(5, $a->value);
+        $this->assertSame(50, $b->value);
+
+        // And each child still enforces its own Max, not the sibling's.
+        $b = new SiblingChildB(100);
+        $this->assertSame(100, $b->value);
+    }
+
+    #[Test]
+    public function testSiblingChildAEnforcesOwnMax()
+    {
+        $this->expectException(StrongTypeException::class);
+        new SiblingChildA(11);
+    }
+
+    #[Test]
+    public function testSiblingChildBEnforcesOwnMax()
+    {
+        $this->expectException(StrongTypeException::class);
+        new SiblingChildB(101);
+    }
+
+    #[Test]
+    public function testSharedParentConstraintStillAppliesToChild()
+    {
+        // Min(0) on SiblingParentInt must still reject negatives on children.
+        $this->expectException(StrongTypeException::class);
+        new SiblingChildA(-1);
+    }
+
+    #[Test]
+    public function testEqualPriorityConstraintsAllFire()
+    {
+        // When two constraints share a priority, both must run — the sort is
+        // stable enough that neither is silently dropped.
+        PriorityCollisionTracker::$log = [];
+
+        new CollisionTestInt(1);
+
+        $this->assertContains('A', PriorityCollisionTracker::$log);
+        $this->assertContains('B', PriorityCollisionTracker::$log);
+        $this->assertCount(2, PriorityCollisionTracker::$log);
     }
 }

@@ -14,6 +14,7 @@ use StrongType\String\NonemptyString;
 use StrongType\String\StringType;
 use StrongType\Bool\BoolType;
 use StrongType\Bool\TrueValue;
+use StrongType\Bool\FalseValue;
 use StrongType\DateTime\DateString;
 use StrongType\DateTime\DateTime;
 use StrongType\DateTime\Timestamp;
@@ -125,6 +126,28 @@ class TryFromTest extends TestCase
     public function testAbstractBoolReturnsNull(): void
     {
         $this->assertNull(BoolType::tryFrom(true));
+    }
+
+    #[Test]
+    public function testFalseValueSuccess(): void
+    {
+        $result = FalseValue::tryFrom(false);
+        $this->assertInstanceOf(FalseValue::class, $result);
+    }
+
+    #[Test]
+    public function testFalseValueLiteralMismatch(): void
+    {
+        // FalseValue narrows bool to literal `false`; passing `true` must
+        // surface as null via the TypeError catch in BoolType::tryFrom.
+        $this->assertNull(FalseValue::tryFrom(true));
+    }
+
+    #[Test]
+    public function testFalseValueTypeMismatch(): void
+    {
+        $this->assertNull(FalseValue::tryFrom('not a bool'));
+        $this->assertNull(FalseValue::tryFrom(0));
     }
 
     #[Test]

@@ -130,6 +130,35 @@ class TimeStringTest extends \PHPUnit\Framework\TestCase
             ['1:00:00'],
             ['12:0:00'],
             ['12:00:0'],
+            // Leap seconds are not supported; 60 in the seconds field is invalid.
+            ['23:59:60'],
+            // Hours > 23 are invalid.
+            ['25:00:00'],
+            ['99:00:00'],
+            // Negative / signed values are invalid.
+            ['-1:00:00'],
+            // Trailing content after a valid time is invalid.
+            ['12:00:00Z'],
+            ['12:00:00 '],
+            [' 12:00:00'],
+            // Fractional seconds are not part of HH:MM:SS.
+            ['12:00:00.5'],
         ];
+    }
+
+    #[Test]
+    public function testBoundaryMidnightIsValid()
+    {
+        $time = new TimeString('00:00:00');
+
+        $this->assertSame('00:00:00', $time->getValue());
+    }
+
+    #[Test]
+    public function testBoundaryLastSecondOfDayIsValid()
+    {
+        $time = new TimeString('23:59:59');
+
+        $this->assertSame('23:59:59', $time->getValue());
     }
 }

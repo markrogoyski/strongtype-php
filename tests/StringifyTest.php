@@ -44,4 +44,76 @@ class StringifyTest extends \PHPUnit\Framework\TestCase
         $this->assertStringContainsString('Array', $result);
         $this->assertStringContainsString('1', $result);
     }
+
+    #[Test]
+    public function testNestedArrayValue()
+    {
+        $result = Stringify::value(['outer' => ['inner' => 42]]);
+
+        $this->assertStringContainsString('outer', $result);
+        $this->assertStringContainsString('inner', $result);
+        $this->assertStringContainsString('42', $result);
+    }
+
+    #[Test]
+    public function testEmptyArrayValue()
+    {
+        $result = Stringify::value([]);
+
+        $this->assertStringContainsString('Array', $result);
+    }
+
+    #[Test]
+    public function testStringableObject()
+    {
+        $object = new class {
+            public function __toString(): string
+            {
+                return 'stringable-value';
+            }
+        };
+
+        $result = Stringify::value($object);
+
+        // print_r does not invoke __toString; it dumps object state.
+        $this->assertStringContainsString('Object', $result);
+    }
+
+    #[Test]
+    public function testPlainObject()
+    {
+        $object = new \stdClass();
+        $object->foo = 'bar';
+        $object->qux = 7;
+
+        $result = Stringify::value($object);
+
+        $this->assertStringContainsString('stdClass', $result);
+        $this->assertStringContainsString('foo', $result);
+        $this->assertStringContainsString('bar', $result);
+    }
+
+    #[Test]
+    public function testResource()
+    {
+        $resource = \fopen('php://memory', 'r');
+        try {
+            $result = Stringify::value($resource);
+            $this->assertStringContainsString('Resource', $result);
+        } finally {
+            \fclose($resource);
+        }
+    }
+
+    #[Test]
+    public function testClosure()
+    {
+        $closure = function () {
+            return 'hi';
+        };
+
+        $result = Stringify::value($closure);
+
+        $this->assertStringContainsString('Closure', $result);
+    }
 }

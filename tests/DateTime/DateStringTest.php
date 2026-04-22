@@ -128,6 +128,27 @@ class DateStringTest extends \PHPUnit\Framework\TestCase
             ['01-01-2024'],
             ['2024/01/01'],
             ['20240101'],
+            // Century years divisible by 100 but not 400 are NOT leap years.
+            ['1900-02-29'],
+            ['2100-02-29'],
+            // Months with only 30 days cannot have day 31.
+            ['2024-04-31'],
+            ['2024-06-31'],
+            ['2024-09-31'],
+            ['2024-11-31'],
+            // February never has 30 days.
+            ['2024-02-30'],
+            // Day 00 is never valid.
+            ['2024-01-00'],
         ];
+    }
+
+    #[Test]
+    public function testLeapYearDivisibleBy400IsValid()
+    {
+        // 2000 is divisible by 400 -> leap year -> Feb 29 exists.
+        $dateString = new DateString('2000-02-29');
+
+        $this->assertSame('2000-02-29', $dateString->getValue());
     }
 }
