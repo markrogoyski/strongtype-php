@@ -180,6 +180,42 @@ PositiveInt::nullable(null);      // Nullable<PositiveInt>(null)
 
 `FixedSizeArray::tryFrom` and `FixedSizeArray::nullable` throw `\LogicException` — the required `$size` parameter cannot be satisfied through these factories. Use `new FixedSizeArray($values, $size)` or `$existing->withValues($values)` instead.
 
+### Implemented Interfaces
+
+Every strong type implements a small, stable set of standard interfaces so it can interoperate with native PHP language features and generic code:
+
+| Interface | Where | What you get |
+| --- | --- | --- |
+| `\Stringable` | All types | `__toString()` — cast any strong type to `string` (integers/floats/bools use `strval`; strings pass through; arrays and datetimes JSON-encode). |
+| `\JsonSerializable` | All types | `jsonSerialize()` — `json_encode($value)` produces the underlying scalar/array. |
+| `\StrongType\HasEquals` | All types | `equals(HasEquals $other): bool` — strict structural equality. Lets generic code (e.g. `Nullable`) compare two strong-type instances without knowing the concrete type. Type-hint against `HasEquals` when you want to accept "any strong type" in a signature. |
+| `\Countable` | `ArrayType` only | `count($arr)` returns the element count. |
+| `\IteratorAggregate` | `ArrayType` only | `foreach ($arr as $key => $value) { ... }` iterates the underlying values, preserving original keys (via `\ArrayIterator`). |
+
+```php
+use StrongType\Arrays\ArrayOfStrings;
+
+$tags = new ArrayOfStrings(['php', 'types', 'validation']);
+
+\count($tags);              // 3 (Countable)
+foreach ($tags as $tag) {   // IteratorAggregate
+    echo $tag, "\n";
+}
+
+(string) $tags;             // '["php","types","validation"]' (Stringable)
+\json_encode($tags);        // '["php","types","validation"]' (JsonSerializable)
+```
+
+```php
+use StrongType\HasEquals;
+
+// Accept any strong type in a generic signature.
+function areEqual(HasEquals $a, HasEquals $b): bool
+{
+    return $a->equals($b);
+}
+```
+
 ## Setup
 
 ```bash
@@ -477,7 +513,7 @@ No registration step -- the validator automatically discovers any attribute impl
 ### Domain Modeling
 
 ```php
-use StrongType\Constraint\{Min, Max, Nonempty, Pattern, MaxLength, Positive, Nonnegative, ElementType, Unique};
+use StrongType\Constraint\{Min, Max, Nonempty, Pattern, MaxCount, Positive, Nonnegative, ElementType, Unique};
 use StrongType\Int\Integer;
 use StrongType\Float\FloatingPoint;
 use StrongType\String\StringType;
@@ -507,8 +543,8 @@ readonly class Port extends Integer {}
 readonly class Hostname extends StringType {}
 
 // Configuration
-#[Nonempty, Unique, ElementType('string'), MaxLength(50)]
-readonly class FeatureFlags extends ArrayType {}
+#[Nonempty, Unique, ElementType('string'), MaxCount(50)]
+class FeatureFlags extends ArrayType {}
 ```
 
 ### Extending Built-in Types
