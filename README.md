@@ -457,7 +457,49 @@ Constraints execute in priority order (lower runs first). This ensures range che
 
 ### Custom Constraints
 
-Create your own constraint by implementing `ConstraintInterface`:
+Create your own constraint by implementing `ConstraintInterface`. The interface has just two methods: `validate()` returns `null` on success or an error message string on failure, and `priority()` controls execution order.
+
+#### A minimal example: `Palindrome`
+
+```php
+use StrongType\Constraint\ConstraintInterface;
+
+#[\Attribute(\Attribute::TARGET_CLASS)]
+final readonly class Palindrome implements ConstraintInterface
+{
+    public function validate(mixed $value, string $className): ?string
+    {
+        $short = substr($className, strrpos($className, '\\') + 1);
+
+        if (\is_string($value) && $value !== strrev($value)) {
+            return "{$short} type must be a palindrome, got {$value}";
+        }
+
+        return null;
+    }
+
+    public function priority(): int
+    {
+        return 200; // Custom constraints typically use 200+
+    }
+}
+```
+
+Compose it with built-in constraints:
+
+```php
+use StrongType\Constraint\Nonempty;
+use StrongType\String\StringType;
+
+#[Nonempty, Palindrome]
+readonly class PalindromeString extends StringType {}
+
+new PalindromeString('racecar'); // OK
+new PalindromeString('hello');   // StrongTypeException -- not a palindrome
+new PalindromeString('');        // StrongTypeException -- empty (Nonempty runs first)
+```
+
+#### A real-world example: `Luhn` checksum
 
 ```php
 use StrongType\Constraint\ConstraintInterface;
