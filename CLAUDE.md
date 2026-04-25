@@ -4,6 +4,8 @@
 
 StrongType PHP is a library of strongly typed value objects for PHP 8.4+. It provides validated integer, float, string, array, boolean, and datetime types, plus an attribute-based constraint composition system that lets users define new types declaratively.
 
+Core philosophy: **validate once at construction, trust everywhere after**. Every type is immutable, every invalid value throws `StrongTypeException` immediately, and types are designed to be used as parameter and return type hints.
+
 ## Commands
 
 ```bash
@@ -42,6 +44,7 @@ src/
   Bool/                 # BoolType base class + 2 concrete types
   DateTime/             # DateTime base class + 5 concrete types
   Nullable.php          # Nullable wrapper for any strong type
+  HasEquals.php         # Marker interface for structural equality
   Exception/
     StrongTypeException.php   # All validation failures throw this
   Util/
@@ -75,6 +78,10 @@ User subclasses with divergent constructors must follow the same pattern: overri
 - Priority bands: 50 (range/size), 60 (content), 100 (format), 150 (semantic), 200+ (custom).
 - Attributes use `\Attribute::TARGET_CLASS`. `Pattern` is `IS_REPEATABLE`.
 
+### Standard Interfaces
+
+All types implement `\Stringable`, `\JsonSerializable`, and `\StrongType\HasEquals`. `ArrayType` additionally implements `\Countable` and `\IteratorAggregate`. Type-hint against `HasEquals` to accept "any strong type" generically.
+
 ### Key Conventions
 
 - All base types are `readonly abstract` (except `ArrayType` which is `abstract` without `readonly` due to `protected(set)` property).
@@ -82,8 +89,11 @@ User subclasses with divergent constructors must follow the same pattern: overri
 - Error messages follow: `"{ShortClassName} type must {description}, got {value}"`.
 - Short class name extracted via: `\substr($className, \strrpos($className, '\\') + 1)`.
 - Namespace maps directly to directory: `StrongType\` -> `src/`, `StrongType\Tests\` -> `tests/`.
+- Value access: every type exposes both `$obj->value` (public readonly property) and `$obj->getValue()` (method).
 
-### Tests
+## Testing
+
+### Layout
 
 ```
 tests/
@@ -99,11 +109,94 @@ tests/
   Int/, Float/, String/, Arrays/, Bool/, DateTime/  # Per-type tests
 ```
 
-Test style: PHPUnit 11.5+ with `#[Test]` and `#[DataProvider]` attributes. Valid values use `expectNotToPerformAssertions()` or `assertSame()`. Invalid values use `expectException(StrongTypeException::class)`.
+PHPUnit 11.5+ with `#[Test]` and `#[DataProvider]` attributes (no `test` prefix dependency, no `@test` annotations).
+
+### BDD Comment Style — Given / When / Then
+
+**Every test method body uses `// Given`, `// When`, `// Then` comments** to label the three phases. This is non-negotiable for new tests — match the existing style exactly.
+
+```php
+#[Test]
+#[DataProvider('dataProviderForValidValues')]
+public function testGetValue(int $value)
+{
+    // Given
+    $positiveInt = new PositiveInt($value);
+
+    // When
+    $obtainedValue = $positiveInt->getValue();
+
+    // Then
+    $this->assertSame($value, $obtainedValue);
+}
+```
+
+Phases may be omitted when not meaningful. Two common shapes:
+
+- **Construction-only valid test** — only `// When` (construction is the action) and `// Then` (`expectNotToPerformAssertions`).
+- **Invalid value test** — `// Then` (`expectException`) comes *before* `// When` (the throwing construction), because PHPUnit requires the expectation set up first.
+
+```php
+#[Test]
+#[DataProvider('dataProviderForInvalidValues')]
+public function testInvalidValue(int $value)
+{
+    // Then
+    $this->expectException(StrongTypeException::class);
+
+    // When
+    new PositiveInt($value);
+}
+```
+
+### Standard Test Surface for a Type
+
+Every concrete type test covers, at minimum:
+
+1. `testValidValue` — construction succeeds for valid values (`expectNotToPerformAssertions`).
+2. `testGetValue` — `getValue()` returns the input.
+3. `testDebugInfo` — `__debugInfo()['value']` returns the input.
+4. `testStringRepresentation` — `(string) $obj` matches expected string form.
+5. `testJsonSerialization` — `json_encode($obj)` matches expected JSON.
+6. `testInvalidValue` — invalid values throw `StrongTypeException`.
+
+Add `testEquals`, `testTryFrom`, `testNullable`, etc. when the type or change touches that surface. `ArrayType` tests add `testCount` and `testIteration`.
+
+### Exhaustive Data Providers
+
+Tests are **data-driven and exhaustive** — push the type's boundaries. Every provider should include:
+
+- **Boundary values** — `0`, `1`, `-1`, `PHP_INT_MAX`, `PHP_INT_MIN`, empty string `''`, single character, just-below/just-above thresholds.
+- **Typical values** — a handful of representative cases.
+- **Edge cases specific to the type** — Unicode for strings, nested arrays for arrays, leap-second `:60` for RFC 3339, `INF`/`-INF`/`NAN` for floats, etc.
+- **Invalid providers** — symmetric coverage: every "must be > 0" rule needs `0` and a negative; every length rule needs both ends.
+
+Providers are `public static function dataProviderForX(): array` and live in the same file as the tests that use them.
+
+### When Adding or Changing a Type
+
+- Add a per-type test file under `tests/{Category}/` that covers the full standard surface above.
+- If the type uses constraint attributes, also add coverage in the relevant `tests/Constraint/{Category}ConstraintsTest.php` file or per-attribute test.
+
+## Build Must Stay Clean
+
+**Run `make all` after every change — no exceptions — and do not declare a task done until it passes.** This runs lint, the full test suite, PSR-12 style, PHPStan (max level), Psalm, composer-unused, and composer-require-checker. A green `make all` is the contract for "done"; if any check fails, fix the root cause rather than narrowing the check or skipping it. For tight inner loops you can run individual targets (`make tests`, `make phpstan`, etc.), but the final gate before handing work back is always `make all`.
+
+## Documentation
+
+Keep docs in sync with code in the same change. The library has no separate `docs/` directory — documentation lives in:
+
+- **`README.md`** — the canonical user-facing reference. Update the relevant Quick Reference table, attribute table, and add/refresh examples whenever you add a type, attribute, base method, or interface, or change error-message format.
+- **`CHANGELOG.md`** — append a human-readable entry for any user-visible change (new type, new attribute, behavior change, bug fix).
+- **`CLAUDE.md`** (this file) — update when architecture, conventions, or workflow change.
+
+### Real-World Examples
+
+Examples in `README.md` must be **realistic, domain-driven** — `Port`, `Username`, `Sku`, `Hostname`, `CurrencyCode`, `CreditCardNumber`, `Probability`, `FeatureFlags`. Avoid abstract `Foo`/`Bar`/`MyType` placeholders. When adding a constraint or feature, demonstrate it with a use case a reader would plausibly encounter in production code.
 
 ## Style
 
 - PSR-12 (no line length limit).
 - `declare(strict_types=1)` in every file.
 - Root PHP namespace for built-in functions (e.g., `\strlen()`, `\count()`).
-- PHPStan level max.
+- PHPStan level max, Psalm clean.
