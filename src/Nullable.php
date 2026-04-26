@@ -6,7 +6,7 @@ namespace StrongType;
 
 use StrongType\Exception\StrongTypeException;
 
-readonly class Nullable implements \JsonSerializable, \Stringable
+readonly class Nullable implements \JsonSerializable, \Stringable, HasEquals
 {
     private (\JsonSerializable&\Stringable&HasEquals)|null $strongType;
 
@@ -40,8 +40,12 @@ readonly class Nullable implements \JsonSerializable, \Stringable
         return $this->strongType === null;
     }
 
-    public function equals(self $other): bool
+    #[\Override]
+    public function equals(HasEquals $other): bool
     {
+        if (!$other instanceof self) {
+            return false;
+        }
         if ($this->type !== $other->type) {
             return false;
         }

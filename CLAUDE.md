@@ -57,9 +57,11 @@ Every type extends one of 6 abstract base classes: `Integer`, `FloatingPoint`, `
 
 Types are validated either via:
 1. **Constraint attributes** (preferred) -- e.g., `#[Positive] readonly class PositiveInt extends Integer {}`
-2. **Manual constructors** (legacy/special cases) -- for types needing default params, extra constructor args, or PHP literal types
+2. **Manual constructors** (special cases only) -- when validation needs something a class-level attribute can't express
 
-Most built-in types have been refactored to use attributes. Types that keep manual constructors: `EmptyString` (default param), `FixedSizeArray` (runtime `$size` param), `TrueValue`/`FalseValue` (PHP `true`/`false` type hints), `Timestamp`, `FutureTimestamp`, `PastTimestamp`, `DateString`, `TimeString`.
+The rule for picking between them: **use attributes for value-shape rules that depend only on the input value; use a manual constructor only when the type needs a runtime parameter (e.g. `FixedSizeArray`'s `$size`), a PHP literal type narrowing (e.g. `TrueValue`/`FalseValue`), a default parameter (e.g. `EmptyString`), validation against externally-mutable state (e.g. comparing to `time()`), or a hand-rolled parse step that's cleaner inline than as an attribute.** Anything else should be expressed as one or more constraint attributes — that's the path users learn first and the path that composes cleanly under inheritance.
+
+Built-in types currently keeping manual constructors: `EmptyString` (default param), `FixedSizeArray` (runtime `$size` param), `TrueValue` / `FalseValue` (PHP `true` / `false` type hints), `Timestamp` (non-negative integer timestamp), `FutureTimestamp` / `PastTimestamp` (compare against `time()`), `DateString` (`YYYY-MM-DD` parse + calendar-validity check), `TimeString` (`HH:MM:SS` parse + 24-hour-validity check).
 
 ### Constructor Consistency Contract
 
@@ -74,7 +76,7 @@ User subclasses with divergent constructors must follow the same pattern: overri
 ### Constraint System
 
 - `ConstraintInterface`: `validate(mixed $value, string $className): ?string` returns null on success, error message on failure. `priority(): int` controls execution order (lower = first).
-- `ConstraintValidator`: Reads attributes via `ReflectionClass`, walks class hierarchy (child + all parents), sorts by priority, caches per class. Static cache means reflection happens once per class per process.
+- `ConstraintValidator`: Reads attributes via `ReflectionClass`, walks class hierarchy (child + all parents), sorts by priority, caches per class. Static cache means reflection happens once per class per process. The cache is unbounded by design — the keyspace is the set of strong-type classes, which is bounded at compile time, so it grows once at warm-up and stays flat. Don't add eviction.
 - Priority bands: 50 (range/size), 60 (content), 100 (format), 150 (semantic), 200+ (custom).
 - Attributes use `\Attribute::TARGET_CLASS`. `Pattern` is `IS_REPEATABLE`.
 

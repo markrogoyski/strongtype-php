@@ -26,10 +26,11 @@ This release introduces the attribute-based constraint composition system, a lar
 
 #### Base-class methods
 - `tryFrom(mixed $value): ?static` on `Integer`, `FloatingPoint`, `StringType`, `BoolType`, `DateTime`, `ArrayType`.
-- `equals(HasEquals $other): bool` on all six bases plus a new `equals()` on `Nullable` that delegates to the wrapped type.
+- `equals(HasEquals $other): bool` on all six bases plus `Nullable`. `Nullable` now implements `HasEquals` itself, so it can flow through any code that accepts a `HasEquals` argument; cross-comparisons between a `Nullable` and a non-`Nullable` always return `false`.
+- `equalsUnordered(HasEquals $other): bool` on `ArrayType` — type-strict multiset equality that ignores key/order at the top level. Use this when comparing collections that share contents but not insertion order; use `equals()` when key/order significance is required.
 - `nullable(mixed $value): Nullable` convenience factory on all six bases.
 - `withValues(array $values): static` on `ArrayType`.
-- `StrongType\HasEquals` interface — implemented by every base class.
+- `StrongType\HasEquals` interface — implemented by every base class and by `Nullable`.
 
 #### Constraints
 - `Finite` — rejects `INF`, `-INF`, `NAN`.

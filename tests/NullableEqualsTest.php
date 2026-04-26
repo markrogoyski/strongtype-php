@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace StrongType\Tests;
 
 use PHPUnit\Framework\Attributes\Test;
+use StrongType\HasEquals;
 use StrongType\Int\PortNumber;
 use StrongType\Int\PositiveInt;
 use StrongType\Nullable;
@@ -65,6 +66,28 @@ class NullableEqualsTest extends \PHPUnit\Framework\TestCase
         $b = new Nullable(NonemptyString::class, null);
 
         $this->assertFalse($a->equals($b));
+    }
+
+    #[Test]
+    public function testImplementsHasEquals(): void
+    {
+        // Given
+        $nullable = new Nullable(PositiveInt::class, 5);
+
+        // Then
+        $this->assertInstanceOf(HasEquals::class, $nullable);
+    }
+
+    #[Test]
+    public function testEqualsAcceptsHasEqualsParam(): void
+    {
+        // Given a Nullable and a non-Nullable HasEquals with identical underlying value
+        $nullable = new Nullable(PositiveInt::class, 5);
+        $bare = new PositiveInt(5);
+
+        // When comparing through the HasEquals interface
+        // Then a non-Nullable counterpart is never equal to a Nullable
+        $this->assertFalse($nullable->equals($bare));
     }
 
     #[Test]

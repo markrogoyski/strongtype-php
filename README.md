@@ -152,16 +152,21 @@ $null->isNull();     // true
 // Structural equality delegates to the wrapped type's equals().
 $value->equals(new Nullable(PositiveInt::class, 5));    // true
 $value->equals(new Nullable(PositiveInt::class, null)); // false
+
+// Nullable itself implements HasEquals, so it can flow through generic code
+// that accepts any strong type. Cross-comparison with a non-Nullable is always false.
+$value->equals(new PositiveInt(5));                     // false (Nullable<PositiveInt> != PositiveInt)
 ```
 
 ### Base Class Methods
 
-Every strong type inherits four helpers from its base class:
+Base classes provide these helpers (array-only helpers are prefixed with `ArrayType::`):
 
 | Method | Returns | Description |
 | --- | --- | --- |
 | `tryFrom(mixed $value)` | `static \| null` | Returns an instance or `null` if the input is the wrong PHP type or fails validation. Does **not** widen across scalar types (strict matching) — except `FloatingPoint::tryFrom` accepts `int` and widens to `float`, mirroring PHP's native int-to-float param coercion. |
 | `equals(HasEquals $other)` | `bool` | Strict structural equality: same concrete class and same value (`ArrayType::equals` compares values **and** key-order, since insertion order is part of the array identity). |
+| `ArrayType::equalsUnordered(HasEquals $other)` | `bool` | Multiset equality: same concrete subclass and same values (each repeated the same number of times) regardless of keys or insertion order. Strict element comparison; nested arrays are compared as-is. Only defined on `ArrayType`. |
 | `nullable(mixed $value)` | `Nullable` | Convenience shortcut for `new Nullable(static::class, $value)`. |
 | `ArrayType::withValues(array $values)` | `static` | Returns a new instance of the same concrete subclass with a different value array. Only defined on `ArrayType`. |
 
@@ -178,6 +183,22 @@ $a->equals(new PositiveInt(6));   // false
 PositiveInt::nullable(null);      // Nullable<PositiveInt>(null)
 ```
 
+```php
+use StrongType\Arrays\ListArray;
+
+// equalsUnordered — same multiset of values, any order or keys.
+$shipped = new ListArray([101, 204, 309]);
+$received = new ListArray([309, 101, 204]);
+
+$shipped->equals($received);          // false — order differs
+$shipped->equalsUnordered($received); // true  — same multiset
+
+// Multiplicity matters: duplicates must match.
+$a = new ListArray([1, 2, 2, 3]);
+$b = new ListArray([1, 1, 2, 3]);
+$a->equalsUnordered($b);              // false — different multiset
+```
+
 `FixedSizeArray::tryFrom` and `FixedSizeArray::nullable` throw `\LogicException` — the required `$size` parameter cannot be satisfied through these factories. Use `new FixedSizeArray($values, $size)` or `$existing->withValues($values)` instead.
 
 ### Implemented Interfaces
@@ -188,7 +209,7 @@ Every strong type implements a small, stable set of standard interfaces so it ca
 | --- | --- | --- |
 | `\Stringable` | All types | `__toString()` — cast any strong type to `string` (integers/floats/bools use `strval`; strings pass through; arrays and datetimes JSON-encode). |
 | `\JsonSerializable` | All types | `jsonSerialize()` — `json_encode($value)` produces the underlying scalar/array. |
-| `\StrongType\HasEquals` | All types | `equals(HasEquals $other): bool` — strict structural equality. Lets generic code (e.g. `Nullable`) compare two strong-type instances without knowing the concrete type. Type-hint against `HasEquals` when you want to accept "any strong type" in a signature. |
+| `\StrongType\HasEquals` | All types and `Nullable` | `equals(HasEquals $other): bool` — strict structural equality. Lets generic code compare two strong-type instances without knowing the concrete type. Type-hint against `HasEquals` when you want to accept "any strong type" (including a `Nullable`) in a signature. |
 | `\Countable` | `ArrayType` only | `count($arr)` returns the element count. |
 | `\IteratorAggregate` | `ArrayType` only | `foreach ($arr as $key => $value) { ... }` iterates the underlying values, preserving original keys (via `\ArrayIterator`). |
 

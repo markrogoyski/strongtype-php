@@ -106,6 +106,38 @@ abstract class ArrayType implements \JsonSerializable, \Countable, \IteratorAggr
         return $this->values === $other->values;
     }
 
+    /**
+     * Type-strict equality that ignores order and keys at the top level.
+     *
+     * Both arrays must contain the same multiset of values (each value the same number of times),
+     * compared with strict equality. Nested arrays are compared as-is, so element ordering inside
+     * nested structures still matters. Use {@see equals()} when key/order significance is required.
+     */
+    public function equalsUnordered(HasEquals $other): bool
+    {
+        if (!$other instanceof self || $other::class !== static::class) {
+            return false;
+        }
+        if (\count($this->values) !== \count($other->values)) {
+            return false;
+        }
+        $remaining = \array_values($other->values);
+        foreach ($this->values as $value) {
+            $found = false;
+            foreach ($remaining as $index => $candidate) {
+                if ($candidate === $value) {
+                    unset($remaining[$index]);
+                    $found = true;
+                    break;
+                }
+            }
+            if (!$found) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public static function nullable(mixed $value): \StrongType\Nullable
     {
         return new \StrongType\Nullable(static::class, $value);

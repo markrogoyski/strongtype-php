@@ -62,4 +62,21 @@ class AssociativeArrayTest extends \PHPUnit\Framework\TestCase
             [[1, 2, 3]],
         ];
     }
+
+    /**
+     * Locks in that Nonempty fires before IsAssociative on [], so users get the
+     * "must not be empty" message rather than "must be an associative array".
+     * Both constraints have priority 50; this test guards against a future
+     * priority change silently swapping the message.
+     */
+    #[Test]
+    public function testEmptyArrayProducesNonemptyMessage()
+    {
+        // Then
+        $this->expectException(StrongTypeException::class);
+        $this->expectExceptionMessage('AssociativeArray type must not be empty');
+
+        // When
+        new AssociativeArray([]);
+    }
 }
