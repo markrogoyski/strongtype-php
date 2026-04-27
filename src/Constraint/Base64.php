@@ -10,10 +10,22 @@ final readonly class Base64 implements ConstraintInterface
     #[\Override]
     public function validate(mixed $value, string $className): ?string
     {
-        $short = \substr($className, (int) \strrpos($className, '\\') + 1);
+        if (!\is_string($value)) {
+            return null;
+        }
 
-        if (\is_string($value) && !\preg_match('/^[A-Za-z0-9+\/]*={0,2}$/', $value)) {
-            return "{$short} type must be valid base64, got {$value}";
+        $short = \substr($className, (int) \strrpos($className, '\\') + 1);
+        $error = "{$short} type must be valid base64, got {$value}";
+
+        // Canonical RFC 4648 §4: standard alphabet, length is a multiple of 4,
+        // 0–2 padding chars at the end only. Base64URL alphabet (-/_) is rejected.
+        if (\preg_match('#\A(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?\z#', $value) !== 1) {
+            return $error;
+        }
+
+        $decoded = \base64_decode($value, true);
+        if ($decoded === false || \base64_encode($decoded) !== $value) {
+            return $error;
         }
 
         return null;

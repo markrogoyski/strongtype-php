@@ -271,14 +271,26 @@ class StringConstraintsTest extends \PHPUnit\Framework\TestCase
 
     public static function dataProviderForValidBase64(): array
     {
-        return [['SGVsbG8='], ['dGVzdA=='], ['YQ=='], ['abc']];
+        return [['SGVsbG8='], ['dGVzdA=='], ['YQ=='], ['YWJj']];
     }
 
     #[Test]
-    public function testBase64Rejects()
+    #[DataProvider('dataProviderForInvalidBase64')]
+    public function testBase64Rejects(string $value)
     {
         $this->expectException(StrongTypeException::class);
-        new Base64TestStr('not valid base64!!!');
+        new Base64TestStr($value);
+    }
+
+    public static function dataProviderForInvalidBase64(): array
+    {
+        return [
+            ['not valid base64!!!'],
+            ['abc'],
+            ['YWJjZA'],
+            ['Pz8-Pz8_'],
+            ['YQ== '],
+        ];
     }
 
     // Email

@@ -53,11 +53,15 @@ class Base64StringTest extends \PHPUnit\Framework\TestCase
     public static function dataProviderForValidValues(): array
     {
         return [
-            ['aGVsbG8='],
-            ['dGVzdA=='],
-            ['YWJj'],
-            ['AQID'],
-            ['dGVzdGluZzEyMw=='],
+            'one byte (a)'        => ['YQ=='],
+            'two bytes (ab)'      => ['YWI='],
+            'three bytes (abc)'   => ['YWJj'],
+            'four bytes (abcd)'   => ['YWJjZA=='],
+            'hello'               => ['aGVsbG8='],
+            'test'                => ['dGVzdA=='],
+            'longer'              => ['dGVzdGluZzEyMw=='],
+            'binary 0x01 0x02 0x03' => ['AQID'],
+            'plus and slash chars'  => ['Pz8/Pz8/'],
         ];
     }
 
@@ -121,12 +125,28 @@ class Base64StringTest extends \PHPUnit\Framework\TestCase
     public static function dataProviderForInvalidValues(): array
     {
         return [
-            [''],
-            ['not base64!'],
-            ['hello world'],
-            ['abc@def'],
-            ['==='],
-            ['aGVsbG8=extra!'],
+            'empty (rejected by Nonempty)'   => [''],
+            'random punctuation'             => ['not base64!'],
+            'sentence'                       => ['hello world'],
+            'non-alphabet (@)'               => ['abc@def'],
+            'three pad only'                 => ['==='],
+            'four pad only'                  => ['===='],
+            'extra chars after padding'      => ['aGVsbG8=extra!'],
+            'single char unpadded'           => ['A'],
+            'two chars unpadded'             => ['AA'],
+            'three chars unpadded'           => ['AAA'],
+            'six chars unpadded'             => ['YWJjZA'],
+            'wrong padding for 1-byte'       => ['A='],
+            'too few padding chars'          => ['YQ='],
+            'leading equals'                 => ['=YQ=='],
+            'embedded whitespace'            => ['YQ =='],
+            'leading space'                  => [' YQ=='],
+            'trailing space'                 => ['YQ== '],
+            'embedded newline'               => ["YQ\n=="],
+            'trailing newline'               => ["YQ==\n"],
+            'base64url dash'                 => ['Pz8-Pz8_'],
+            'base64url underscore'           => ['YQ__'],
+            'padding in middle'              => ['YQ==YQ=='],
         ];
     }
 }

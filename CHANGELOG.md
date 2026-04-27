@@ -48,6 +48,10 @@ This release introduces the attribute-based constraint composition system, a lar
 - Strings: `Ipv4AddressString`, `Ipv6AddressString`, `CidrString`, `MacAddressString`, `JwtString`, `PhoneE164String`, `CountryCodeAlpha2String`, `CountryCodeAlpha3String`, `CurrencyCodeString`, `LanguageCodeString`, `MimeTypeString`, `Rfc3339DateTimeString`.
 - Arrays: `ListArray`, `AssociativeArray`.
 
+### Fixed
+
+- `Base64` constraint and `Base64String` now enforce canonical, padded standard Base64 (RFC 4648 §4). The previous regex-only check accepted shape-only strings such as `"A"`, `"AAA"`, `"A="`, `"==="`, and unpadded forms like `"YWJjZA"`. Validation now requires the length to be a multiple of 4 with 0–2 trailing `=` pad characters, the value to decode under `base64_decode($v, strict: true)`, and a re-encode round-trip equal to the input. Base64URL alphabet (`-`, `_`) is rejected. **Behavior change:** values previously accepted under the lax regex but not canonical Base64 will now throw `StrongTypeException`.
+
 ### Changed
 
 - Existing `Int`, `Float`, `String`, `Array`, `Bool`, and `DateTime` types are now defined declaratively via constraint attributes instead of hand-written constructor checks. A small set of types intentionally keeps manual constructors and is documented in `CLAUDE.md`: `EmptyString` (default param), `FixedSizeArray` (runtime `$size`), `TrueValue` / `FalseValue` (PHP `true` / `false` literal types), `Timestamp` / `FutureTimestamp` / `PastTimestamp`, `DateString`, `TimeString`.

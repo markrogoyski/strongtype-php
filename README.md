@@ -72,7 +72,7 @@ Float subtypes reject `INF`, `-INF`, and `NAN` by default (via the inherited `#[
 | `NumericString` | `ctype_digit` | Numeric digits only |
 | `BinaryString` | `[01]+` | Binary digit string |
 | `HexString` | `ctype_xdigit` | Hexadecimal digits only |
-| `Base64String` | Base64 charset | Valid base64 encoding |
+| `Base64String` | Canonical Base64 (RFC 4648 §4) | Padded, standard alphabet only; Base64URL rejected |
 | `JsonString` | `json_validate` | Valid JSON |
 | `EmailString` | `FILTER_VALIDATE_EMAIL` | Valid email address |
 | `UrlString` | `FILTER_VALIDATE_URL` | Valid URL |
@@ -392,7 +392,7 @@ class UniqueIdList extends ArrayType {}
 | `HexDigits` | none | `ctype_xdigit` |
 | `Lowercase` | none | `ctype_lower` |
 | `Uppercase` | none | `ctype_upper` |
-| `Base64` | none | Valid base64 charset and padding |
+| `Base64` | none | Canonical standard Base64 (RFC 4648 §4, padded); Base64URL alphabet (`-`, `_`) is rejected |
 | `Email` | none | `filter_var(FILTER_VALIDATE_EMAIL)` |
 | `Url` | none | `filter_var(FILTER_VALIDATE_URL)` |
 | `IpAddress` | none | `filter_var(FILTER_VALIDATE_IP)` |
