@@ -9,6 +9,9 @@ final readonly class DivisibleBy implements ConstraintInterface
 {
     public function __construct(private int $divisor)
     {
+        if ($divisor === 0) {
+            throw new \LogicException('DivisibleBy: divisor must not be zero');
+        }
     }
 
     #[\Override]

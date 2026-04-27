@@ -9,6 +9,9 @@ final readonly class MinCount implements ConstraintInterface
 {
     public function __construct(private int $minCount)
     {
+        if ($minCount < 0) {
+            throw new \LogicException("MinCount: count must be >= 0, got {$minCount}");
+        }
     }
 
     #[\Override]

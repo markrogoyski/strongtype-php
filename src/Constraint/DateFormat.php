@@ -9,6 +9,9 @@ final readonly class DateFormat implements ConstraintInterface
 {
     public function __construct(private string $format)
     {
+        if ($format === '') {
+            throw new \LogicException('DateFormat: format must not be empty');
+        }
     }
 
     #[\Override]

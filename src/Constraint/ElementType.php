@@ -7,8 +7,17 @@ namespace StrongType\Constraint;
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final readonly class ElementType implements ConstraintInterface
 {
+    private const BUILTINS = ['string', 'int', 'float', 'bool', 'array', 'object', 'callable', 'resource', 'iterable'];
+
     public function __construct(private string $type)
     {
+        if (\in_array($type, self::BUILTINS, strict: true)) {
+            return;
+        }
+        if (\class_exists($type) || \interface_exists($type)) {
+            return;
+        }
+        throw new \LogicException("ElementType: type must be one of [" . \implode(', ', self::BUILTINS) . "] or a class/interface name, got '{$type}'");
     }
 
     #[\Override]

@@ -80,6 +80,10 @@ User subclasses with divergent constructors must follow the same pattern: overri
 - Priority bands: 50 (range/size), 60 (content), 100 (format), 150 (semantic), 200+ (custom).
 - Attributes use `\Attribute::TARGET_CLASS`. `Pattern` is `IS_REPEATABLE`.
 
+### Constraint Constructor Invariants
+
+Constraints with constructor parameters fail fast with `\LogicException` for impossible configurations: `DivisibleBy` rejects divisor 0; `MinLength`/`MaxLength`/`MinCount`/`MaxCount`/`ExactCount` reject negative bounds; `Pattern`/`NotPattern` reject regexes that fail to compile; `ElementType` rejects strings that are neither one of the locked builtin set (`string`, `int`, `float`, `bool`, `array`, `object`, `callable`, `resource`, `iterable`) nor an existing class/interface; `InRange` rejects `min > max` and equal bounds with an exclusive flag; `InList` rejects an empty allowed set; `DateFormat` rejects an empty format string. These are surfaced when the constraint is instantiated — for attribute-driven types that means the first time `ReflectionAttribute::newInstance()` runs in `ConstraintValidator::resolveConstraints()` (i.e. the first construction of a value of the affected class), not at PHP class-load time.
+
 ### Standard Interfaces
 
 All types implement `\Stringable`, `\JsonSerializable`, and `\StrongType\HasEquals`. `ArrayType` additionally implements `\Countable` and `\IteratorAggregate`. Type-hint against `HasEquals` to accept "any strong type" generically.

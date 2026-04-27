@@ -9,6 +9,9 @@ final readonly class MinLength implements ConstraintInterface
 {
     public function __construct(private int $minLength)
     {
+        if ($minLength < 0) {
+            throw new \LogicException("MinLength: length must be >= 0, got {$minLength}");
+        }
     }
 
     #[\Override]

@@ -10,6 +10,9 @@ final readonly class Pattern implements ConstraintInterface
     /** @param non-empty-string $pattern */
     public function __construct(private string $pattern)
     {
+        if (@\preg_match($pattern, '') === false) {
+            throw new \LogicException("Pattern: invalid regex pattern: {$pattern}");
+        }
     }
 
     #[\Override]

@@ -571,6 +571,29 @@ new CreditCardNumber('1234567890123456'); // StrongTypeException -- fails Luhn
 
 No registration step -- the validator automatically discovers any attribute implementing `ConstraintInterface`.
 
+### Constraint Constructor Invariants
+
+Built-in constraints fail fast with `\LogicException` when configured impossibly — these are programmer errors, not validation failures, and surface during attribute instantiation (the first time a typed value of the affected class is constructed), not at PHP class-load time.
+
+| Constraint                        | Invariant                                       |
+| --------------------------------- | ----------------------------------------------- |
+| `DivisibleBy`                     | divisor must not be zero                        |
+| `MinLength`, `MaxLength`          | length must be `>= 0`                           |
+| `MinCount`, `MaxCount`, `ExactCount` | count must be `>= 0`                         |
+| `Pattern`, `NotPattern`           | regex must compile                              |
+| `ElementType`                     | type must be a builtin (`string`, `int`, `float`, `bool`, `array`, `object`, `callable`, `resource`, `iterable`) or an existing class/interface name |
+| `InRange`                         | `min <= max`; if equal, no exclusive flag       |
+| `InList`                          | at least one allowed value                      |
+| `DateFormat`                      | format string must be non-empty                 |
+
+```php
+new MinLength(-1);            // \LogicException
+new DivisibleBy(0);           // \LogicException
+new Pattern('not-a-regex');   // \LogicException
+new ElementType('integer');   // \LogicException -- 'integer' is a PHP type alias, not a builtin name
+new InRange(100, 1);          // \LogicException
+```
+
 ## Examples
 
 ### Domain Modeling

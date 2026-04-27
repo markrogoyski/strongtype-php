@@ -9,6 +9,9 @@ final readonly class ExactCount implements ConstraintInterface
 {
     public function __construct(private int $count)
     {
+        if ($count < 0) {
+            throw new \LogicException("ExactCount: count must be >= 0, got {$count}");
+        }
     }
 
     #[\Override]
