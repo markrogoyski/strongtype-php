@@ -51,6 +51,7 @@ This release introduces the attribute-based constraint composition system, a lar
 ### Fixed
 
 - `Base64` constraint and `Base64String` now enforce canonical, padded standard Base64 (RFC 4648 §4). The previous regex-only check accepted shape-only strings such as `"A"`, `"AAA"`, `"A="`, `"==="`, and unpadded forms like `"YWJjZA"`. Validation now requires the length to be a multiple of 4 with 0–2 trailing `=` pad characters, the value to decode under `base64_decode($v, strict: true)`, and a re-encode round-trip equal to the input. Base64URL alphabet (`-`, `_`) is rejected. **Behavior change:** values previously accepted under the lax regex but not canonical Base64 will now throw `StrongTypeException`.
+- `SemverString` is now SemVer 2.0.0 spec compliant. The previous regex incorrectly **rejected** valid versions whose pre-release identifiers contained hyphens (e.g. `1.0.0-alpha-1`, `1.0.0-x.7.z.92`) and incorrectly **accepted** invalid versions with leading-zero numeric pre-release identifiers (e.g. `1.0.0-01`). The pattern is now derived from the official semver.org BNF and is anchored with `\A...\z` so trailing whitespace, tabs, or newlines (which PHP's `$` would otherwise tolerate before a final `\n`) are rejected. **Behavior change in both directions:** previously rejected valid SemVer strings now construct successfully, and previously accepted invalid strings now throw `StrongTypeException`.
 
 ### Changed
 

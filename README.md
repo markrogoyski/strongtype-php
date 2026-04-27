@@ -90,7 +90,7 @@ Float subtypes reject `INF`, `-INF`, and `NAN` by default (via the inherited `#[
 | `LanguageCodeString` | `[a-z]{2}` | ISO 639-1 format (format only) |
 | `MimeTypeString` | RFC 6838 | `type/subtype` restricted-name format |
 | `SlugString` | Slug pattern | `lowercase-words-with-dashes` |
-| `SemverString` | Semver pattern | `MAJOR.MINOR.PATCH[-prerelease][+build]` |
+| `SemverString` | SemVer 2.0.0 | `MAJOR.MINOR.PATCH[-prerelease][+build]` per [semver.org](https://semver.org/) spec |
 | `HexColorString` | Hex color pattern | `#RGB` or `#RRGGBB` |
 | `ClassString` | `class_exists` | Existing class, interface, or enum |
 | `DateTimeString` | `DateTimeImmutable` | Parseable date/time string |

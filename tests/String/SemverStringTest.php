@@ -53,11 +53,17 @@ class SemverStringTest extends \PHPUnit\Framework\TestCase
     public static function dataProviderForValidValues(): array
     {
         return [
-            ['0.0.0'],
             ['1.0.0'],
-            ['1.2.3'],
+            ['0.0.0'],
+            ['1.2.3-alpha'],
+            ['1.2.3-alpha-1'],
+            ['1.2.3-alpha.1'],
+            ['1.2.3-0.3.7'],
+            ['1.2.3+build'],
+            ['1.2.3-alpha+exp.sha.5114f85'],
+            ['1.0.0-x.7.z.92'],
             ['10.20.30'],
-            ['1.0.0-alpha'],
+            ['1.2.3'],
             ['1.0.0-alpha.1'],
             ['1.0.0+build'],
             ['1.0.0+build.123'],
@@ -133,11 +139,19 @@ class SemverStringTest extends \PHPUnit\Framework\TestCase
             ['1.0.0.0'],
             ['v1.0.0'],
             ['01.0.0'],
+            ['1.01.0'],
             ['1.02.0'],
             ['1.0.03'],
+            ['1.0.0-01'],
             ['abc'],
             ['1.0.0-'],
             ['1.0.0+'],
+            ['1.0.0-alpha_1'],
+            [' 1.0.0'],
+            ['1.0.0 '],
+            ["1.0.0\t"],
+            ["1.0.0\n"],
+            ["1.0.0\r\n"],
         ];
     }
 }
