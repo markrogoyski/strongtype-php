@@ -136,10 +136,10 @@ class NullableTest extends \PHPUnit\Framework\TestCase
     }
 
     #[Test]
-    public function testInvalidTypeThrowsException()
+    public function testInvalidTypeThrowsLogicException()
     {
         // Then
-        $this->expectException(StrongTypeException::class);
+        $this->expectException(\LogicException::class);
 
         // When
         $nullable = new Nullable('NonExistentClass', 5);

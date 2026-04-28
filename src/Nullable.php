@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace StrongType;
 
-use StrongType\Exception\StrongTypeException;
-
 readonly class Nullable implements \JsonSerializable, \Stringable, HasEquals
 {
     private (\JsonSerializable&\Stringable&HasEquals)|null $strongType;
@@ -18,10 +16,10 @@ readonly class Nullable implements \JsonSerializable, \Stringable, HasEquals
         mixed $value,
     ) {
         if (!\is_subclass_of($this->type, HasEquals::class) || !\is_subclass_of($this->type, \JsonSerializable::class)) {
-            throw new StrongTypeException("Nullable type must reference a valid StrongType class, got {$this->type}");
+            throw new \LogicException("Nullable type must reference a valid StrongType class, got {$this->type}");
         }
         if ((new \ReflectionClass($this->type))->isAbstract()) {
-            throw new StrongTypeException("Nullable type must reference a concrete StrongType class, got abstract {$this->type}");
+            throw new \LogicException("Nullable type must reference a concrete StrongType class, got abstract {$this->type}");
         }
         if ($value === null) {
             $this->strongType = null;

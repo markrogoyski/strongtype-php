@@ -16,7 +16,7 @@ This release introduces the attribute-based constraint composition system, a lar
 - **`ArrayType::equals` is order-sensitive for keys.** Insertion order is considered part of the value, so `['a' => 1, 'b' => 2]` is not equal to `['b' => 2, 'a' => 1]`.
 - **`FloatingPoint::tryFrom` widens `int` to `float`.** This mirrors PHP's native int-to-float parameter widening. `tryFrom` on every other base class remains strict: `tryFrom('5')` returns `null`, not a coerced instance.
 - **All six base classes now implement the new `StrongType\HasEquals` interface.** Their `equals()` parameter type widens from `self` to `HasEquals`, which is a contravariant change. User subclasses that override `equals()` with a narrower parameter type must widen to match.
-- **`Nullable` validates the wrapped type before looking at the value.** The constructor now throws `StrongTypeException` if the `$type` argument is not a concrete class implementing `StrongType\HasEquals` and `\JsonSerializable`. Previously, `new Nullable(SomeAbstract::class, null)` or `new Nullable(NotAStrongType::class, null)` succeeded silently when the value was `null`; now they fail fast. Callers wrapping external `\JsonSerializable&\Stringable` classes that do not implement `HasEquals` will need to adopt `HasEquals` (or wrap in a `StrongType` subclass).
+- **`Nullable` validates the wrapped type before looking at the value.** The constructor now throws `\LogicException` if the `$type` argument is not a concrete class implementing `StrongType\HasEquals` and `\JsonSerializable`. Previously, `new Nullable(SomeAbstract::class, null)` or `new Nullable(NotAStrongType::class, null)` succeeded silently when the value was `null`; now they fail fast. The throw is `\LogicException` rather than `StrongTypeException` because passing the wrong `class-string` is a programmer error at the API boundary, not a value-validation failure. Callers wrapping external `\JsonSerializable&\Stringable` classes that do not implement `HasEquals` will need to adopt `HasEquals` (or wrap in a `StrongType` subclass).
 
 ### Added
 
@@ -31,6 +31,12 @@ This release introduces the attribute-based constraint composition system, a lar
 - `nullable(mixed $value): Nullable` convenience factory on all six bases.
 - `withValues(array $values): static` on `ArrayType`.
 - `StrongType\HasEquals` interface — implemented by every base class and by `Nullable`.
+
+#### Exception subclasses
+- `StrongType\Exception\ConstraintViolationException extends StrongTypeException` — thrown by `ConstraintValidator::validate()` for every attribute-driven validation failure. Lets callers distinguish constraint failures from other `StrongTypeException` subtypes without parsing messages.
+- `StrongType\Exception\FormatException extends StrongTypeException` — thrown by the hand-rolled parsers in `DateString` and `TimeString` when the input does not match the expected `YYYY-MM-DD` / `HH:MM:SS` shape (or, for `DateString`, fails the calendar-validity check). Distinguishes parse-shape failures from other validation failures.
+
+Both subclasses extend `StrongTypeException`, so existing `catch (StrongTypeException $e)` blocks continue to catch every validation failure unchanged. This change is non-breaking for that pattern; callers that want to react specifically to a constraint violation or a format-parse failure can now catch the subclass directly. PHP `\TypeError` from constructor parameter type hints (e.g. `new PositiveInt('5')`) and `tryFrom()` returning `null` for type-mismatched input remain unchanged.
 
 #### Constraints
 - `Finite` — rejects `INF`, `-INF`, `NAN`.

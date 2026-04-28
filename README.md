@@ -281,6 +281,45 @@ try {
 }
 ```
 
+### Error Handling
+
+`StrongType\Exception\StrongTypeException` is the umbrella for all validation failures and remains the right type to catch when you want to handle any invalid value uniformly. It has two subclasses for code that wants to distinguish between failure modes:
+
+| Failure mode | Result |
+| --- | --- |
+| Constructor argument type mismatch (e.g. `new PositiveInt('5')`) | PHP `\TypeError` |
+| `tryFrom()` with a type-mismatched argument | returns `null` |
+| Constraint attribute fails during validation | `ConstraintViolationException` |
+| Manual parse fails in `DateString` / `TimeString` | `FormatException` |
+
+Both `ConstraintViolationException` and `FormatException` extend `StrongTypeException`, so existing `catch (StrongTypeException $e)` blocks continue to catch every validation failure. Catch a subclass when you want to react specifically to a constraint violation or a format-parse failure:
+
+```php
+use StrongType\DateTime\DateString;
+use StrongType\Exception\ConstraintViolationException;
+use StrongType\Exception\FormatException;
+use StrongType\Exception\StrongTypeException;
+use StrongType\Int\PositiveInt;
+
+try {
+    new PositiveInt(-1);
+} catch (ConstraintViolationException $e) {
+    // Constraint attribute rejected the value.
+}
+
+try {
+    new DateString('not-a-date');
+} catch (FormatException $e) {
+    // Hand-rolled parser rejected the string shape.
+}
+
+try {
+    new PositiveInt(-1);
+} catch (StrongTypeException $e) {
+    // Catches both subclasses.
+}
+```
+
 ### Type Hints in Your Code
 
 StrongTypes shine as parameter and return types:
@@ -657,7 +696,7 @@ readonly class DisplayName extends NonemptyString {}
 The constraint system uses PHP 8 attributes and reflection:
 
 1. **At first instantiation** of a type, `ConstraintValidator` reads all `ConstraintInterface` attributes from the class and its parents via reflection, sorts them by priority, and caches the result.
-2. **On every instantiation**, it iterates the cached constraint list and calls `validate()` on each. The first failure throws `StrongTypeException`.
+2. **On every instantiation**, it iterates the cached constraint list and calls `validate()` on each. The first failure throws `ConstraintViolationException` (a `StrongTypeException` subclass).
 3. **Subsequent instantiations** skip reflection entirely -- it's a hash lookup plus iterating a small array.
 
 Existing types with manual constructors continue to work unchanged. The validator is a no-op for classes with no constraint attributes.

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace StrongType\Constraint;
 
-use StrongType\Exception\StrongTypeException;
+use StrongType\Exception\ConstraintViolationException;
 
 final class ConstraintValidator
 {
@@ -22,7 +22,7 @@ final class ConstraintValidator
         foreach (self::$cache[$class] as $constraint) {
             $error = $constraint->validate($value, $class);
             if ($error !== null) {
-                throw new StrongTypeException($error);
+                throw new ConstraintViolationException($error);
             }
         }
     }
