@@ -149,6 +149,42 @@ class StringConstraintsTest extends \PHPUnit\Framework\TestCase
         new MaxLenTestStr('abcdef');
     }
 
+    // MinLength / MaxLength count bytes, not Unicode characters.
+    // 'é' is one character but two bytes in UTF-8.
+
+    #[Test]
+    public function testMinLengthCountsBytesNotCharacters()
+    {
+        // Given: 'éé' is two characters but four bytes — passes MinLength(3).
+        // When
+        $obj = new MinLenTestStr('éé');
+
+        // Then
+        $this->assertSame('éé', $obj->value);
+    }
+
+    #[Test]
+    public function testMinLengthRejectsByByteCount()
+    {
+        // Given: 'é' is one character but two bytes — fails MinLength(3).
+        // Then
+        $this->expectException(StrongTypeException::class);
+
+        // When
+        new MinLenTestStr('é');
+    }
+
+    #[Test]
+    public function testMaxLengthRejectsByByteCount()
+    {
+        // Given: 'ééé' is three characters but six bytes — fails MaxLength(5).
+        // Then
+        $this->expectException(StrongTypeException::class);
+
+        // When
+        new MaxLenTestStr('ééé');
+    }
+
     // Pattern
     #[Test]
     public function testPatternAccepts()

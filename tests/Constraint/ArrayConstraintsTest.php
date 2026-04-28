@@ -40,6 +40,9 @@ use PHPUnit\Framework\Attributes\Test;
 #[ElementType('string')] class StringElementTestArr extends ArrayType
 {
 }
+#[ElementType('array')] class ArrayElementTestArr extends ArrayType
+{
+}
 
 class ArrayConstraintsTest extends \PHPUnit\Framework\TestCase
 {
@@ -174,5 +177,21 @@ class ArrayConstraintsTest extends \PHPUnit\Framework\TestCase
     {
         $arr = new IntElementTestArr([]);
         $this->assertSame([], $arr->values);
+    }
+
+    #[Test]
+    public function testElementTypeIsShallowAndDoesNotRecurseIntoNestedArrays()
+    {
+        // Given: ElementType validates only the direct (top-level) children.
+        // It does not recurse — mixed-type contents inside nested arrays are
+        // not inspected. To validate nested element types, wrap the inner
+        // arrays in their own strong type.
+        $mixedNestedContents = [[1, 'two', 3.0], ['a', null, true], []];
+
+        // When
+        $arr = new ArrayElementTestArr($mixedNestedContents);
+
+        // Then
+        $this->assertSame($mixedNestedContents, $arr->values);
     }
 }

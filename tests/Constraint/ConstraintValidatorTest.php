@@ -102,6 +102,54 @@ readonly class CollisionTestInt extends Integer
 {
 }
 
+// Constraint fixtures for the short-circuit test: the lower-priority constraint
+// always fails, the higher-priority constraint records its invocation. If
+// validation is short-circuiting at the first failure, the second never runs.
+final class ShortCircuitTracker
+{
+    /** @var list<string> */
+    public static array $log = [];
+}
+
+#[\Attribute(\Attribute::TARGET_CLASS)]
+final readonly class FailingFirstConstraint implements ConstraintInterface
+{
+    #[\Override]
+    public function validate(mixed $value, string $className): ?string
+    {
+        ShortCircuitTracker::$log[] = 'first';
+        return 'first failed';
+    }
+
+    #[\Override]
+    public function priority(): int
+    {
+        return 50;
+    }
+}
+
+#[\Attribute(\Attribute::TARGET_CLASS)]
+final readonly class RecordingSecondConstraint implements ConstraintInterface
+{
+    #[\Override]
+    public function validate(mixed $value, string $className): ?string
+    {
+        ShortCircuitTracker::$log[] = 'second';
+        return null;
+    }
+
+    #[\Override]
+    public function priority(): int
+    {
+        return 100;
+    }
+}
+
+#[FailingFirstConstraint, RecordingSecondConstraint]
+readonly class ShortCircuitTestInt extends Integer
+{
+}
+
 class ConstraintValidatorTest extends \PHPUnit\Framework\TestCase
 {
     #[Test]
@@ -251,5 +299,24 @@ class ConstraintValidatorTest extends \PHPUnit\Framework\TestCase
         $this->assertContains('A', PriorityCollisionTracker::$log);
         $this->assertContains('B', PriorityCollisionTracker::$log);
         $this->assertCount(2, PriorityCollisionTracker::$log);
+    }
+
+    #[Test]
+    public function testValidationStopsAtFirstFailingConstraint()
+    {
+        // Given: two constraints — first (priority 50) always fails, second
+        // (priority 100) records its invocation. Validation should short-circuit
+        // on the first failure and never invoke the second.
+        ShortCircuitTracker::$log = [];
+
+        // Then
+        $this->expectException(StrongTypeException::class);
+
+        // When
+        try {
+            new ShortCircuitTestInt(0);
+        } finally {
+            $this->assertSame(['first'], ShortCircuitTracker::$log);
+        }
     }
 }

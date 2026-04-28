@@ -69,6 +69,7 @@ Both subclasses extend `StrongTypeException`, so existing `catch (StrongTypeExce
 ### Documentation
 
 - README: clarified that `Nullable` requires a concrete StrongType class and that the type is validated even when the wrapped value is `null`.
+- README: new "Scope and Semantics" section documenting cross-cutting policy — format-vs-registry validation for ISO/MIME types, byte-not-Unicode length counting in `MinLength`/`MaxLength`, first-failure short-circuit during validation, type-strict equality semantics (and `ArrayType` key/order sensitivity), shallow `ElementType` validation that does not recurse into nested arrays, and the validate-at-boundaries immutability model. Adds backing tests for previously undertested claims: byte-length semantics for `MinLength`/`MaxLength` against multibyte input, short-circuit halt at the first failing constraint, and `ElementType('array')` not recursing into nested array contents.
 - New `CLAUDE.md` documents source layout, the constraint system, the consistent-constructor contract, naming and namespace conventions, and the test layout.
 
 ### Notes on scope
