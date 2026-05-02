@@ -4,10 +4,32 @@ Strongly typed values for PHP -- validate once at construction, trust everywhere
 
 StrongType provides a library of ready-to-use typed value objects (integers, floats, strings, arrays, booleans, datetimes) and an **attribute-based constraint composition system** that lets you define new validated types declaratively -- no constructor boilerplate needed.
 
-```php
-use StrongType\Constraint\{Min, Max, Nonempty, Pattern, MaxLength, Unique, ElementType};
+Use the built-in types directly as parameter and return type hints:
 
-// Define custom types with stacked attributes -- no constructor needed
+```php
+use StrongType\Int\PortNumber;
+use StrongType\String\{EmailString, UuidString};
+
+function sendWelcome(EmailString $to, UuidString $userId, PortNumber $smtpPort): void
+{
+    // Inside this function, every value is already validated -- no defensive checks needed.
+}
+
+sendWelcome(
+    new EmailString('alice@example.com'),
+    new UuidString('550e8400-e29b-41d4-a716-446655440000'),
+    new PortNumber(587),
+);
+
+new EmailString('not-an-email'); // StrongTypeException
+new PortNumber(0);               // StrongTypeException: "PortNumber type must be >= 1, got 0"
+```
+
+When you need a type the library doesn't ship, compose one with stacked attributes:
+
+```php
+use StrongType\Constraint\{Min, Max, Nonempty, Pattern, Unique, ElementType};
+
 #[Min(1), Max(65535)]
 readonly class Port extends \StrongType\Int\Integer {}
 
@@ -17,7 +39,6 @@ readonly class Username extends \StrongType\String\StringType {}
 #[Nonempty, Unique, ElementType('int')]
 class WatcherUserIds extends \StrongType\Arrays\ArrayType {}
 
-// Use them -- invalid values throw StrongTypeException
 $port = new Port(8080);           // OK
 $port = new Port(0);              // StrongTypeException: "Port type must be >= 1, got 0"
 
