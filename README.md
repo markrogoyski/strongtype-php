@@ -469,6 +469,12 @@ The `ElementType` attribute accepts: `'string'`, `'int'`, `'float'`, `'bool'`, `
 | `InFuture` | none | `> time()` (for integer timestamps) |
 | `InPast` | none | `< time()` (for integer timestamps) |
 
+#### Enum Constraint
+
+| Attribute | Parameters | Description |
+| --- | --- | --- |
+| `InEnum` | `class-string $enumClass` | Value matches a backing value (for `BackedEnum`) or a case name (for pure `UnitEnum`). Works on `Integer` (for `int`-backed enums) and `StringType` (for `string`-backed or pure enums). See [Wrapping Enums](#wrapping-enums). |
+
 #### Constraint Combinators
 
 | Attribute | Parameters | Description |
@@ -688,6 +694,59 @@ readonly class ScopedUsername extends StringType {}
 
 Combinators with zero children (`new AnyOf()`, `new AllOf()`) throw `\LogicException` at the same site as the other [constraint constructor invariants](#constraint-constructor-invariants).
 
+### Wrapping Enums
+
+`#[InEnum(MyEnum::class)]` constrains a strong type's value to the enum's backing values (for `BackedEnum`) or case names (for pure `UnitEnum`). No `EnumString` / `EnumInt` base class is needed — `InEnum` on a `StringType` or `Integer` subclass is sufficient:
+
+```php
+use StrongType\Constraint\InEnum;
+use StrongType\String\StringType;
+
+enum Status: string
+{
+    case Active   = 'active';
+    case Inactive = 'inactive';
+    case Pending  = 'pending';
+}
+
+#[InEnum(Status::class)]
+readonly class StatusCode extends StringType {}
+
+new StatusCode('active');   // OK
+new StatusCode('Active');   // StrongTypeException -- case-sensitive backing-value match
+new StatusCode('archived'); // StrongTypeException -- not a Status backing value
+
+// Hand the validated value back to the enum when you need the case object.
+$status = Status::from((new StatusCode('pending'))->value);
+```
+
+Int-backed and pure (non-backed) enums work the same way:
+
+```php
+use StrongType\Constraint\InEnum;
+use StrongType\Int\Integer;
+use StrongType\String\StringType;
+
+enum Priority: int { case Low = 1; case Medium = 5; case High = 10; }
+
+#[InEnum(Priority::class)]
+readonly class PriorityCode extends Integer {}
+
+new PriorityCode(5);   // OK
+new PriorityCode(2);   // StrongTypeException
+
+enum Color { case Red; case Green; case Blue; }
+
+// Pure enums match by case name (case-sensitive).
+#[InEnum(Color::class)]
+readonly class ColorName extends StringType {}
+
+new ColorName('Red');  // OK
+new ColorName('red');  // StrongTypeException -- case names are case-sensitive
+```
+
+`InEnum` constructed with anything other than an existing enum class — a non-existent class, an interface, or a non-enum class — throws `\LogicException` at the same site as the other [constraint constructor invariants](#constraint-constructor-invariants).
+
 ### Constraint Constructor Invariants
 
 Built-in constraints fail fast with `\LogicException` when configured impossibly — these are programmer errors, not validation failures, and surface during attribute instantiation (the first time a typed value of the affected class is constructed), not at PHP class-load time.
@@ -703,6 +762,7 @@ Built-in constraints fail fast with `\LogicException` when configured impossibly
 | `InList`                          | at least one allowed value                      |
 | `DateFormat`                      | format string must be non-empty                 |
 | `AnyOf`, `AllOf`                  | at least one child constraint                   |
+| `InEnum`                          | class must be an existing enum (`enum_exists`)  |
 
 ```php
 new MinLength(-1);            // \LogicException
