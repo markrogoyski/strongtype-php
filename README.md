@@ -469,6 +469,16 @@ The `ElementType` attribute accepts: `'string'`, `'int'`, `'float'`, `'bool'`, `
 | `InFuture` | none | `> time()` (for integer timestamps) |
 | `InPast` | none | `< time()` (for integer timestamps) |
 
+#### Constraint Combinators
+
+| Attribute | Parameters | Description |
+| --- | --- | --- |
+| `AnyOf` | `ConstraintInterface ...$children` | Passes if at least one child passes; combined error message lists every child failure. See [Composing Constraints](#composing-constraints). |
+| `AllOf` | `ConstraintInterface ...$children` | Passes only if every child passes; first failure wins (verbatim). |
+| `Not` | `ConstraintInterface $child` | Inverts a single child constraint. |
+
+Combinator priority equals the minimum priority of its children, so a combinator wrapping range-band children (priority 50) runs alongside range checks rather than after format checks.
+
 ### Constraint Inheritance
 
 Constraints are inherited through the class hierarchy. Child classes get all parent constraints plus their own:
@@ -514,6 +524,7 @@ Constraints execute in priority order (lower runs first). This ensures range che
 | 60 | Content | Nonblank |
 | 100 | Format | Pattern, Alpha, Alphanumeric, Lowercase, Uppercase, Unique, ElementType, DateFormat, etc. |
 | 150 | Semantic | Email, Url, IpAddress, Json, ClassExists, DateTimeParseable |
+| min(children) | Combinator | `AnyOf`, `AllOf`, `Not` — execute at the lowest priority among their children |
 
 ### Custom Constraints
 
@@ -610,6 +621,73 @@ new CreditCardNumber('1234567890123456'); // StrongTypeException -- fails Luhn
 
 No registration step -- the validator automatically discovers any attribute implementing `ConstraintInterface`.
 
+### Composing Constraints
+
+The `AnyOf`, `AllOf`, and `Not` combinators are themselves constraints, so they compose with every built-in or user-defined `ConstraintInterface` — including each other. Children are passed as constructor arguments using `new`, which PHP allows in attribute argument expressions.
+
+**`AnyOf` — at least one child must pass.** Useful for disjoint-but-valid ranges, alternate formats, or "either of these patterns":
+
+```php
+use StrongType\Constraint\{AnyOf, InRange};
+use StrongType\Int\Integer;
+
+// A port that is either well-known (1–1023) or in the IANA dynamic/private range (49152–65535).
+#[AnyOf(new InRange(1, 1023), new InRange(49152, 65535))]
+readonly class WellKnownOrEphemeralPort extends Integer {}
+
+new WellKnownOrEphemeralPort(80);    // OK
+new WellKnownOrEphemeralPort(50000); // OK
+new WellKnownOrEphemeralPort(8080);  // StrongTypeException -- "must satisfy one of: [...]"
+```
+
+When every child fails, `AnyOf` emits a composite message: `"{Type} type must satisfy one of: [child1msg | child2msg | …]"`.
+
+**`AllOf` — every child must pass.** Children run in **argument order** — `AllOf` does not sort by priority, so the first child you pass is the first child evaluated. This differs from stacking attributes, which run in priority order. Use `AllOf` when you need a single groupable unit you can nest inside `AnyOf` or `Not`, not as a drop-in replacement for stacked attributes:
+
+```php
+use StrongType\Constraint\{AllOf, MinLength, Pattern};
+use StrongType\String\StringType;
+
+#[AllOf(new MinLength(3), new Pattern('/^[a-z]/'))]
+readonly class LowercaseAtLeastThree extends StringType {}
+```
+
+The first failing child wins; its message is returned verbatim. Order the children intentionally: cheaper checks first, or the message you would prefer to surface first.
+
+**`Not` — invert a single child.** Useful for blocklists or "anything but" rules:
+
+```php
+use StrongType\Constraint\{Not, Pattern};
+use StrongType\String\StringType;
+
+// Reject all-uppercase words (likely shouting in user-generated content).
+#[Not(new Pattern('/^[A-Z]+$/'))]
+readonly class NoAllCapsString extends StringType {}
+
+new NoAllCapsString('Hello');  // OK
+new NoAllCapsString('HELLO');  // StrongTypeException -- "must NOT satisfy Pattern"
+```
+
+`Not`'s error message names the inverted constraint by class (`Pattern`, `Email`, etc.) but does not describe the inverted condition in detail.
+
+**Nesting and composition with non-combinator attributes.** Combinators are constraints, so they nest freely and sit alongside ordinary attributes:
+
+```php
+use StrongType\Constraint\{AnyOf, MaxLength, Nonempty, Not, Pattern};
+use StrongType\String\StringType;
+
+// A username scoped to a known prefix, between 1 and 20 chars, that is not all digits.
+#[
+    Nonempty,
+    MaxLength(20),
+    AnyOf(new Pattern('/^user_/'), new Pattern('/^admin_/')),
+    Not(new Pattern('/^\d+$/')),
+]
+readonly class ScopedUsername extends StringType {}
+```
+
+Combinators with zero children (`new AnyOf()`, `new AllOf()`) throw `\LogicException` at the same site as the other [constraint constructor invariants](#constraint-constructor-invariants).
+
 ### Constraint Constructor Invariants
 
 Built-in constraints fail fast with `\LogicException` when configured impossibly — these are programmer errors, not validation failures, and surface during attribute instantiation (the first time a typed value of the affected class is constructed), not at PHP class-load time.
@@ -624,6 +702,7 @@ Built-in constraints fail fast with `\LogicException` when configured impossibly
 | `InRange`                         | `min <= max`; if equal, no exclusive flag       |
 | `InList`                          | at least one allowed value                      |
 | `DateFormat`                      | format string must be non-empty                 |
+| `AnyOf`, `AllOf`                  | at least one child constraint                   |
 
 ```php
 new MinLength(-1);            // \LogicException
