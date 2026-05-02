@@ -15,7 +15,7 @@ readonly class Port extends \StrongType\Int\Integer {}
 readonly class Username extends \StrongType\String\StringType {}
 
 #[Nonempty, Unique, ElementType('int')]
-class UniqueIntSet extends \StrongType\Arrays\ArrayType {}
+class WatcherUserIds extends \StrongType\Arrays\ArrayType {}
 
 // Use them -- invalid values throw StrongTypeException
 $port = new Port(8080);           // OK
@@ -368,8 +368,8 @@ use StrongType\Constraint\{Min, Max, Nonempty, Pattern, MaxLength, Unique, Eleme
 #[Min(1), Max(65535)]
 readonly class Port extends Integer {}
 
-#[Min(100), Max(999)]
-readonly class ThreeDigitCode extends Integer {}
+#[Min(200), Max(999)]
+readonly class AreaCode extends Integer {}
 
 #[Positive]
 readonly class Price extends FloatingPoint {}
@@ -490,19 +490,19 @@ Combinator priority equals the minimum priority of its children, so a combinator
 Constraints are inherited through the class hierarchy. Child classes get all parent constraints plus their own:
 
 ```php
-use StrongType\Constraint\{Min, Max, Even};
+use StrongType\Constraint\{DivisibleBy, Min, Max};
 use StrongType\Int\Integer;
 
 #[Min(1), Max(1000)]
-readonly class BoundedInt extends Integer {}
+readonly class OrderQuantity extends Integer {}
 
-// Inherits Min(1) and Max(1000) from parent, adds Even
-#[Even]
-readonly class EvenBoundedInt extends BoundedInt {}
+// Wholesale ships in dozens. Inherits Min(1) and Max(1000) from OrderQuantity, adds DivisibleBy(12).
+#[DivisibleBy(12)]
+readonly class CasePackQuantity extends OrderQuantity {}
 
-new EvenBoundedInt(42);   // OK -- even and in range
-new EvenBoundedInt(43);   // StrongTypeException -- not even
-new EvenBoundedInt(1001); // StrongTypeException -- exceeds max
+new CasePackQuantity(24);   // OK -- divisible by 12 and in range
+new CasePackQuantity(13);   // StrongTypeException -- not divisible by 12
+new CasePackQuantity(1008); // StrongTypeException -- exceeds Max(1000) (inherited)
 ```
 
 This also works with the built-in types, since they use constraints themselves:
@@ -511,13 +511,13 @@ This also works with the built-in types, since they use constraints themselves:
 use StrongType\Constraint\Max;
 use StrongType\Int\PositiveInt;
 
-// PositiveInt already has #[Positive], so this inherits > 0
+// PositiveInt already has #[Positive], so PageSize inherits > 0
 #[Max(100)]
-readonly class SmallPositiveInt extends PositiveInt {}
+readonly class PageSize extends PositiveInt {}
 
-new SmallPositiveInt(50);  // OK
-new SmallPositiveInt(0);   // StrongTypeException -- not positive (from parent)
-new SmallPositiveInt(101); // StrongTypeException -- exceeds max (from own)
+new PageSize(50);  // OK
+new PageSize(0);   // StrongTypeException -- not positive (inherited from PositiveInt)
+new PageSize(101); // StrongTypeException -- exceeds max (added by PageSize)
 ```
 
 ### Priority Ordering
@@ -654,8 +654,10 @@ When every child fails, `AnyOf` emits a composite message: `"{Type} type must sa
 use StrongType\Constraint\{AllOf, MinLength, Pattern};
 use StrongType\String\StringType;
 
-#[AllOf(new MinLength(3), new Pattern('/^[a-z]/'))]
-readonly class LowercaseAtLeastThree extends StringType {}
+// Standard env-var shape: at least 2 chars, must start with a letter or underscore,
+// then uppercase letters / digits / underscores.
+#[AllOf(new MinLength(2), new Pattern('/^[A-Z_][A-Z0-9_]*$/'))]
+readonly class EnvVarName extends StringType {}
 ```
 
 The first failing child wins; its message is returned verbatim. Order the children intentionally: cheaper checks first, or the message you would prefer to surface first.
@@ -882,7 +884,7 @@ The constraint system uses PHP 8 attributes and reflection:
 2. **On every instantiation**, it iterates the cached constraint list and calls `validate()` on each. The first failure throws `ConstraintViolationException` (a `StrongTypeException` subclass).
 3. **Subsequent instantiations** skip reflection entirely -- it's a hash lookup plus iterating a small array.
 
-Existing types with manual constructors continue to work unchanged. The validator is a no-op for classes with no constraint attributes.
+The validator is a no-op for classes with no constraint attributes — types that keep manual constructors (such as `EmptyString`, `FixedSizeArray`, `TrueValue` / `FalseValue`, the `Timestamp` family, and `DateString` / `TimeString`) bypass it entirely and run their own validation logic instead.
 
 ## Standards
 
