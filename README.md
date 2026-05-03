@@ -49,7 +49,27 @@ $userIds = new UserIds([42, 108, 1337]); // OK
 $userIds = new UserIds([42, 42, 1337]);  // StrongTypeException (duplicate)
 ```
 
-## Quick Reference
+## Setup
+
+```bash
+composer require markrogoyski/strongtype-php
+```
+
+**Requirements**
+- PHP 8.4+
+- Extensions: `ctype`, `filter`, `json` (all bundled with PHP by default)
+
+## How It Works
+
+The constraint system uses PHP 8 attributes and reflection:
+
+1. **At first instantiation** of a type, `ConstraintValidator` reads all `ConstraintInterface` attributes from the class and its parents via reflection, sorts them by priority, and caches the result.
+2. **On every instantiation**, it iterates the cached constraint list and calls `validate()` on each. The first failure throws `ConstraintViolationException` (a `StrongTypeException` subclass).
+3. **Subsequent instantiations** skip reflection entirely -- it's a hash lookup plus iterating a small array.
+
+The validator is a no-op for classes with no constraint attributes — types that keep manual constructors (such as `EmptyString`, `FixedSizeArray`, `TrueValue` / `FalseValue`, the `Timestamp` family, and `DateString` / `TimeString`) bypass it entirely and run their own validation logic instead.
+
+## Built-in Types
 
 ### Integers
 
@@ -261,19 +281,9 @@ function areEqual(HasEquals $a, HasEquals $b): bool
 }
 ```
 
-## Setup
-
-```bash
-composer require markrogoyski/strongtype-php
-```
-
-#### Requirements
-- PHP 8.4+
-- Extensions: `ctype`, `filter`, `json`
-
 ## Usage
 
-### Built-in Types
+### Construction, Value Access, and Serialization
 
 Every type validates at construction and is immutable. Invalid values throw `StrongTypeException`.
 
@@ -303,6 +313,35 @@ try {
 } catch (StrongTypeException $e) {
     echo $e->getMessage(); // "PositiveInt type must be > 0, got -1"
 }
+```
+
+### Type Hints Throughout Your Domain Code
+
+Use strong types as constructor, parameter, and return types so validation lives at the system boundary and the rest of your code can trust every value:
+
+```php
+use StrongType\Int\NonnegativeInt;
+use StrongType\String\NonemptyString;
+use StrongType\String\EmailString;
+use StrongType\Arrays\ArrayOfStrings;
+
+class User
+{
+    public function __construct(
+        public readonly NonemptyString $name,
+        public readonly NonnegativeInt $age,
+        public readonly EmailString    $email,
+        public readonly ArrayOfStrings $roles,
+    ) {}
+}
+
+// Validation happens at construction -- no manual checks needed
+$user = new User(
+    new NonemptyString('Alice'),
+    new NonnegativeInt(30),
+    new EmailString('alice@example.com'),
+    new ArrayOfStrings(['admin', 'editor']),
+);
 ```
 
 ### Error Handling
@@ -342,35 +381,6 @@ try {
 } catch (StrongTypeException $e) {
     // Catches both subclasses.
 }
-```
-
-### Type Hints in Your Code
-
-StrongTypes shine as parameter and return types:
-
-```php
-use StrongType\Int\NonnegativeInt;
-use StrongType\String\NonemptyString;
-use StrongType\String\EmailString;
-use StrongType\Arrays\ArrayOfStrings;
-
-class User
-{
-    public function __construct(
-        public readonly NonemptyString $name,
-        public readonly NonnegativeInt $age,
-        public readonly EmailString    $email,
-        public readonly ArrayOfStrings $roles,
-    ) {}
-}
-
-// Validation happens at construction -- no manual checks needed
-$user = new User(
-    new NonemptyString('Alice'),
-    new NonnegativeInt(30),
-    new EmailString('alice@example.com'),
-    new ArrayOfStrings(['admin', 'editor']),
-);
 ```
 
 ## Constraint Composition
@@ -418,6 +428,8 @@ class TagSet extends ArrayType {}
 #[Nonempty, ElementType('int'), Unique]
 class UniqueIdList extends ArrayType {}
 ```
+
+> **Note:** scalar subclasses (`Integer`, `FloatingPoint`, `StringType`, `BoolType`, `DateTime`) are declared `readonly`, but `ArrayType` subclasses are **not** — the base class uses a `protected(set)` property that can't appear inside a `readonly` class. The value remains immutable in practice; you simply omit the keyword.
 
 ### Available Constraint Attributes
 
@@ -773,31 +785,6 @@ new ColorName('red');  // StrongTypeException -- case names are case-sensitive
 
 `InEnum` constructed with anything other than an existing enum class — a non-existent class, an interface, or a non-enum class — throws `\LogicException` at the same site as the other [constraint constructor invariants](#constraint-constructor-invariants).
 
-### Constraint Constructor Invariants
-
-Built-in constraints fail fast with `\LogicException` when configured impossibly — these are programmer errors, not validation failures, and surface during attribute instantiation (the first time a typed value of the affected class is constructed), not at PHP class-load time.
-
-| Constraint                        | Invariant                                       |
-| --------------------------------- | ----------------------------------------------- |
-| `DivisibleBy`                     | divisor must not be zero                        |
-| `MinLength`, `MaxLength`          | length must be `>= 0`                           |
-| `MinCount`, `MaxCount`, `ExactCount` | count must be `>= 0`                         |
-| `Pattern`, `NotPattern`           | regex must compile                              |
-| `ElementType`                     | type must be a builtin (`string`, `int`, `float`, `bool`, `array`, `object`, `callable`, `resource`, `iterable`) or an existing class/interface name |
-| `InRange`                         | `min <= max`; if equal, no exclusive flag       |
-| `InList`                          | at least one allowed value                      |
-| `DateFormat`                      | format string must be non-empty                 |
-| `AnyOf`, `AllOf`                  | at least one child constraint                   |
-| `InEnum`                          | class must be an existing enum (`enum_exists`)  |
-
-```php
-new MinLength(-1);            // \LogicException
-new DivisibleBy(0);           // \LogicException
-new Pattern('not-a-regex');   // \LogicException
-new ElementType('integer');   // \LogicException -- 'integer' is a PHP type alias, not a builtin name
-new InRange(100, 1);          // \LogicException
-```
-
 ## Scope and Semantics
 
 A few cross-cutting policies govern every type and constraint in the library. These are the rules to keep in mind when picking a built-in type or designing your own.
@@ -900,15 +887,32 @@ readonly class CentAmount extends PositiveInt {}
 readonly class DisplayName extends NonemptyString {}
 ```
 
-## How It Works
+## Reference
 
-The constraint system uses PHP 8 attributes and reflection:
+### Constraint Constructor Invariants
 
-1. **At first instantiation** of a type, `ConstraintValidator` reads all `ConstraintInterface` attributes from the class and its parents via reflection, sorts them by priority, and caches the result.
-2. **On every instantiation**, it iterates the cached constraint list and calls `validate()` on each. The first failure throws `ConstraintViolationException` (a `StrongTypeException` subclass).
-3. **Subsequent instantiations** skip reflection entirely -- it's a hash lookup plus iterating a small array.
+Built-in constraints fail fast with `\LogicException` when configured impossibly — these are programmer errors, not validation failures, and surface during attribute instantiation (the first time a typed value of the affected class is constructed), not at PHP class-load time.
 
-The validator is a no-op for classes with no constraint attributes — types that keep manual constructors (such as `EmptyString`, `FixedSizeArray`, `TrueValue` / `FalseValue`, the `Timestamp` family, and `DateString` / `TimeString`) bypass it entirely and run their own validation logic instead.
+| Constraint                        | Invariant                                       |
+| --------------------------------- | ----------------------------------------------- |
+| `DivisibleBy`                     | divisor must not be zero                        |
+| `MinLength`, `MaxLength`          | length must be `>= 0`                           |
+| `MinCount`, `MaxCount`, `ExactCount` | count must be `>= 0`                         |
+| `Pattern`, `NotPattern`           | regex must compile                              |
+| `ElementType`                     | type must be a builtin (`string`, `int`, `float`, `bool`, `array`, `object`, `callable`, `resource`, `iterable`) or an existing class/interface name |
+| `InRange`                         | `min <= max`; if equal, no exclusive flag       |
+| `InList`                          | at least one allowed value                      |
+| `DateFormat`                      | format string must be non-empty                 |
+| `AnyOf`, `AllOf`                  | at least one child constraint                   |
+| `InEnum`                          | class must be an existing enum (`enum_exists`)  |
+
+```php
+new MinLength(-1);            // \LogicException
+new DivisibleBy(0);           // \LogicException
+new Pattern('not-a-regex');   // \LogicException
+new ElementType('integer');   // \LogicException -- 'integer' is a PHP type alias, not a builtin name
+new InRange(100, 1);          // \LogicException
+```
 
 ## Standards
 
