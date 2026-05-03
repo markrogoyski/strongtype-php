@@ -84,13 +84,16 @@ Existing `catch (StrongTypeException $e)` blocks continue to catch every validat
 
 ### Documentation
 
-- README: comprehensive reference for the constraint composition system, with quick-reference tables for every built-in type and constraint attribute, including the new combinators, `InEnum`, and the constraint constructor invariants.
-- README: new "Composing Constraints" subsection covering `AnyOf` / `AllOf` / `Not` with realistic, domain-driven examples (well-known-or-ephemeral ports, scoped usernames, rejected all-caps strings).
-- README: new "Wrapping Enums" subsection showing string-backed, int-backed, and pure enum integration via `InEnum`.
-- README: new "Error Handling" subsection mapping each failure mode (constructor type mismatch, `tryFrom` mismatch, constraint failure, manual parse failure) to its result type.
-- README: new "Scope and Semantics" section documenting cross-cutting policy — format-vs-registry validation for ISO/MIME types, byte-not-Unicode length counting in `MinLength` / `MaxLength`, first-failure short-circuit during validation, type-strict equality semantics (and `ArrayType` key/order sensitivity), shallow `ElementType` validation that does not recurse into nested arrays, and the validate-at-boundaries immutability model. Adds backing tests for previously undertested claims: byte-length semantics for `MinLength` / `MaxLength` against multibyte input, short-circuit halt at the first failing constraint, and `ElementType('array')` not recursing into nested array contents.
-- README: clarified that `Nullable` requires a concrete StrongType class and that the type is validated even when the wrapped value is `null`.
-- New `CLAUDE.md` documents source layout, the constraint system, the consistent-constructor contract, naming and namespace conventions, and the test layout.
+- Documentation restructured: the canonical reference moves from a single `README.md` into a hero/catalog landing page plus a new `docs/` directory. The README serves both first-time readers (hero examples, narrative pitch) and catalog users (compact 2-column tables of every built-in type and constraint attribute, each name linking into the deep docs). The seven topic files plus index in `docs/` cover getting started, the full type and attribute catalogs with per-row examples, defining custom types, library semantics, the `Nullable` wrapper and base-class helpers, internals (how the validator caches, manual-constructor rationale, the consistent-constructor contract, the constructor-invariants table), and an index with named learning paths and use-case navigation. No code changes.
+- New comprehensive coverage of the 1.0 surface area now lives across the README and `docs/`:
+  - Quick-reference tables for every built-in type and every constraint attribute (`README.md` catalog spine plus per-row examples in `docs/built-in-types.md` and `docs/constraint-attributes.md`).
+  - Combinators (`AnyOf` / `AllOf` / `Not`) with realistic, domain-driven examples — well-known-or-ephemeral ports, scoped usernames, rejected all-caps strings (`docs/defining-types.md`).
+  - Enum wrapping via `InEnum` for string-backed, int-backed, and pure enums (`docs/defining-types.md`).
+  - Error handling table mapping each failure mode (constructor type mismatch, `tryFrom` mismatch, constraint failure, manual parse failure) to its result type, plus a `declare(strict_types=1)` callout (`README.md`, `docs/getting-started.md`).
+  - Cross-cutting "Scope and Semantics" coverage of format-vs-registry validation for ISO/MIME types, byte-not-Unicode length counting in `MinLength` / `MaxLength`, first-failure short-circuit during validation, type-strict equality semantics (and `ArrayType` key/order sensitivity), shallow `ElementType` validation that does not recurse into nested arrays, and the validate-at-boundaries immutability model (`docs/semantics.md`). Adds backing tests for previously undertested claims: byte-length semantics for `MinLength` / `MaxLength` against multibyte input, short-circuit halt at the first failing constraint, and `ElementType('array')` not recursing into nested array contents.
+  - Clarification that `Nullable` requires a concrete StrongType class and that the type is validated even when the wrapped value is `null` (`docs/nullable-and-helpers.md`).
+  - Constraint constructor invariants table — every fail-fast `\LogicException` configuration documented in one place (`docs/architecture.md`).
+- New `CLAUDE.md` documents source layout, the constraint system, the consistent-constructor contract, naming and namespace conventions, the test layout, and the documentation layout (README + `docs/` + CHANGELOG).
 
 ### Notes on scope
 

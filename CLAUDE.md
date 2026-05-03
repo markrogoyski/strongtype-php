@@ -194,15 +194,25 @@ Providers are `public static function dataProviderForX(): array` and live in the
 
 ## Documentation
 
-Keep docs in sync with code in the same change. The library has no separate `docs/` directory — documentation lives in:
+Keep docs in sync with code in the same change. Documentation lives in three places:
 
-- **`README.md`** — the canonical user-facing reference. Update the relevant Quick Reference table, attribute table, and add/refresh examples whenever you add a type, attribute, base method, or interface, or change error-message format.
+- **`README.md`** — the entry point: hero usage examples, the catalog spine of every built-in type and attribute name (linking into the deep docs), error handling, and a 30-second semantics summary. Update the relevant Quick Reference table whenever you add a type, attribute, base method, or interface, or change error-message format.
+- **`docs/`** — the deep reference. Seven topic files plus an index (`docs/README.md`), eight files total:
+  - `docs/getting-started.md` — install, construction, value access, type hints, error handling.
+  - `docs/built-in-types.md` — every concrete type with a usage example (catalog rows can use `// throws StrongTypeException` shorthand; verbatim messages live in the README, `docs/getting-started.md`, and one or two representative examples per category).
+  - `docs/constraint-attributes.md` — every constraint attribute with constructor signature, an example, and the priority-bands table.
+  - `docs/defining-types.md` — composition, inheritance, priority, custom constraints, combinators, wrapping enums, real-world domain modeling.
+  - `docs/nullable-and-helpers.md` — `Nullable`, `tryFrom`, `equals`, `equalsUnordered`, `withValues`, implemented standard interfaces.
+  - `docs/semantics.md` — cross-cutting policies (format-vs-registry, byte-vs-Unicode length, first-error, equality, shallow array validation, mutability).
+  - `docs/architecture.md` — internals: how the validator caches, why some types keep manual constructors, the consistent-constructor contract, the constructor-invariants table.
+  - `docs/README.md` — index with learning paths and use-case navigation.
+  When adding a type or attribute, update **the README catalog row(s) and the matching `docs/built-in-types.md` or `docs/constraint-attributes.md` subsection** in the same change. Verify any new anchor link in the README resolves to a real heading.
 - **`CHANGELOG.md`** — append a human-readable entry for any user-visible change (new type, new attribute, behavior change, bug fix).
 - **`CLAUDE.md`** (this file) — update when architecture, conventions, or workflow change.
 
 ### Real-World Examples
 
-Examples in `README.md` must be **realistic, domain-driven** — `Port`, `Username`, `Sku`, `Hostname`, `CurrencyCode`, `CreditCardNumber`, `Probability`, `FeatureFlags`. Avoid abstract `Foo`/`Bar`/`MyType` placeholders. When adding a constraint or feature, demonstrate it with a use case a reader would plausibly encounter in production code.
+Examples in `README.md` and `docs/` must be **realistic, domain-driven** — `Port`, `Username`, `Sku`, `Hostname`, `CurrencyCode`, `CreditCardNumber`, `Probability`, `FeatureFlags`. Avoid abstract `Foo`/`Bar`/`MyType` placeholders. When adding a constraint or feature, demonstrate it with a use case a reader would plausibly encounter in production code.
 
 ## Style
 
