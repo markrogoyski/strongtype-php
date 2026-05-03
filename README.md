@@ -37,13 +37,16 @@ readonly class Port extends \StrongType\Int\Integer {}
 readonly class Username extends \StrongType\String\StringType {}
 
 #[Nonempty, Unique, ElementType('int')]
-class WatcherUserIds extends \StrongType\Arrays\ArrayType {}
+class UserIds extends \StrongType\Arrays\ArrayType {}
 
 $port = new Port(8080);           // OK
 $port = new Port(0);              // StrongTypeException: "Port type must be >= 1, got 0"
 
 $user = new Username('alice_99'); // OK
 $user = new Username('99bad');    // StrongTypeException
+
+$userIds = new UserIds([42, 108, 1337]); // OK
+$userIds = new UserIds([42, 42, 1337]);  // StrongTypeException (duplicate)
 ```
 
 ## Quick Reference
