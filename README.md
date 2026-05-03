@@ -2,7 +2,10 @@
 
 Strongly typed values for PHP -- validate once at construction, trust everywhere after.
 
-StrongType provides a library of ready-to-use typed value objects (integers, floats, strings, arrays, booleans, datetimes) and an **attribute-based constraint composition system** that lets you define new validated types declaratively -- no constructor boilerplate needed.
+StrongType provides two things:
+
+- **Ready-to-use typed value objects**: integers, floats, strings, arrays, booleans, and datetimes that validate themselves at construction.
+- **An attribute-based constraint composition system**: define new validated types declaratively by stacking constraint attributes. No constructor boilerplate.
 
 ## Quick Overview
 
