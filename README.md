@@ -4,6 +4,8 @@ Strongly typed values for PHP -- validate once at construction, trust everywhere
 
 StrongType provides a library of ready-to-use typed value objects (integers, floats, strings, arrays, booleans, datetimes) and an **attribute-based constraint composition system** that lets you define new validated types declaratively -- no constructor boilerplate needed.
 
+## Quick Overview
+
 Use the built-in types directly as parameter and return type hints:
 
 ```php
@@ -59,15 +61,107 @@ composer require markrogoyski/strongtype-php
 - PHP 8.4+
 - Extensions: `ctype`, `filter`, `json` (all bundled with PHP by default)
 
-## How It Works
+## Usage
 
-The constraint system uses PHP 8 attributes and reflection:
+### Construction, Value Access, and Serialization
 
-1. **At first instantiation** of a type, `ConstraintValidator` reads all `ConstraintInterface` attributes from the class and its parents via reflection, sorts them by priority, and caches the result.
-2. **On every instantiation**, it iterates the cached constraint list and calls `validate()` on each. The first failure throws `ConstraintViolationException` (a `StrongTypeException` subclass).
-3. **Subsequent instantiations** skip reflection entirely -- it's a hash lookup plus iterating a small array.
+Every type validates at construction and is immutable. Invalid values throw `StrongTypeException`.
 
-The validator is a no-op for classes with no constraint attributes — types that keep manual constructors (such as `EmptyString`, `FixedSizeArray`, `TrueValue` / `FalseValue`, the `Timestamp` family, and `DateString` / `TimeString`) bypass it entirely and run their own validation logic instead.
+```php
+use StrongType\Int\PositiveInt;
+use StrongType\String\EmailString;
+use StrongType\Arrays\ArrayOfStrings;
+use StrongType\Exception\StrongTypeException;
+
+// Construct -- validates automatically
+$age   = new PositiveInt(25);
+$email = new EmailString('alice@example.com');
+$tags  = new ArrayOfStrings(['php', 'types']);
+
+// Access the value
+$age->value;         // 25 (public readonly property)
+$age->getValue();    // 25 (getter method)
+
+// String and JSON representations
+(string) $age;                // "25"
+json_encode($email);          // '"alice@example.com"'
+json_encode($tags);           // '["php","types"]'
+
+// Invalid values throw immediately
+try {
+    new PositiveInt(-1);
+} catch (StrongTypeException $e) {
+    echo $e->getMessage(); // "PositiveInt type must be > 0, got -1"
+}
+```
+
+### Type Hints Throughout Your Domain Code
+
+Use strong types as constructor, parameter, and return types so validation lives at the system boundary and the rest of your code can trust every value:
+
+```php
+use StrongType\Int\NonnegativeInt;
+use StrongType\String\NonemptyString;
+use StrongType\String\EmailString;
+use StrongType\Arrays\ArrayOfStrings;
+
+class User
+{
+    public function __construct(
+        public readonly NonemptyString $name,
+        public readonly NonnegativeInt $age,
+        public readonly EmailString    $email,
+        public readonly ArrayOfStrings $roles,
+    ) {}
+}
+
+// Validation happens at construction -- no manual checks needed
+$user = new User(
+    new NonemptyString('Alice'),
+    new NonnegativeInt(30),
+    new EmailString('alice@example.com'),
+    new ArrayOfStrings(['admin', 'editor']),
+);
+```
+
+### Error Handling
+
+`StrongType\Exception\StrongTypeException` is the umbrella for all validation failures and remains the right type to catch when you want to handle any invalid value uniformly. It has two subclasses for code that wants to distinguish between failure modes:
+
+| Failure mode | Result |
+| --- | --- |
+| Constructor argument type mismatch (e.g. `new PositiveInt('5')`) | PHP `\TypeError` |
+| `tryFrom()` with a type-mismatched argument | returns `null` |
+| Constraint attribute fails during validation | `ConstraintViolationException` |
+| Manual parse fails in `DateString` / `TimeString` | `FormatException` |
+
+Both `ConstraintViolationException` and `FormatException` extend `StrongTypeException`, so existing `catch (StrongTypeException $e)` blocks continue to catch every validation failure. Catch a subclass when you want to react specifically to a constraint violation or a format-parse failure:
+
+```php
+use StrongType\DateTime\DateString;
+use StrongType\Exception\ConstraintViolationException;
+use StrongType\Exception\FormatException;
+use StrongType\Exception\StrongTypeException;
+use StrongType\Int\PositiveInt;
+
+try {
+    new PositiveInt(-1);
+} catch (ConstraintViolationException $e) {
+    // Constraint attribute rejected the value.
+}
+
+try {
+    new DateString('not-a-date');
+} catch (FormatException $e) {
+    // Hand-rolled parser rejected the string shape.
+}
+
+try {
+    new PositiveInt(-1);
+} catch (StrongTypeException $e) {
+    // Catches both subclasses.
+}
+```
 
 ## Built-in Types
 
@@ -177,211 +271,6 @@ Float subtypes reject `INF`, `-INF`, and `NAN` by default (via the inherited `#[
 | `PastTimestamp` | `< time()` | Timestamp in the past |
 | `DateString` | `YYYY-MM-DD` | Valid calendar date |
 | `TimeString` | `HH:MM:SS` | Valid 24-hour time |
-
-### Nullable Wrapper
-
-`Nullable` requires a concrete StrongType class — the wrapped value is validated against that type whenever it is non-null, and the type itself is checked even when the value is `null`.
-
-```php
-use StrongType\Nullable;
-use StrongType\Int\PositiveInt;
-
-$value = new Nullable(PositiveInt::class, 5);    // wraps PositiveInt(5)
-$null  = new Nullable(PositiveInt::class, null);  // wraps null
-
-$value->getValue();  // 5
-$null->getValue();   // null
-$null->isNull();     // true
-
-// Structural equality delegates to the wrapped type's equals().
-$value->equals(new Nullable(PositiveInt::class, 5));    // true
-$value->equals(new Nullable(PositiveInt::class, null)); // false
-
-// Nullable itself implements HasEquals, so it can flow through generic code
-// that accepts any strong type. Cross-comparison with a non-Nullable is always false.
-$value->equals(new PositiveInt(5));                     // false (Nullable<PositiveInt> != PositiveInt)
-```
-
-### Base Class Methods
-
-Base classes provide these helpers (array-only helpers are prefixed with `ArrayType::`):
-
-| Method | Returns | Description |
-| --- | --- | --- |
-| `tryFrom(mixed $value)` | `static \| null` | Returns an instance or `null` if the input is the wrong PHP type or fails validation. Does **not** widen across scalar types (strict matching) — except `FloatingPoint::tryFrom` accepts `int` and widens to `float`, mirroring PHP's native int-to-float param coercion. |
-| `equals(HasEquals $other)` | `bool` | Strict structural equality: same concrete class and same value (`ArrayType::equals` compares values **and** key-order, since insertion order is part of the array identity). |
-| `ArrayType::equalsUnordered(HasEquals $other)` | `bool` | Multiset equality: same concrete subclass and same values (each repeated the same number of times) regardless of keys or insertion order. Strict element comparison; nested arrays are compared as-is. Only defined on `ArrayType`. |
-| `nullable(mixed $value)` | `Nullable` | Convenience shortcut for `new Nullable(static::class, $value)`. |
-| `ArrayType::withValues(array $values)` | `static` | Returns a new instance of the same concrete subclass with a different value array. Only defined on `ArrayType`. |
-
-```php
-use StrongType\Int\PositiveInt;
-
-$a = PositiveInt::tryFrom(5);     // PositiveInt(5)
-$b = PositiveInt::tryFrom(-1);    // null (constraint failure)
-$c = PositiveInt::tryFrom('5');   // null (wrong type — no coercion)
-
-$a->equals(new PositiveInt(5));   // true
-$a->equals(new PositiveInt(6));   // false
-
-PositiveInt::nullable(null);      // Nullable<PositiveInt>(null)
-```
-
-```php
-use StrongType\Arrays\ListArray;
-
-// equalsUnordered — same multiset of values, any order or keys.
-$shipped = new ListArray([101, 204, 309]);
-$received = new ListArray([309, 101, 204]);
-
-$shipped->equals($received);          // false — order differs
-$shipped->equalsUnordered($received); // true  — same multiset
-
-// Multiplicity matters: duplicates must match.
-$a = new ListArray([1, 2, 2, 3]);
-$b = new ListArray([1, 1, 2, 3]);
-$a->equalsUnordered($b);              // false — different multiset
-```
-
-`FixedSizeArray::tryFrom` and `FixedSizeArray::nullable` throw `\LogicException` — the required `$size` parameter cannot be satisfied through these factories. Use `new FixedSizeArray($values, $size)` or `$existing->withValues($values)` instead.
-
-### Implemented Interfaces
-
-Every strong type implements a small, stable set of standard interfaces so it can interoperate with native PHP language features and generic code:
-
-| Interface | Where | What you get |
-| --- | --- | --- |
-| `\Stringable` | All types | `__toString()` — cast any strong type to `string` (integers/floats/bools use `strval`; strings pass through; arrays and datetimes JSON-encode). |
-| `\JsonSerializable` | All types | `jsonSerialize()` — `json_encode($value)` produces the underlying scalar/array. |
-| `\StrongType\HasEquals` | All types and `Nullable` | `equals(HasEquals $other): bool` — strict structural equality. Lets generic code compare two strong-type instances without knowing the concrete type. Type-hint against `HasEquals` when you want to accept "any strong type" (including a `Nullable`) in a signature. |
-| `\Countable` | `ArrayType` only | `count($arr)` returns the element count. |
-| `\IteratorAggregate` | `ArrayType` only | `foreach ($arr as $key => $value) { ... }` iterates the underlying values, preserving original keys (via `\ArrayIterator`). |
-
-```php
-use StrongType\Arrays\ArrayOfStrings;
-
-$tags = new ArrayOfStrings(['php', 'types', 'validation']);
-
-\count($tags);              // 3 (Countable)
-foreach ($tags as $tag) {   // IteratorAggregate
-    echo $tag, "\n";
-}
-
-(string) $tags;             // '["php","types","validation"]' (Stringable)
-\json_encode($tags);        // '["php","types","validation"]' (JsonSerializable)
-```
-
-```php
-use StrongType\HasEquals;
-
-// Accept any strong type in a generic signature.
-function areEqual(HasEquals $a, HasEquals $b): bool
-{
-    return $a->equals($b);
-}
-```
-
-## Usage
-
-### Construction, Value Access, and Serialization
-
-Every type validates at construction and is immutable. Invalid values throw `StrongTypeException`.
-
-```php
-use StrongType\Int\PositiveInt;
-use StrongType\String\EmailString;
-use StrongType\Arrays\ArrayOfStrings;
-use StrongType\Exception\StrongTypeException;
-
-// Construct -- validates automatically
-$age   = new PositiveInt(25);
-$email = new EmailString('alice@example.com');
-$tags  = new ArrayOfStrings(['php', 'types']);
-
-// Access the value
-$age->value;         // 25 (public readonly property)
-$age->getValue();    // 25 (getter method)
-
-// String and JSON representations
-(string) $age;                // "25"
-json_encode($email);          // '"alice@example.com"'
-json_encode($tags);           // '["php","types"]'
-
-// Invalid values throw immediately
-try {
-    new PositiveInt(-1);
-} catch (StrongTypeException $e) {
-    echo $e->getMessage(); // "PositiveInt type must be > 0, got -1"
-}
-```
-
-### Type Hints Throughout Your Domain Code
-
-Use strong types as constructor, parameter, and return types so validation lives at the system boundary and the rest of your code can trust every value:
-
-```php
-use StrongType\Int\NonnegativeInt;
-use StrongType\String\NonemptyString;
-use StrongType\String\EmailString;
-use StrongType\Arrays\ArrayOfStrings;
-
-class User
-{
-    public function __construct(
-        public readonly NonemptyString $name,
-        public readonly NonnegativeInt $age,
-        public readonly EmailString    $email,
-        public readonly ArrayOfStrings $roles,
-    ) {}
-}
-
-// Validation happens at construction -- no manual checks needed
-$user = new User(
-    new NonemptyString('Alice'),
-    new NonnegativeInt(30),
-    new EmailString('alice@example.com'),
-    new ArrayOfStrings(['admin', 'editor']),
-);
-```
-
-### Error Handling
-
-`StrongType\Exception\StrongTypeException` is the umbrella for all validation failures and remains the right type to catch when you want to handle any invalid value uniformly. It has two subclasses for code that wants to distinguish between failure modes:
-
-| Failure mode | Result |
-| --- | --- |
-| Constructor argument type mismatch (e.g. `new PositiveInt('5')`) | PHP `\TypeError` |
-| `tryFrom()` with a type-mismatched argument | returns `null` |
-| Constraint attribute fails during validation | `ConstraintViolationException` |
-| Manual parse fails in `DateString` / `TimeString` | `FormatException` |
-
-Both `ConstraintViolationException` and `FormatException` extend `StrongTypeException`, so existing `catch (StrongTypeException $e)` blocks continue to catch every validation failure. Catch a subclass when you want to react specifically to a constraint violation or a format-parse failure:
-
-```php
-use StrongType\DateTime\DateString;
-use StrongType\Exception\ConstraintViolationException;
-use StrongType\Exception\FormatException;
-use StrongType\Exception\StrongTypeException;
-use StrongType\Int\PositiveInt;
-
-try {
-    new PositiveInt(-1);
-} catch (ConstraintViolationException $e) {
-    // Constraint attribute rejected the value.
-}
-
-try {
-    new DateString('not-a-date');
-} catch (FormatException $e) {
-    // Hand-rolled parser rejected the string shape.
-}
-
-try {
-    new PositiveInt(-1);
-} catch (StrongTypeException $e) {
-    // Catches both subclasses.
-}
-```
 
 ## Constraint Composition
 
@@ -886,6 +775,121 @@ readonly class CentAmount extends PositiveInt {}
 #[MaxLength(50), Pattern('/^\S.*\S$/')]
 readonly class DisplayName extends NonemptyString {}
 ```
+
+## Additional Features
+
+### Nullable Wrapper
+
+`Nullable` requires a concrete StrongType class — the wrapped value is validated against that type whenever it is non-null, and the type itself is checked even when the value is `null`.
+
+```php
+use StrongType\Nullable;
+use StrongType\Int\PositiveInt;
+
+$value = new Nullable(PositiveInt::class, 5);    // wraps PositiveInt(5)
+$null  = new Nullable(PositiveInt::class, null);  // wraps null
+
+$value->getValue();  // 5
+$null->getValue();   // null
+$null->isNull();     // true
+
+// Structural equality delegates to the wrapped type's equals().
+$value->equals(new Nullable(PositiveInt::class, 5));    // true
+$value->equals(new Nullable(PositiveInt::class, null)); // false
+
+// Nullable itself implements HasEquals, so it can flow through generic code
+// that accepts any strong type. Cross-comparison with a non-Nullable is always false.
+$value->equals(new PositiveInt(5));                     // false (Nullable<PositiveInt> != PositiveInt)
+```
+
+### Base Class Methods
+
+Base classes provide these helpers (array-only helpers are prefixed with `ArrayType::`):
+
+| Method | Returns | Description |
+| --- | --- | --- |
+| `tryFrom(mixed $value)` | `static \| null` | Returns an instance or `null` if the input is the wrong PHP type or fails validation. Does **not** widen across scalar types (strict matching) — except `FloatingPoint::tryFrom` accepts `int` and widens to `float`, mirroring PHP's native int-to-float param coercion. |
+| `equals(HasEquals $other)` | `bool` | Strict structural equality: same concrete class and same value (`ArrayType::equals` compares values **and** key-order, since insertion order is part of the array identity). |
+| `ArrayType::equalsUnordered(HasEquals $other)` | `bool` | Multiset equality: same concrete subclass and same values (each repeated the same number of times) regardless of keys or insertion order. Strict element comparison; nested arrays are compared as-is. Only defined on `ArrayType`. |
+| `nullable(mixed $value)` | `Nullable` | Convenience shortcut for `new Nullable(static::class, $value)`. |
+| `ArrayType::withValues(array $values)` | `static` | Returns a new instance of the same concrete subclass with a different value array. Only defined on `ArrayType`. |
+
+```php
+use StrongType\Int\PositiveInt;
+
+$a = PositiveInt::tryFrom(5);     // PositiveInt(5)
+$b = PositiveInt::tryFrom(-1);    // null (constraint failure)
+$c = PositiveInt::tryFrom('5');   // null (wrong type — no coercion)
+
+$a->equals(new PositiveInt(5));   // true
+$a->equals(new PositiveInt(6));   // false
+
+PositiveInt::nullable(null);      // Nullable<PositiveInt>(null)
+```
+
+```php
+use StrongType\Arrays\ListArray;
+
+// equalsUnordered — same multiset of values, any order or keys.
+$shipped = new ListArray([101, 204, 309]);
+$received = new ListArray([309, 101, 204]);
+
+$shipped->equals($received);          // false — order differs
+$shipped->equalsUnordered($received); // true  — same multiset
+
+// Multiplicity matters: duplicates must match.
+$a = new ListArray([1, 2, 2, 3]);
+$b = new ListArray([1, 1, 2, 3]);
+$a->equalsUnordered($b);              // false — different multiset
+```
+
+`FixedSizeArray::tryFrom` and `FixedSizeArray::nullable` throw `\LogicException` — the required `$size` parameter cannot be satisfied through these factories. Use `new FixedSizeArray($values, $size)` or `$existing->withValues($values)` instead.
+
+### Implemented Interfaces
+
+Every strong type implements a small, stable set of standard interfaces so it can interoperate with native PHP language features and generic code:
+
+| Interface | Where | What you get |
+| --- | --- | --- |
+| `\Stringable` | All types | `__toString()` — cast any strong type to `string` (integers/floats/bools use `strval`; strings pass through; arrays and datetimes JSON-encode). |
+| `\JsonSerializable` | All types | `jsonSerialize()` — `json_encode($value)` produces the underlying scalar/array. |
+| `\StrongType\HasEquals` | All types and `Nullable` | `equals(HasEquals $other): bool` — strict structural equality. Lets generic code compare two strong-type instances without knowing the concrete type. Type-hint against `HasEquals` when you want to accept "any strong type" (including a `Nullable`) in a signature. |
+| `\Countable` | `ArrayType` only | `count($arr)` returns the element count. |
+| `\IteratorAggregate` | `ArrayType` only | `foreach ($arr as $key => $value) { ... }` iterates the underlying values, preserving original keys (via `\ArrayIterator`). |
+
+```php
+use StrongType\Arrays\ArrayOfStrings;
+
+$tags = new ArrayOfStrings(['php', 'types', 'validation']);
+
+\count($tags);              // 3 (Countable)
+foreach ($tags as $tag) {   // IteratorAggregate
+    echo $tag, "\n";
+}
+
+(string) $tags;             // '["php","types","validation"]' (Stringable)
+\json_encode($tags);        // '["php","types","validation"]' (JsonSerializable)
+```
+
+```php
+use StrongType\HasEquals;
+
+// Accept any strong type in a generic signature.
+function areEqual(HasEquals $a, HasEquals $b): bool
+{
+    return $a->equals($b);
+}
+```
+
+## How It Works
+
+The constraint system uses PHP 8 attributes and reflection:
+
+1. **At first instantiation** of a type, `ConstraintValidator` reads all `ConstraintInterface` attributes from the class and its parents via reflection, sorts them by priority, and caches the result.
+2. **On every instantiation**, it iterates the cached constraint list and calls `validate()` on each. The first failure throws `ConstraintViolationException` (a `StrongTypeException` subclass).
+3. **Subsequent instantiations** skip reflection entirely -- it's a hash lookup plus iterating a small array.
+
+The validator is a no-op for classes with no constraint attributes — types that keep manual constructors (such as `EmptyString`, `FixedSizeArray`, `TrueValue` / `FalseValue`, the `Timestamp` family, and `DateString` / `TimeString`) bypass it entirely and run their own validation logic instead.
 
 ## Reference
 
