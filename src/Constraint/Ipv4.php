@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace StrongType\Constraint;
 
+use StrongType\Util\ShortClassName;
+
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final readonly class Ipv4 implements ConstraintInterface
 {
     #[\Override]
     public function validate(mixed $value, string $className): ?string
     {
-        $short = \substr($className, (int) \strrpos($className, '\\') + 1);
+        $short = ShortClassName::of($className);
 
         if (\is_string($value) && \filter_var($value, \FILTER_VALIDATE_IP, \FILTER_FLAG_IPV4) === false) {
             return "{$short} type must be a valid IPv4 address, got {$value}";

@@ -178,6 +178,68 @@ class ArrayOfArraysTest extends \PHPUnit\Framework\TestCase
     }
 
     #[Test]
+    public function testStringRepresentationTerminatesOnSelfReferentialArray()
+    {
+        // Given an inner array that contains a reference to itself.
+        // ArrayOfArrays validly accepts arrays-of-arrays, including ones with
+        // internal cycles. json_encode throws JsonException("Recursion detected"),
+        // so the fallback stringifier must terminate cleanly rather than recurse.
+        $inner = [];
+        $inner[] = &$inner;
+        $arr = new ArrayOfArrays([$inner]);
+
+        // When casting to string
+        $rendered = (string) $arr;
+
+        // Then __toString must not exhaust the stack and must mark the cycle.
+        $this->assertStringContainsString('*RECURSION*', $rendered);
+    }
+
+    #[Test]
+    public function testStringRepresentationRendersJustUnderDepthGuard()
+    {
+        // Given a structure one level shy of the depth guard. The fallback's
+        // STRINGIFY_MAX_DEPTH is 64, and the leaf reaches stringifyJsonishValue
+        // at depth ($levels + 1) — one hop is consumed walking from the outer
+        // ArrayType::values wrapper into its first child. $levels = 62 puts
+        // the NAN leaf at depth 63, just under the >= 64 trip point. NAN is
+        // used because it forces json_encode to throw and hands control to the
+        // fallback renderer (the only path under test here).
+        $value = \NAN;
+        for ($i = 0; $i < 62; $i++) {
+            $value = [$value];
+        }
+        $arr = new ArrayOfArrays([$value]);
+
+        // When casting to string
+        $rendered = (string) $arr;
+
+        // Then the leaf renders as 'NaN' and no recursion marker is emitted.
+        $this->assertStringNotContainsString('*RECURSION*', $rendered);
+        $this->assertStringContainsString('NaN', $rendered);
+    }
+
+    #[Test]
+    public function testStringRepresentationMarksAtDepthGuard()
+    {
+        // Given a structure one level past the depth guard: $levels = 63 puts
+        // the NAN leaf at depth 64 in stringifyJsonishValue — exactly the >= 64
+        // boundary where STRINGIFY_MAX_DEPTH cuts off recursion.
+        $value = \NAN;
+        for ($i = 0; $i < 63; $i++) {
+            $value = [$value];
+        }
+        $arr = new ArrayOfArrays([$value]);
+
+        // When casting to string
+        $rendered = (string) $arr;
+
+        // Then the marker fires for the over-depth leaf and 'NaN' is replaced.
+        $this->assertStringContainsString('*RECURSION*', $rendered);
+        $this->assertStringNotContainsString('NaN', $rendered);
+    }
+
+    #[Test]
     #[DataProvider('dataProviderForInvalidValues')]
     public function testInvalidValue(array $values)
     {

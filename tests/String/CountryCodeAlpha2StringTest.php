@@ -66,6 +66,7 @@ class CountryCodeAlpha2StringTest extends \PHPUnit\Framework\TestCase
             ['us'],
             ['12'],
             ['A'],
+            ["US\n"],
         ];
     }
 }

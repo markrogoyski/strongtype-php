@@ -83,6 +83,7 @@ class MimeTypeStringTest extends \PHPUnit\Framework\TestCase
             ['text/ plain'],
             [' text/plain'],
             ['text/plain '],
+            ["text/html\n"],
         ];
     }
 }

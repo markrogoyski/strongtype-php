@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace StrongType\Constraint;
 
+use StrongType\Util\ShortClassName;
+
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final readonly class MaxCount implements ConstraintInterface
 {
@@ -17,7 +19,7 @@ final readonly class MaxCount implements ConstraintInterface
     #[\Override]
     public function validate(mixed $value, string $className): ?string
     {
-        $short = \substr($className, (int) \strrpos($className, '\\') + 1);
+        $short = ShortClassName::of($className);
 
         if (\is_array($value) && \count($value) > $this->maxCount) {
             return "{$short} type must have count <= {$this->maxCount}, got " . \count($value);

@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace StrongType\Constraint;
 
+use StrongType\Util\ShortClassName;
+
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final readonly class InFuture implements ConstraintInterface
 {
     #[\Override]
     public function validate(mixed $value, string $className): ?string
     {
-        $short = \substr($className, (int) \strrpos($className, '\\') + 1);
+        $short = ShortClassName::of($className);
 
         if (\is_int($value) && $value <= \time()) {
             return "{$short} type must be in the future, got {$value}";

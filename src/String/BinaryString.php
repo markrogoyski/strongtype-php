@@ -6,7 +6,7 @@ namespace StrongType\String;
 
 use StrongType\Constraint\Pattern;
 
-#[Pattern('/^[01]+$/')]
+#[Pattern('/\A[01]+\z/')]
 readonly class BinaryString extends NonemptyString
 {
 }

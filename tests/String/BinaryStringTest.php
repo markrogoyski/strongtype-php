@@ -185,6 +185,7 @@ class BinaryStringTest extends \PHPUnit\Framework\TestCase
             ['>'],
             ['/'],
             ['?'],
+            ["1010\n"],
         ];
     }
 }

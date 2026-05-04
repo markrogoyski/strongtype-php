@@ -124,6 +124,7 @@ class PhoneE164StringTest extends \PHPUnit\Framework\TestCase
             ['+0551234567'],
             ['++1234'],
             ['+1'],
+            ["+12025551234\n"],
         ];
     }
 }

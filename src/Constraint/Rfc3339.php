@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace StrongType\Constraint;
 
+use StrongType\Util\ShortClassName;
+
 /**
  * Validates RFC 3339 §5.6 date-time strings.
  *
@@ -35,7 +37,7 @@ final readonly class Rfc3339 implements ConstraintInterface
         // RFC 3339 §4.3: "-00:00" denotes UTC with unknown local offset.
         $pattern = '/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}):(\d{2})(\.\d+)?(Z|[+-](?:[01]\d|2[0-3]):[0-5]\d)$/i';
         if (\preg_match($pattern, $value, $matches) !== 1 || !$this->roundTrips($matches)) {
-            $short = \substr($className, (int) \strrpos($className, '\\') + 1);
+            $short = ShortClassName::of($className);
             return "{$short} type must be a valid RFC 3339 datetime, got {$value}";
         }
 

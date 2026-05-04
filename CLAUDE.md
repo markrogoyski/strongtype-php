@@ -97,7 +97,7 @@ All types implement `\Stringable`, `\JsonSerializable`, and `\StrongType\HasEqua
 - All base types are `readonly abstract` (except `ArrayType` which is `abstract` without `readonly` due to `protected(set)` property).
 - Concrete types are `readonly` (except array types which are non-readonly).
 - Error messages follow: `"{ShortClassName} type must {description}, got {value}"`.
-- Short class name extracted via: `\substr($className, \strrpos($className, '\\') + 1)`.
+- Short class name extracted via: `StrongType\Util\ShortClassName::of($className)` (correctly handles classes in the global namespace; do not use the inline `\substr(..., \strrpos(...) + 1)` form — it drops the first character when the FQCN has no `\`).
 - Namespace maps directly to directory: `StrongType\` -> `src/`, `StrongType\Tests\` -> `tests/`.
 - Value access: every type exposes both `$obj->value` (public readonly property) and `$obj->getValue()` (method).
 
@@ -191,6 +191,24 @@ Providers are `public static function dataProviderForX(): array` and live in the
 ## Build Must Stay Clean
 
 **Run `make all` after every change — no exceptions — and do not declare a task done until it passes.** This runs lint, the full test suite, PSR-12 style, PHPStan (max level), Psalm, composer-unused, and composer-require-checker. A green `make all` is the contract for "done"; if any check fails, fix the root cause rather than narrowing the check or skipping it. For tight inner loops you can run individual targets (`make tests`, `make phpstan`, etc.), but the final gate before handing work back is always `make all`.
+
+## Codex Second-Opinion Review
+
+Before presenting a non-trivial **plan** or **implementation** back to the user, solicit a Codex review via the `codex-reviewer` subagent and iterate on its feedback. This is a quality gate, not a formality.
+
+**When to invoke:**
+- After drafting any plan that proposes more than a single localized edit (new type, new constraint, refactor across files, behavior change).
+- After finishing an implementation that touches more than one file or introduces new public API.
+- **Skip** for: trivial edits (typos, single-line fixes, doc-only tweaks), exploratory questions, or when the user asks for a quick answer rather than production-quality work.
+
+**Loop:**
+1. Draft the plan or implementation.
+2. Invoke the `codex-reviewer` agent (or run the `/codex-review` slash command) with the plan text or the diff + summary.
+3. Address every **Blocking** item; weigh **Suggestions** and apply the worthwhile ones.
+4. If you made non-trivial changes, run another round. **Cap at 3 rounds.**
+5. Then run `make all`, then present to the user — including a 1-2 sentence summary of what Codex flagged, what you addressed, and any blocking items you declined (with reasoning).
+
+The reviewer runs `codex exec -s read-only` so it cannot modify the working tree. Each round costs Codex tokens, so keep rounds purposeful — don't loop just to loop.
 
 ## Documentation
 

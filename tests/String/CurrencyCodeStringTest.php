@@ -65,6 +65,7 @@ class CurrencyCodeStringTest extends \PHPUnit\Framework\TestCase
             ['usd'],
             ['123'],
             ['ABCD'],
+            ["USD\n"],
         ];
     }
 }

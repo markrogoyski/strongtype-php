@@ -15,7 +15,7 @@ use StrongType\Constraint\Pattern;
  * Validates format only; does not verify IANA registry membership. Examples like
  * application/x-foo are syntactically valid even when not registered.
  */
-#[Pattern('/^[A-Za-z0-9](?:[A-Za-z0-9!#$&\-^_.+]{0,125}[A-Za-z0-9])?\/[A-Za-z0-9](?:[A-Za-z0-9!#$&\-^_.+]{0,125}[A-Za-z0-9])?$/')]
+#[Pattern('/\A[A-Za-z0-9](?:[A-Za-z0-9!#$&\-^_.+]{0,125}[A-Za-z0-9])?\/[A-Za-z0-9](?:[A-Za-z0-9!#$&\-^_.+]{0,125}[A-Za-z0-9])?\z/')]
 readonly class MimeTypeString extends NonemptyString
 {
 }

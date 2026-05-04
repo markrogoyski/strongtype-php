@@ -15,6 +15,7 @@ use StrongType\Constraint\DivisibleBy;
 use StrongType\Exception\StrongTypeException;
 use StrongType\Int\Integer;
 use StrongType\Float\FloatingPoint;
+use StrongType\String\StringType;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 
@@ -43,6 +44,10 @@ use PHPUnit\Framework\Attributes\Test;
 {
 }
 #[Positive] readonly class PositiveTestFloat extends FloatingPoint
+{
+}
+// String-typed Nonzero fixture: numeric constraints must not fire on non-numeric values.
+#[Nonzero] readonly class NonzeroTestString extends StringType
 {
 }
 
@@ -132,6 +137,27 @@ class NumericConstraintsTest extends \PHPUnit\Framework\TestCase
     {
         $this->expectException(StrongTypeException::class);
         new NonzeroTestInt(0);
+    }
+
+    #[Test]
+    public function testNonzeroOnStringTypeIgnoresNonNumericValues()
+    {
+        // Given a non-numeric string value
+        // When constructing a string type that carries #[Nonzero]
+        $str = new NonzeroTestString('hello');
+
+        // Then the constraint must not fire (it only applies to numeric values),
+        // matching the gating behavior of sibling numeric constraints.
+        $this->assertSame('hello', $str->value);
+    }
+
+    #[Test]
+    public function testNonzeroOnStringTypeStillRejectsNumericZeroStrings()
+    {
+        // Numeric strings that equal 0 ('0', '0.0', '0e123') are still rejected:
+        // is_numeric() is true, and the loose-equality check fires.
+        $this->expectException(StrongTypeException::class);
+        new NonzeroTestString('0');
     }
 
     // Even

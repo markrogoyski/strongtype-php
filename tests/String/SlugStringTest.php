@@ -132,6 +132,7 @@ class SlugStringTest extends \PHPUnit\Framework\TestCase
             ['hello--world'],
             ['HELLO'],
             ['hello/world'],
+            ["hello-world\n"],
         ];
     }
 }

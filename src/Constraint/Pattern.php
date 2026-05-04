@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace StrongType\Constraint;
 
+use StrongType\Util\ShortClassName;
+
 #[\Attribute(\Attribute::TARGET_CLASS | \Attribute::IS_REPEATABLE)]
 final readonly class Pattern implements ConstraintInterface
 {
@@ -18,7 +20,7 @@ final readonly class Pattern implements ConstraintInterface
     #[\Override]
     public function validate(mixed $value, string $className): ?string
     {
-        $short = \substr($className, (int) \strrpos($className, '\\') + 1);
+        $short = ShortClassName::of($className);
 
         if (\is_string($value) && !\preg_match($this->pattern, $value)) {
             return "{$short} type must match pattern {$this->pattern}, got {$value}";

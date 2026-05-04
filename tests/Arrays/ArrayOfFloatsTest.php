@@ -92,6 +92,11 @@ class ArrayOfFloatsTest extends \PHPUnit\Framework\TestCase
             [[10.555], '[10.555]'],
             [[1.1, 2.2, 3.3], '[1.1,2.2,3.3]'],
             [[-4.453, 30.432, 3939.9393, 1.111], '[-4.453,30.432,3939.9393,1.111]'],
+            // NaN / INF / -INF are valid floats and must not throw from __toString().
+            [[\NAN], '[NaN]'],
+            [[\INF], '[Infinity]'],
+            [[-\INF], '[-Infinity]'],
+            [[1.5, \NAN, 2.5], '[1.5,NaN,2.5]'],
         ];
     }
 

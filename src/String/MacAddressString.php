@@ -6,7 +6,7 @@ namespace StrongType\String;
 
 use StrongType\Constraint\Pattern;
 
-#[Pattern('/^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$/')]
+#[Pattern('/\A([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}\z/')]
 readonly class MacAddressString extends NonemptyString
 {
 }

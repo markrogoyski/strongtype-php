@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace StrongType\Constraint;
 
+use StrongType\Util\ShortClassName;
+
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final readonly class InRange implements ConstraintInterface
 {
@@ -24,7 +26,7 @@ final readonly class InRange implements ConstraintInterface
     #[\Override]
     public function validate(mixed $value, string $className): ?string
     {
-        $short = \substr($className, (int) \strrpos($className, '\\') + 1);
+        $short = ShortClassName::of($className);
 
         if (\is_numeric($value)) {
             $leftBracket  = $this->exclusiveMin ? '(' : '[';

@@ -124,6 +124,7 @@ class MacAddressStringTest extends \PHPUnit\Framework\TestCase
             ['00:1A:2B:3C:4D'],
             ['GG:HH:II:JJ:KK:LL'],
             ['not-a-mac'],
+            ["00:11:22:33:44:55\n"],
         ];
     }
 }

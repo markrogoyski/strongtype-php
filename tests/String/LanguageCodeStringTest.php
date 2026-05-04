@@ -65,6 +65,7 @@ class LanguageCodeStringTest extends \PHPUnit\Framework\TestCase
             ['eng'],
             ['12'],
             ['a'],
+            ["en\n"],
         ];
     }
 }

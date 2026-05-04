@@ -143,6 +143,24 @@ class ArrayConstraintsTest extends \PHPUnit\Framework\TestCase
         new UniqueTestArr([1, 1, 2]);
     }
 
+    #[Test]
+    public function testUniqueAcceptsLooselyEqualButStrictlyDistinctValues()
+    {
+        // Strict equality: 0 !== '0', 1 !== '1', true !== 1.
+        // SORT_REGULAR-based array_unique would have collapsed these.
+        $arr = new UniqueTestArr([0, '0', 1, '1', true]);
+        $this->assertSame([0, '0', 1, '1', true], $arr->values);
+    }
+
+    #[Test]
+    public function testUniqueRejectsDuplicateNan()
+    {
+        // NAN === NAN is false in PHP, but two NaNs are indistinguishable as
+        // values; Unique treats them as duplicates.
+        $this->expectException(StrongTypeException::class);
+        new UniqueTestArr([\NAN, \NAN]);
+    }
+
     // ElementType
     #[Test]
     public function testElementTypeIntAccepts()

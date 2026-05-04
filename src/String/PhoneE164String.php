@@ -6,7 +6,7 @@ namespace StrongType\String;
 
 use StrongType\Constraint\Pattern;
 
-#[Pattern('/^\+[1-9]\d{1,14}$/')]
+#[Pattern('/\A\+[1-9]\d{1,14}\z/')]
 readonly class PhoneE164String extends NonemptyString
 {
 }

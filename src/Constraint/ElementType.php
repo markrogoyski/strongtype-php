@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace StrongType\Constraint;
 
+use StrongType\Util\ShortClassName;
+
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final readonly class ElementType implements ConstraintInterface
 {
@@ -27,7 +29,7 @@ final readonly class ElementType implements ConstraintInterface
             return null;
         }
 
-        $short = \substr($className, (int) \strrpos($className, '\\') + 1);
+        $short = ShortClassName::of($className);
 
         $checker = match ($this->type) {
             'string'   => fn(mixed $v): bool => \is_string($v),

@@ -6,7 +6,7 @@ namespace StrongType\String;
 
 use StrongType\Constraint\Pattern;
 
-#[Pattern('/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/')]
+#[Pattern('/\A#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})\z/')]
 readonly class HexColorString extends NonemptyString
 {
 }

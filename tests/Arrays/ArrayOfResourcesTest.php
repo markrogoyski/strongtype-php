@@ -124,6 +124,23 @@ class ArrayOfResourcesTest extends \PHPUnit\Framework\TestCase
     }
 
     #[Test]
+    public function testStringRepresentationDoesNotThrowOnResources()
+    {
+        // Given a resource (which json_encode cannot serialize)
+        $resource = \tmpfile();
+        $arrayOfResources = new ArrayOfResources([$resource]);
+
+        // When casting to string
+        $stringRepresentation = (string) $arrayOfResources;
+
+        // Then __toString must not throw and must produce a stable representation
+        $this->assertStringContainsString('resource(#', $stringRepresentation);
+
+        // Cleanup
+        \fclose($resource);
+    }
+
+    #[Test]
     #[DataProvider('dataProviderForInvalidValues')]
     public function testInvalidValue(array $values)
     {

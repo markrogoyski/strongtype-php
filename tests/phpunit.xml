@@ -17,9 +17,11 @@
       <directory suffix="Test.php">Constraint</directory>
       <directory suffix="Test.php">Exception</directory>
       <file>EqualsTest.php</file>
+      <file>GlobalNamespaceTypeTest.php</file>
       <file>NullableEqualsTest.php</file>
       <file>NullableFactoryTest.php</file>
       <file>NullableTest.php</file>
+      <file>ShortClassNameTest.php</file>
       <file>StringifyTest.php</file>
       <file>TryFromTest.php</file>
     </testsuite>

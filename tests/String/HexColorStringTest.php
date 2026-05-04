@@ -139,6 +139,8 @@ class HexColorStringTest extends \PHPUnit\Framework\TestCase
             ['#gggggg'],
             ['red'],
             ['#'],
+            ["#fff\n"],
+            ["#ffffff\n"],
         ];
     }
 }

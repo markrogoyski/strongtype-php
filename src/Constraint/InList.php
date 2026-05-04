@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace StrongType\Constraint;
 
+use StrongType\Util\ShortClassName;
+
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final readonly class InList implements ConstraintInterface
 {
@@ -21,7 +23,7 @@ final readonly class InList implements ConstraintInterface
     #[\Override]
     public function validate(mixed $value, string $className): ?string
     {
-        $short = \substr($className, (int) \strrpos($className, '\\') + 1);
+        $short = ShortClassName::of($className);
 
         if (!\in_array($value, $this->allowed, strict: true)) {
             $list = \implode(', ', \array_map(static fn(mixed $v): string => \is_scalar($v) || $v === null ? \strval($v) : \get_debug_type($v), $this->allowed));

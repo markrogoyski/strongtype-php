@@ -121,6 +121,7 @@ class JwtStringTest extends \PHPUnit\Framework\TestCase
             ['only.two'],
             ['.empty-header.sig'],
             ['a.b'],
+            ["a.b.c\n"],
         ];
     }
 }

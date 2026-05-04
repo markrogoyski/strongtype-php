@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace StrongType\Constraint;
 
+use StrongType\Util\ShortClassName;
+
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final readonly class IsEmpty implements ConstraintInterface
 {
     #[\Override]
     public function validate(mixed $value, string $className): ?string
     {
-        $short = \substr($className, (int) \strrpos($className, '\\') + 1);
+        $short = ShortClassName::of($className);
 
         if (\is_array($value) && \count($value) !== 0) {
             return "{$short} type must be empty, got " . \print_r($value, true);

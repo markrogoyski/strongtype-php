@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace StrongType\Constraint;
 
+use StrongType\Util\ShortClassName;
+
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final readonly class Base64 implements ConstraintInterface
 {
@@ -14,7 +16,7 @@ final readonly class Base64 implements ConstraintInterface
             return null;
         }
 
-        $short = \substr($className, (int) \strrpos($className, '\\') + 1);
+        $short = ShortClassName::of($className);
         $error = "{$short} type must be valid base64, got {$value}";
 
         // Canonical RFC 4648 §4: standard alphabet, length is a multiple of 4,

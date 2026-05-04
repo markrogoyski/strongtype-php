@@ -58,6 +58,12 @@ class UniqueArrayTest extends \PHPUnit\Framework\TestCase
             [['a', 'b', 'c']],
             [['a', 'b', 'c', 'd']],
             [[1, 2, 3, 4, 5]],
+            // Strict equality: loosely-equal scalars are *distinct* values
+            // (SORT_REGULAR-based array_unique would have collapsed these).
+            [[0, '0']],
+            [[1, '1']],
+            [[true, 1]],
+            [[false, 0, '0', null]],
         ];
     }
 
@@ -126,6 +132,9 @@ class UniqueArrayTest extends \PHPUnit\Framework\TestCase
             [['a', 'a']],
             [[1, 2, 3, 1]],
             [['hello', 'world', 'hello']],
+            // Two NaN floats are duplicates: NAN === NAN is false, but they
+            // are indistinguishable as values for uniqueness purposes.
+            [[\NAN, \NAN]],
         ];
     }
 }
