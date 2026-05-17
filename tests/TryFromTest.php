@@ -13,6 +13,7 @@ use StrongType\Float\FloatingPoint;
 use StrongType\String\NonemptyString;
 use StrongType\String\StringType;
 use StrongType\Bool\BoolType;
+use StrongType\Constraint\InList;
 use StrongType\Bool\TrueValue;
 use StrongType\Bool\FalseValue;
 use StrongType\DateTime\DateString;
@@ -98,6 +99,12 @@ class TryFromTest extends TestCase
     }
 
     #[Test]
+    public function testStringTypeMismatch(): void
+    {
+        $this->assertNull(NonemptyString::tryFrom(123));
+    }
+
+    #[Test]
     public function testAbstractStringReturnsNull(): void
     {
         $this->assertNull(StringType::tryFrom('hello'));
@@ -126,6 +133,29 @@ class TryFromTest extends TestCase
     public function testAbstractBoolReturnsNull(): void
     {
         $this->assertNull(BoolType::tryFrom(true));
+    }
+
+    #[Test]
+    public function testBoolBaseSuccess(): void
+    {
+        // Concrete BoolType subclass using the inherited tryFrom().
+        $result = InListTrueOnlyBool::tryFrom(true);
+        $this->assertInstanceOf(InListTrueOnlyBool::class, $result);
+    }
+
+    #[Test]
+    public function testBoolBaseTypeMismatch(): void
+    {
+        // Non-bool input: BoolType::tryFrom() short-circuits to null.
+        $this->assertNull(InListTrueOnlyBool::tryFrom('not a bool'));
+    }
+
+    #[Test]
+    public function testBoolBaseConstraintViolation(): void
+    {
+        // Valid bool that the constraint rejects: the StrongTypeException
+        // raised by the constructor must surface as null.
+        $this->assertNull(InListTrueOnlyBool::tryFrom(false));
     }
 
     #[Test]
@@ -171,6 +201,12 @@ class TryFromTest extends TestCase
     }
 
     #[Test]
+    public function testDateTimeTypeMismatch(): void
+    {
+        $this->assertNull(DateString::tryFrom(123));
+    }
+
+    #[Test]
     public function testAbstractDateTimeReturnsNull(): void
     {
         $this->assertNull(DateTime::tryFrom('something'));
@@ -187,6 +223,12 @@ class TryFromTest extends TestCase
     public function testArrayConstraintViolation(): void
     {
         $this->assertNull(NonemptyArray::tryFrom([]));
+    }
+
+    #[Test]
+    public function testArrayTypeMismatch(): void
+    {
+        $this->assertNull(NonemptyArray::tryFrom('not an array'));
     }
 
     #[Test]
@@ -220,4 +262,14 @@ readonly class BuggyInteger extends Integer
     {
         parent::__construct(\intdiv(1, 0));
     }
+}
+
+/**
+ * Test fixture: a concrete BoolType that keeps the inherited tryFrom() and
+ * carries a constraint, so `tryFrom(false)` exercises the StrongTypeException
+ * catch path in `BoolType::tryFrom()`.
+ */
+#[InList(true)]
+readonly class InListTrueOnlyBool extends BoolType
+{
 }

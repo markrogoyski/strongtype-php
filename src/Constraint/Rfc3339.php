@@ -54,12 +54,15 @@ final readonly class Rfc3339 implements ConstraintInterface
         $base = "{$matches[1]}T{$matches[2]}:{$parseSeconds}{$parseOffset}";
 
         $parsed = \DateTimeImmutable::createFromFormat(\DATE_RFC3339, $base);
-        if ($parsed === false) {
-            return false;
-        }
-
-        $errors = $parsed->getLastErrors();
-        if ($errors !== false && ($errors['warning_count'] > 0 || $errors['error_count'] > 0)) {
+        // $base is rebuilt from regex groups in canonical form, so createFromFormat
+        // never actually returns false here; the check remains for type narrowing
+        // and is folded into the (reachable) calendar-validity gate. getLastErrors()
+        // returns false on a clean parse — that is the success path, not a failure.
+        $errors = \DateTimeImmutable::getLastErrors();
+        if (
+            $parsed === false
+            || ($errors !== false && ($errors['warning_count'] > 0 || $errors['error_count'] > 0))
+        ) {
             return false;
         }
 

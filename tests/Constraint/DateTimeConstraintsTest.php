@@ -121,4 +121,56 @@ class DateTimeConstraintsTest extends \PHPUnit\Framework\TestCase
         $this->expectException(StrongTypeException::class);
         new PastTestInt(\time() + 86400);
     }
+
+    #[Test]
+    public function testDateFormatPriorityIsFormatBand(): void
+    {
+        // Given
+        $constraint = new DateFormat('Y-m-d');
+
+        // When
+        $priority = $constraint->priority();
+
+        // Then
+        $this->assertSame(100, $priority);
+    }
+
+    #[Test]
+    public function testTimeFormatPriorityIsFormatBand(): void
+    {
+        // Given
+        $constraint = new TimeFormat();
+
+        // When
+        $priority = $constraint->priority();
+
+        // Then
+        $this->assertSame(100, $priority);
+    }
+
+    #[Test]
+    public function testInFuturePriorityIsFormatBand(): void
+    {
+        // Given
+        $constraint = new InFuture();
+
+        // When
+        $priority = $constraint->priority();
+
+        // Then
+        $this->assertSame(100, $priority);
+    }
+
+    #[Test]
+    public function testInPastPriorityIsFormatBand(): void
+    {
+        // Given
+        $constraint = new InPast();
+
+        // When
+        $priority = $constraint->priority();
+
+        // Then
+        $this->assertSame(100, $priority);
+    }
 }

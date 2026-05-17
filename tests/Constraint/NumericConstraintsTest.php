@@ -225,4 +225,43 @@ class NumericConstraintsTest extends \PHPUnit\Framework\TestCase
         $this->expectException(StrongTypeException::class);
         new DivisibleBy3TestInt(1);
     }
+
+    #[Test]
+    public function testEvenPriorityIsRangeBand(): void
+    {
+        // Given
+        $constraint = new Even();
+
+        // When
+        $priority = $constraint->priority();
+
+        // Then
+        $this->assertSame(50, $priority);
+    }
+
+    #[Test]
+    public function testOddPriorityIsRangeBand(): void
+    {
+        // Given
+        $constraint = new Odd();
+
+        // When
+        $priority = $constraint->priority();
+
+        // Then
+        $this->assertSame(50, $priority);
+    }
+
+    #[Test]
+    public function testDivisibleByPriorityIsRangeBand(): void
+    {
+        // Given
+        $constraint = new DivisibleBy(3);
+
+        // When
+        $priority = $constraint->priority();
+
+        // Then
+        $this->assertSame(50, $priority);
+    }
 }

@@ -15,6 +15,7 @@ use StrongType\String\UuidString;
 use StrongType\Bool\TrueValue;
 use StrongType\Bool\FalseValue;
 use StrongType\DateTime\DateString;
+use StrongType\DateTime\TimeString;
 use StrongType\DateTime\Timestamp;
 use StrongType\Arrays\NonemptyArray;
 use StrongType\Arrays\ListArray;
@@ -141,6 +142,14 @@ class EqualsTest extends TestCase
     {
         $a = new DateString('2026-04-18');
         $b = new DateString('2026-04-19');
+        $this->assertFalse($a->equals($b));
+    }
+
+    #[Test]
+    public function testDateTimeNotEqualByType(): void
+    {
+        $a = new DateString('2026-04-18');
+        $b = new TimeString('10:30:00');
         $this->assertFalse($a->equals($b));
     }
 

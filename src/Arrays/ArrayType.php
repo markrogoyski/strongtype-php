@@ -67,12 +67,15 @@ abstract class ArrayType implements \JsonSerializable, \Countable, \IteratorAggr
         }
     }
 
-    /** @param array<array-key, mixed> $values */
+    /**
+     * Depth is not re-checked here: stringifyJsonishValue() is the sole gateway
+     * into this method (and into every recursive descent), and it enforces
+     * STRINGIFY_MAX_DEPTH before each hop, so the bound is already guaranteed.
+     *
+     * @param array<array-key, mixed> $values
+     */
     private static function stringifyJsonish(array $values, int $depth): string
     {
-        if ($depth >= self::STRINGIFY_MAX_DEPTH) {
-            return '"*RECURSION*"';
-        }
         $isList = \array_is_list($values);
         $parts = [];
         foreach ($values as $key => $value) {

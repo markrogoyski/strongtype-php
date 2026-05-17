@@ -51,4 +51,17 @@ class IsListTest extends TestCase
             [[1 => 'a', 0 => 'b']],
         ];
     }
+
+    #[Test]
+    public function testPriorityIsSizeBand(): void
+    {
+        // Given
+        $constraint = new IsList();
+
+        // When
+        $priority = $constraint->priority();
+
+        // Then
+        $this->assertSame(50, $priority);
+    }
 }

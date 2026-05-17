@@ -212,4 +212,82 @@ class ArrayConstraintsTest extends \PHPUnit\Framework\TestCase
         // Then
         $this->assertSame($mixedNestedContents, $arr->values);
     }
+
+    #[Test]
+    public function testExactCountPriorityIsSizeBand(): void
+    {
+        // Given
+        $constraint = new ExactCount(2);
+
+        // When
+        $priority = $constraint->priority();
+
+        // Then
+        $this->assertSame(50, $priority);
+    }
+
+    #[Test]
+    public function testMinCountPriorityIsSizeBand(): void
+    {
+        // Given
+        $constraint = new MinCount(2);
+
+        // When
+        $priority = $constraint->priority();
+
+        // Then
+        $this->assertSame(50, $priority);
+    }
+
+    #[Test]
+    public function testMaxCountPriorityIsSizeBand(): void
+    {
+        // Given
+        $constraint = new MaxCount(3);
+
+        // When
+        $priority = $constraint->priority();
+
+        // Then
+        $this->assertSame(50, $priority);
+    }
+
+    #[Test]
+    public function testIsEmptyPriorityIsSizeBand(): void
+    {
+        // Given
+        $constraint = new IsEmpty();
+
+        // When
+        $priority = $constraint->priority();
+
+        // Then
+        $this->assertSame(50, $priority);
+    }
+
+    #[Test]
+    public function testUniqueReturnsNullForNonArray(): void
+    {
+        // Given
+        $constraint = new Unique();
+
+        // When
+        $result = $constraint->validate('not an array', 'X');
+
+        // Then
+        $this->assertNull($result);
+    }
+
+    #[Test]
+    public function testElementTypeReturnsNullForNonArray(): void
+    {
+        // Given
+        $constraint = new ElementType('int');
+
+        // When
+        $result = $constraint->validate('not an array', 'X');
+
+        // Then
+        $this->assertNull($result);
+    }
 }

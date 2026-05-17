@@ -82,7 +82,24 @@ class Base64Test extends \PHPUnit\Framework\TestCase
             'extra chars after padding'        => ['aGVsbG8=extra!'],
             'padding in middle'                => ['YQ==YQ=='],
             'wrong-length valid alphabet'      => ['abcde'],
+            // Passes the alphabet/length/padding regex but is not canonical:
+            // 'YR==' decodes to one byte that re-encodes as 'YQ==', so the
+            // decode round-trip rejects it.
+            'non-canonical trailing bits'      => ['YR=='],
         ];
+    }
+
+    #[Test]
+    public function testReturnsNullForNonString(): void
+    {
+        // Given
+        $constraint = new Base64();
+
+        // When
+        $result = $constraint->validate(12345, 'X');
+
+        // Then
+        $this->assertNull($result);
     }
 
     #[Test]

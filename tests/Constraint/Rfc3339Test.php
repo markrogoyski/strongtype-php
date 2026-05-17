@@ -77,4 +77,17 @@ class Rfc3339Test extends TestCase
             ['2024-01-15 10:30:00Z'],
         ];
     }
+
+    #[Test]
+    public function testReturnsNullForNonString(): void
+    {
+        // Given
+        $constraint = new Rfc3339();
+
+        // When
+        $result = $constraint->validate(12345, 'X');
+
+        // Then
+        $this->assertNull($result);
+    }
 }

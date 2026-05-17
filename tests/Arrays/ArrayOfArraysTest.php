@@ -240,6 +240,26 @@ class ArrayOfArraysTest extends \PHPUnit\Framework\TestCase
     }
 
     #[Test]
+    public function testStringRepresentationRendersAssociativeFallback()
+    {
+        // Given a string-keyed array-of-arrays whose NAN leaf forces
+        // json_encode to throw, handing rendering to the fallback. Because the
+        // top level is associative (not a list), the fallback must JSON-encode
+        // the keys and emit an object form.
+        $arr = new ArrayOfArrays([
+            'first'  => [1],
+            'second' => [\NAN],
+            'nested' => ['inner' => 2],
+        ]);
+
+        // When casting to string
+        $rendered = (string) $arr;
+
+        // Then keys are quoted and the structure renders as a JSON object.
+        $this->assertSame('{"first":[1],"second":[NaN],"nested":{"inner":2}}', $rendered);
+    }
+
+    #[Test]
     #[DataProvider('dataProviderForInvalidValues')]
     public function testInvalidValue(array $values)
     {
