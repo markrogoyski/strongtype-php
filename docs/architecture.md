@@ -42,7 +42,7 @@ It is deliberately a precheck rather than a `catch (\ArgumentCountError)` around
 
 `ArrayType` cannot carry the consistency annotation because `FixedSizeArray` legitimately adds a `$size` parameter. The `new static` calls inside `ArrayType` are suppressed inline, and `FixedSizeArray` overrides all three factories (`withValues` handles the extra arg; `tryFrom` and `nullable` throw `\BadMethodCallException` since they cannot be satisfied without a size — the factory is intentionally unavailable, not misconfigured, so it stays out of the `ConstraintConfigurationException` category below while remaining a `\LogicException` under the hood).
 
-`BoolType` cannot carry the annotation either, because `TrueValue` and `FalseValue` narrow `bool` to `true` and `false` literal types in the constructor signature. Invalid values surface as `\TypeError` — but only because **each one overrides `tryFrom()` to pre-filter the mismatched literal before calling `parent::__construct()`** (see `TrueValue::tryFrom()` / `FalseValue::tryFrom()`). The inherited `BoolType::tryFrom()` does not do this filtering itself.
+`BoolType` cannot carry the annotation either, because `TrueValue` and `FalseValue` narrow `bool` to `true` and `false` literal types in the constructor signature. Direct construction with the wrong literal (`new TrueValue(false)`) raises `\TypeError` straight from PHP's own parameter-type check, before any validation logic runs — that is inherent to literal-type narrowing and happens regardless of `tryFrom`. Going through `tryFrom`, though, **each class overrides `tryFrom()` to pre-filter the mismatched literal before calling `parent::tryFrom()`** (see `TrueValue::tryFrom()` / `FalseValue::tryFrom()`), so `TrueValue::tryFrom(false)` returns `null` instead of leaking that same `\TypeError`. The inherited `BoolType::tryFrom()` does not do this filtering itself.
 
 **This matters for your own types.** If you define a `BoolType` subclass that narrows its constructor parameter to `true` or `false` (the same literal-type-narrowing pattern as `TrueValue`/`FalseValue`) and do *not* override `tryFrom()`, calling the inherited `tryFrom()` with the wrong literal does not return `null` the way it does for every non-narrowed `BoolType` — it forwards the value straight into `new static($value)` and lets PHP's own literal-type check raise an uncaught `\TypeError`. Copy the `TrueValue`/`FalseValue` `tryFrom()` override (pre-filter with `if ($value !== true) { return null; }` or the `false` equivalent) whenever you narrow a `BoolType` constructor this way.
 
@@ -100,7 +100,7 @@ Built-in constraints fail fast with `ConstraintConfigurationException` when conf
 | `ElementType`                     | type must be a builtin (`string`, `int`, `float`, `bool`, `array`, `object`, `callable`, `resource`, `iterable`) or an existing class/interface name |
 | `InRange`                         | `min <= max`; if equal, no exclusive flag       |
 | `InList`                          | at least one allowed value                      |
-| `DateFormat`                      | format string must be non-empty and must not contain `!` or `|` |
+| `DateFormat`                      | format string must be non-empty and must not contain an unescaped `!` or `\|` (a backslash-escaped `\!`/`\|` is a literal character and is accepted) |
 | `AnyOf`, `AllOf`                  | at least one child constraint                   |
 | `InEnum`                          | class must be an existing enum (`enum_exists`)  |
 
