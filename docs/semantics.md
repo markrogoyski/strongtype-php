@@ -10,6 +10,10 @@ Types whose values come from external registries — `CountryCodeAlpha2String`, 
 
 `Rfc3339` and `Rfc3339DateTimeString` similarly accept `:60` seconds syntactically (leap-second tolerance per the grammar) without verifying the minute is an actual IERS-inserted leap second.
 
+## Clock-relative validation
+
+`FutureTimestamp`, `PastTimestamp`, and the `InFuture`/`InPast` constraints compare the value against `time()` **once, at construction**. That comparison is not re-evaluated later: a `FutureTimestamp` holding a timestamp ten seconds out becomes a timestamp in the past ten seconds after it was built, and the object does not know or care. This is the one place the "validate once, trust everywhere" contract is time-relative rather than absolute — the value stays exactly what it was validated to be, but *what "future" means* moves on without it. If you need a timestamp that is still ahead of `time()` at the moment you read it, re-check `time()` at read time rather than trusting a previously-constructed instance.
+
 ## Byte length vs. Unicode length
 
 `MinLength` and `MaxLength` count **bytes**, not Unicode characters or grapheme clusters. They are implemented with `strlen()`. A multibyte character such as `é` (two bytes in UTF-8) consumes two units against the bound, and an emoji like `🎉` (four bytes) consumes four. This matches what most byte-oriented protocols, database columns, and storage limits actually care about, and it stays predictable across PHP installs that may or may not have `mbstring` / `intl` extensions enabled.

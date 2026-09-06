@@ -42,7 +42,7 @@ src/
   Int/                  # Integer base class + 10 concrete types
   Float/                # FloatingPoint base class + 6 concrete types
   String/               # StringType base class + 21 concrete types
-  Arrays/               # ArrayType base class + 13 concrete types
+  Arrays/               # ArrayType base class + 15 concrete types
   Bool/                 # BoolType base class + 2 concrete types
   DateTime/             # DateTime base class + 5 concrete types
   Nullable.php          # Nullable wrapper for any strong type

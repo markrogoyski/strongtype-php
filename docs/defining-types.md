@@ -240,13 +240,14 @@ Create your own constraint by implementing `ConstraintInterface`. The interface 
 ```php
 use StrongType\Constraint\ConstraintInterface;
 use StrongType\Constraint\ValueType;
+use StrongType\Util\ShortClassName;
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final readonly class Palindrome implements ConstraintInterface
 {
     public function validate(mixed $value, string $className): ?string
     {
-        $short = substr($className, strrpos($className, '\\') + 1);
+        $short = ShortClassName::of($className);
 
         if (\is_string($value) && $value !== strrev($value)) {
             return "{$short} type must be a palindrome, got {$value}";
@@ -287,6 +288,7 @@ new PalindromeString('');        // StrongTypeException -- empty (Nonempty runs 
 ```php
 use StrongType\Constraint\ConstraintInterface;
 use StrongType\Constraint\ValueType;
+use StrongType\Util\ShortClassName;
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final readonly class Luhn implements ConstraintInterface
@@ -305,7 +307,7 @@ final readonly class Luhn implements ConstraintInterface
         }
 
         if ($sum % 10 !== 0) {
-            $short = substr($className, strrpos($className, '\\') + 1);
+            $short = ShortClassName::of($className);
             return "{$short} type must pass Luhn checksum, got {$value}";
         }
 

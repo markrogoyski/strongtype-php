@@ -850,14 +850,14 @@ new ListArray([1 => 'a', 2 => 'b']);     // throws StrongTypeException — doesn
 
 ### `AssociativeArray`
 
-Non-empty array that is **not** a list. Note that `array_is_list([])` is `true`, so `[]` is rejected.
+Non-empty array that is **not** a list. `#[Nonempty]` and `#[IsAssociative]` share the same priority band (both are structural, priority 50 — see [priority ordering](defining-types.md#priority-ordering)); ties are broken by declaration order, and `AssociativeArray` declares `#[Nonempty]` first. So `[]` is rejected by `Nonempty` itself, with `Nonempty`'s "must not be empty" message — `IsAssociative` never gets a chance to also reject it as "not associative" (`array_is_list([])` is `true`, so it would). This is intentional and test-locked: `AssociativeArray` can never be empty, unlike `ListArray`, which explicitly accepts `[]`.
 
 ```php
 use StrongType\Arrays\AssociativeArray;
 
 new AssociativeArray(['name' => 'alice', 'age' => 30]);  // OK
 new AssociativeArray([1, 2, 3]);                         // throws StrongTypeException
-new AssociativeArray([]);                                // throws StrongTypeException
+new AssociativeArray([]);                                // throws StrongTypeException — Nonempty's message, not IsAssociative's
 ```
 
 ### `ArrayOfStrings`
@@ -983,7 +983,7 @@ use StrongType\Bool\TrueValue;
 new TrueValue(true);    // OK
 new TrueValue(false);   // \TypeError (PHP literal-type mismatch)
 
-(string) new TrueValue(true);    // "1"
+(string) new TrueValue(true);    // "true"
 json_encode(new TrueValue(true)); // "true"
 ```
 
@@ -1026,7 +1026,7 @@ new Timestamp(-1);            // throws StrongTypeException
 
 ### `FutureTimestamp`
 
-Integer timestamp strictly greater than `time()` at construction. Compares against externally-mutable state.
+Integer timestamp strictly greater than `time()` at construction. Compares against externally-mutable state — see [semantics.md](semantics.md#clock-relative-validation) for how the check decays as the wall clock moves on.
 
 ```php
 use StrongType\DateTime\FutureTimestamp;
@@ -1037,7 +1037,7 @@ new FutureTimestamp(time() - 60);   // throws StrongTypeException
 
 ### `PastTimestamp`
 
-Integer timestamp strictly less than `time()` at construction.
+Integer timestamp strictly less than `time()` at construction. See [semantics.md](semantics.md#clock-relative-validation) for how the check decays as the wall clock moves on.
 
 ```php
 use StrongType\DateTime\PastTimestamp;
@@ -1048,7 +1048,7 @@ new PastTimestamp(time() + 60);   // throws StrongTypeException
 
 ### `DateString`
 
-`YYYY-MM-DD` format with calendar-validity check. Uses a manual parser, so both shape failures and calendar-validity failures throw `FormatException` (a `StrongTypeException` subclass).
+`YYYY-MM-DD` format with calendar-validity check. Uses a manual parser, so both shape failures and calendar-validity failures throw `FormatException` (a `StrongTypeException` subclass). Validity is checked with `checkdate()`, whose Gregorian-calendar floor is year `1`, so year `0000` is rejected — unlike [`Rfc3339`](constraint-attributes.md#rfc3339)/[`Rfc3339DateTimeString`](#rfc3339datetimestring), which accept it (RFC 3339's grammar has no year-1 floor). Each type honors a different contract: `DateString` the Gregorian calendar, `Rfc3339` the RFC's syntax; the floors differ by design, not by bug.
 
 ```php
 use StrongType\DateTime\DateString;
@@ -1057,6 +1057,7 @@ use StrongType\Exception\FormatException;
 new DateString('2024-01-15');  // OK
 new DateString('2024-02-30');  // throws FormatException — invalid calendar date
 new DateString('15-01-2024');  // throws FormatException — wrong format
+new DateString('0000-01-01');  // throws FormatException — year 0000 is below checkdate()'s floor
 ```
 
 ### `TimeString`

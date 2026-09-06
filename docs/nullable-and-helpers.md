@@ -101,6 +101,8 @@ $a->equals(new PositiveInt(6));   // false
 PositiveInt::nullable(null);      // Nullable<PositiveInt>(null)
 ```
 
+`tryFrom` only swallows *validation* failures into `null` — a type whose constraint attributes are themselves misconfigured (e.g. `#[Positive]` on a `StringType`) still throws `ConstraintConfigurationException` from `tryFrom`, same as `new`. A programmer error in the type definition is not something a value-level API should hide behind `null`.
+
 ```php
 use StrongType\Arrays\ListArray;
 
@@ -125,7 +127,7 @@ Every strong type implements a small, stable set of standard interfaces so it ca
 
 | Interface | Where | What you get |
 | --- | --- | --- |
-| `\Stringable` | All types | `__toString()` — cast any strong type to `string` (integers/bools use `strval`; floats render through `json_encode`; strings pass through; arrays and datetimes JSON-encode). |
+| `\Stringable` | All types | `__toString()` — cast any strong type to `string` (integers use `strval`; bools render as `'true'`/`'false'`; floats render through `json_encode`; strings and datetimes pass through verbatim; arrays JSON-encode). |
 | `\JsonSerializable` | All types | `jsonSerialize()` — `json_encode($value)` produces the underlying scalar/array. |
 | `\StrongType\HasEquals` | All types and `Nullable` | `equals(HasEquals $other): bool` — strict structural equality. Lets generic code compare two strong-type instances without knowing the concrete type. Type-hint against `HasEquals` when you want to accept "any strong type" (including a `Nullable`) in a signature. |
 | `\Countable` | `ArrayType` only | `count($arr)` returns the element count. |

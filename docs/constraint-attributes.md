@@ -698,7 +698,7 @@ new JsonBlob('{a:1}');    // throws StrongTypeException
 
 ### `Rfc3339`
 
-Strict RFC 3339 date-time grammar plus calendar round-trip. `:60` accepted syntactically (leap-second tolerance).
+Strict RFC 3339 date-time grammar plus calendar round-trip. `:60` accepted syntactically (leap-second tolerance). Year `0000` is accepted — RFC 3339's grammar has no year-1 floor, unlike [`DateString`](built-in-types.md#datestring), which rejects it via `checkdate()`'s Gregorian floor. Each honors a different contract by design.
 
 **Constructor:** `Rfc3339()`
 
@@ -967,7 +967,7 @@ new ScheduledTime('14:30');     // throws StrongTypeException
 
 ### `InFuture`
 
-Integer timestamp strictly greater than `time()` at validation. Compares against externally-mutable state.
+Integer timestamp strictly greater than `time()` at validation. Compares against externally-mutable state — see [semantics.md](semantics.md#clock-relative-validation) for how the check decays as the wall clock moves on.
 
 **Constructor:** `InFuture()`
 
@@ -984,7 +984,7 @@ new ExpiryTimestamp(time() - 1);     // throws StrongTypeException
 
 ### `InPast`
 
-Integer timestamp strictly less than `time()` at validation.
+Integer timestamp strictly less than `time()` at validation. See [semantics.md](semantics.md#clock-relative-validation) for how the check decays as the wall clock moves on.
 
 **Constructor:** `InPast()`
 
