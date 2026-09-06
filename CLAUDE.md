@@ -35,7 +35,9 @@ make coverage
 src/
   Constraint/           # Attribute-based constraint system
     ConstraintInterface.php   # All constraints implement this
-    ConstraintValidator.php   # Engine: reflection, caching, validation
+    ConstraintValidator.php   # Engine: reflection, caching, applicability, validation
+    ValueType.php             # Enum: Int, Float, String, Bool, Array -- a base's value domain
+    AnyValueType.php          # Trait: acceptedValueTypes() => every type (for custom constraints)
     Min.php, Max.php, ...     # 38 built-in constraint attributes
   Int/                  # Integer base class + 10 concrete types
   Float/                # FloatingPoint base class + 6 concrete types
@@ -78,10 +80,22 @@ User subclasses with divergent constructors must follow the same pattern: overri
 
 ### Constraint System
 
-- `ConstraintInterface`: `validate(mixed $value, string $className): ?string` returns null on success, error message on failure. `priority(): int` controls execution order (lower = first).
-- `ConstraintValidator`: Reads attributes via `ReflectionClass`, walks class hierarchy (child + all parents), sorts by priority, caches per class. Static cache means reflection happens once per class per process. The cache is unbounded by design — the keyspace is the set of strong-type classes, which is bounded at compile time, so it grows once at warm-up and stays flat. Don't add eviction.
+- `ConstraintInterface`: `validate(mixed $value, string $className): ?string` returns null on success, error message on failure. `priority(): int` controls execution order (lower = first). `acceptedValueTypes(): list<ValueType>` declares the value types the constraint can engage on (see Value Type Applicability below).
+- `ConstraintValidator`: Reads attributes via `ReflectionClass`, walks class hierarchy (child + all parents), sorts by priority, checks applicability, caches per class. Static cache means reflection happens once per class per process. The cache is unbounded by design — the keyspace is the set of strong-type classes, which is bounded at compile time, so it grows once at warm-up and stays flat. Don't add eviction.
 - Priority bands: 50 (range/size), 60 (content), 100 (format), 150 (semantic), 200+ (custom).
 - Attributes use `\Attribute::TARGET_CLASS`. `Pattern` is `IS_REPEATABLE`.
+
+### Value Type Applicability
+
+Each base declares a typed class constant `final public const ValueType VALUE_TYPE` (**`final` is load-bearing** — a subclass that redeclared it could relabel its value domain and reopen the fail-open hole) (`Integer`→`Int`, `FloatingPoint`→`Float`, `StringType`→`String`, `BoolType`→`Bool`, `DateTime`→`String`, `ArrayType`→`Array`), inherited by every subclass. Every constraint declares `acceptedValueTypes(): list<ValueType>`. After collecting and sorting, `ConstraintValidator::resolveConstraints()` reads the concrete class's `VALUE_TYPE` (via `getReflectionConstant()`, so "absent" is distinguishable from a falsy value; the value itself is read through `\constant()` because `ReflectionClassConstant::getValue()` is declared as scalar/array/null and would mis-type the enum) and throws `ConstraintConfigurationException` for any constraint whose accepted set excludes it — **before** the cache assignment, so a rejected definition never poisons the cache. Message: `"{Constraint} is not applicable to {ValueType} values on {class}; it applies to [{accepted}]"` (or `"...it applies to no value type"` for an empty set).
+
+This exists because every constraint guards its own value type and returns "valid" otherwise — a fail-open default that, on a base whose value type is fixed, means the constraint can *never* engage. It closes four holes at once: a misapplied constraint validating nothing, `Even`/`Odd`/`DivisibleBy` no-op'ing on floats, `AnyOf` vacuous-pass (a non-engaging child short-circuits the OR to satisfied), and `Not` dead-type (the same child inverts to reject-everything).
+
+**Authoring a constraint:** declare only the types `validate()` genuinely inspects. `use AnyValueType;` returns `ValueType::cases()` and is for genuinely type-agnostic constraints only — it is public API for users; no built-in uses it (which is why `tools/phpstan.neon` carries a scoped `trait.unused` ignore for that one file, mirroring the consumer-facing suppressions in `tools/psalm.xml`). **A constraint's `validate()` guard must agree with its declared set** — a guard wider than the declaration re-admits the half-dead case the check exists to catch (this is why the numeric constraints guard `is_int() || is_float()` rather than `is_numeric()`, which also accepted numeric strings). Assignments: numeric (`Min`, `Max`, `InRange`, `Positive`, `Negative`, `Nonnegative`, `Nonpositive`, `Nonzero`) → `[Int, Float]`; `Finite` → `[Float]`; `Even`, `Odd`, `DivisibleBy`, `InFuture`, `InPast` → `[Int]`; all string constraints → `[String]`; all array constraints → `[Array]`; `Nonempty` → `[String, Array]` (it guards both, and backs `NonemptyString` *and* `NonemptyArray`/`AssociativeArray`).
+
+**Derived sets:** `InList` and `InEnum` compute an *instance-specific* set from their constructor arguments — `InList` from the deduped value types of its allowed values (`null`/object operands ignored; an otherwise-empty result falls back to all types so a degenerate list is never falsely rejected), `InEnum` from the enum's backing type (`[Int]` for int-backed, `[String]` for string-backed **or** pure, since a pure enum is compared against `$case->name`). Making them `AnyValueType` would re-open the hole: `#[InList(1, 2)]` on a `StringType` would pass an "any" check yet never match under strict `in_array`.
+
+**Combinators intersect:** `AnyOf`/`AllOf`/`Not` return the intersection of their children's sets (for `Not`, the single child's). Conservative, not permissive — that is what makes the vacuous-pass and dead-`Not` cases detectable. An empty intersection is a configuration error wherever the combinator is attached. Don't switch this to a union.
 
 ### Constraint Constructor Invariants
 
@@ -89,11 +103,11 @@ Constraints with constructor parameters fail fast with `StrongType\Exception\Con
 
 ### Exception Hierarchy
 
-`StrongTypeException` extends `\RuntimeException` (a validated *value* was invalid — a runtime concern). `ConstraintConfigurationException` extends `\LogicException` (a *type or constraint* is mis-defined — a programmer error) and is never also a `StrongTypeException`; the two hierarchies are independently catchable in both directions. `FixedSizeArray::tryFrom()`/`nullable()` throw plain `\BadMethodCallException` instead of `ConstraintConfigurationException` — nothing is misconfigured, the single-value factory is just intentionally unavailable without a `$size`.
+`StrongTypeException` extends `\RuntimeException` (a validated *value* was invalid — a runtime concern). `ConstraintConfigurationException` extends `\LogicException` (a *type or constraint* is mis-defined — a programmer error: an impossible constraint constructor argument, or a constraint attached to a value type it cannot engage on) and is never also a `StrongTypeException`; the two hierarchies are independently catchable in both directions. `FixedSizeArray::tryFrom()`/`nullable()` throw plain `\BadMethodCallException` instead of `ConstraintConfigurationException` — nothing is misconfigured, the single-value factory is just intentionally unavailable without a `$size`.
 
 ### Combinators
 
-`AnyOf`, `AllOf`, and `Not` are constraints that wrap other constraints. Children are passed as constructor arguments (`new` is allowed in attribute argument expressions since PHP 8.1). Combinators implement `ConstraintInterface` themselves, so they nest freely and compose with non-combinator attributes. **Effective priority is `min(children)`** (for `Not`, the single child's priority) — this is the *external* priority used by `ConstraintValidator` to order the combinator relative to sibling attributes on the same class. **Internal child order is argument order**, not priority order — `AllOf` does not sort. This is deliberate: it preserves "first-failure-wins verbatim" with predictable, author-controlled message selection, and keeps `AllOf` honest as a unit for nesting under `AnyOf` / `Not` rather than a drop-in for stacked attributes (which do sort by priority). Don't sort children inside combinators when adding new ones. Error-message policy: `AnyOf` returns `"{Short} type must satisfy one of: [child1msg | child2msg | …]"` only when *every* child fails; `AllOf` returns the first failing child's message verbatim; `Not` returns `"{Short} type must NOT satisfy {ChildShortClassName}"`. Rich inverted descriptions for `Not` would require adding a `description()` method to `ConstraintInterface`; deferred past 1.0.
+`AnyOf`, `AllOf`, and `Not` are constraints that wrap other constraints. Children are passed as constructor arguments (`new` is allowed in attribute argument expressions since PHP 8.1). Combinators implement `ConstraintInterface` themselves, so they nest freely and compose with non-combinator attributes. **Applicability is the intersection of the children's** (see Value Type Applicability). **Effective priority is `min(children)`** (for `Not`, the single child's priority) — this is the *external* priority used by `ConstraintValidator` to order the combinator relative to sibling attributes on the same class. **Internal child order is argument order**, not priority order — `AllOf` does not sort. This is deliberate: it preserves "first-failure-wins verbatim" with predictable, author-controlled message selection, and keeps `AllOf` honest as a unit for nesting under `AnyOf` / `Not` rather than a drop-in for stacked attributes (which do sort by priority). Don't sort children inside combinators when adding new ones. Error-message policy: `AnyOf` returns `"{Short} type must satisfy one of: [child1msg | child2msg | …]"` only when *every* child fails; `AllOf` returns the first failing child's message verbatim; `Not` returns `"{Short} type must NOT satisfy {ChildShortClassName}"`. Rich inverted descriptions for `Not` would require adding a `description()` method to `ConstraintInterface`; deferred past 1.0.
 
 ### Standard Interfaces
 
@@ -225,11 +239,11 @@ Keep docs in sync with code in the same change. Documentation lives in three pla
 - **`docs/`** — the deep reference. Seven topic files plus an index (`docs/README.md`), eight files total:
   - `docs/getting-started.md` — install, construction, value access, type hints, error handling.
   - `docs/built-in-types.md` — every concrete type with a usage example (catalog rows can use `// throws StrongTypeException` shorthand; verbatim messages live in the README, `docs/getting-started.md`, and one or two representative examples per category).
-  - `docs/constraint-attributes.md` — every constraint attribute with constructor signature, an example, and the priority-bands table.
-  - `docs/defining-types.md` — composition, inheritance, priority, custom constraints, combinators, wrapping enums, real-world domain modeling.
+  - `docs/constraint-attributes.md` — every constraint attribute with constructor signature, an example, the value-type applicability table, and the priority-bands table.
+  - `docs/defining-types.md` — composition, inheritance, priority, value-type applicability, custom constraints, combinators, wrapping enums, real-world domain modeling.
   - `docs/nullable-and-helpers.md` — `Nullable`, `tryFrom`, `equals`, `equalsUnordered`, `withValues`, implemented standard interfaces.
   - `docs/semantics.md` — cross-cutting policies (format-vs-registry, byte-vs-Unicode length, first-error, equality, shallow array validation, mutability).
-  - `docs/architecture.md` — internals: how the validator caches, why some types keep manual constructors, the consistent-constructor contract, the constructor-invariants table.
+  - `docs/architecture.md` — internals: how the validator caches, why some types keep manual constructors, the consistent-constructor contract, the value-type applicability check, the constructor-invariants table.
   - `docs/README.md` — index with learning paths and use-case navigation.
   When adding a type or attribute, update **the README catalog row(s) and the matching `docs/built-in-types.md` or `docs/constraint-attributes.md` subsection** in the same change. Verify any new anchor link in the README resolves to a real heading.
 - **`CHANGELOG.md`** — append a human-readable entry for any user-visible change (new type, new attribute, behavior change, bug fix).

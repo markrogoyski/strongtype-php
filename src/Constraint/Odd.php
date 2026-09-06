@@ -26,4 +26,14 @@ final readonly class Odd implements ConstraintInterface
     {
         return 50;
     }
+
+    /**
+     * @return non-empty-list<ValueType>
+     */
+    #[\Override]
+    public function acceptedValueTypes(): array
+    {
+        // The modulo predicate is integer-only: it is not meaningful for float values.
+        return [ValueType::Int];
+    }
 }

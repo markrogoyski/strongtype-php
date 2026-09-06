@@ -26,4 +26,14 @@ final readonly class InFuture implements ConstraintInterface
     {
         return 100;
     }
+
+    /**
+     * @return non-empty-list<ValueType>
+     */
+    #[\Override]
+    public function acceptedValueTypes(): array
+    {
+        // Compares against a Unix timestamp, so only integer types qualify.
+        return [ValueType::Int];
+    }
 }

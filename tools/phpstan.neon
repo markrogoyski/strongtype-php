@@ -3,3 +3,14 @@ parameters:
 	paths:
 		- ../src
 	treatPhpDocTypesAsCertain: false
+	ignoreErrors:
+		# AnyValueType is public API for user-defined constraints: it exists so a
+		# type-agnostic custom constraint can satisfy acceptedValueTypes() in one line.
+		# No built-in constraint uses it -- every one of them inspects a specific value
+		# type -- and only ../src is analysed, so its only consumers live outside these
+		# paths. Same rationale as the consumer-facing suppressions in tools/psalm.xml.
+		# Note this also means PHPStan does not analyse the trait body itself (a trait is
+		# only analysed through a using class), so keep that body trivial.
+		-
+			identifier: trait.unused
+			path: ../src/Constraint/AnyValueType.php

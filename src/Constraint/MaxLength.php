@@ -34,4 +34,13 @@ final readonly class MaxLength implements ConstraintInterface
     {
         return 50;
     }
+
+    /**
+     * @return non-empty-list<ValueType>
+     */
+    #[\Override]
+    public function acceptedValueTypes(): array
+    {
+        return [ValueType::String];
+    }
 }

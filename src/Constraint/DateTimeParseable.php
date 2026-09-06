@@ -39,4 +39,13 @@ final readonly class DateTimeParseable implements ConstraintInterface
     {
         return 150;
     }
+
+    /**
+     * @return non-empty-list<ValueType>
+     */
+    #[\Override]
+    public function acceptedValueTypes(): array
+    {
+        return [ValueType::String];
+    }
 }

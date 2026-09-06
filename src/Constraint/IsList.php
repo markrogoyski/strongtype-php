@@ -26,4 +26,13 @@ final readonly class IsList implements ConstraintInterface
     {
         return 50;
     }
+
+    /**
+     * @return non-empty-list<ValueType>
+     */
+    #[\Override]
+    public function acceptedValueTypes(): array
+    {
+        return [ValueType::Array];
+    }
 }

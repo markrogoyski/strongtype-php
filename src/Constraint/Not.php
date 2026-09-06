@@ -32,4 +32,17 @@ final readonly class Not implements ConstraintInterface
     {
         return $this->child->priority();
     }
+
+    /**
+     * The child's set. A child that cannot engage always "passes", which inverts to a
+     * `Not` that rejects every value -- so the child's domain is exactly the domain on
+     * which the inversion is meaningful.
+     *
+     * @return list<ValueType>
+     */
+    #[\Override]
+    public function acceptedValueTypes(): array
+    {
+        return $this->child->acceptedValueTypes();
+    }
 }

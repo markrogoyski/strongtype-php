@@ -12,7 +12,7 @@ final readonly class Nonzero implements ConstraintInterface
     #[\Override]
     public function validate(mixed $value, string $className): ?string
     {
-        if (\is_numeric($value) && $value == 0) {
+        if ((\is_int($value) || \is_float($value)) && $value == 0) {
             $short = ShortClassName::of($className);
             return "{$short} type must not be 0, got {$value}";
         }
@@ -24,5 +24,14 @@ final readonly class Nonzero implements ConstraintInterface
     public function priority(): int
     {
         return 50;
+    }
+
+    /**
+     * @return non-empty-list<ValueType>
+     */
+    #[\Override]
+    public function acceptedValueTypes(): array
+    {
+        return [ValueType::Int, ValueType::Float];
     }
 }

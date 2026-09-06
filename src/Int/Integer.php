@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace StrongType\Int;
 
 use StrongType\Constraint\ConstraintValidator;
+use StrongType\Constraint\ValueType;
 use StrongType\Exception\StrongTypeException;
 use StrongType\HasEquals;
 
@@ -14,6 +15,8 @@ use StrongType\HasEquals;
  */
 readonly abstract class Integer implements \JsonSerializable, \Stringable, HasEquals
 {
+    final public const ValueType VALUE_TYPE = ValueType::Int;
+
     public function __construct(public int $value)
     {
         ConstraintValidator::validate($this, $this->value);

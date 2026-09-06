@@ -233,12 +233,13 @@ new ColorName('red');  // StrongTypeException -- case names are case-sensitive
 
 ## Custom constraints
 
-Create your own constraint by implementing `ConstraintInterface`. The interface has just two methods: `validate()` returns `null` on success or an error message string on failure, and `priority()` controls execution order.
+Create your own constraint by implementing `ConstraintInterface`. The interface has three methods: `validate()` returns `null` on success or an error message string on failure, `priority()` controls execution order, and `acceptedValueTypes()` declares which [value types](#value-type-applicability) the constraint applies to.
 
 ### A minimal example: `Palindrome`
 
 ```php
 use StrongType\Constraint\ConstraintInterface;
+use StrongType\Constraint\ValueType;
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final readonly class Palindrome implements ConstraintInterface
@@ -257,6 +258,12 @@ final readonly class Palindrome implements ConstraintInterface
     public function priority(): int
     {
         return 200; // Custom constraints typically use 200+
+    }
+
+    /** @return non-empty-list<ValueType> */
+    public function acceptedValueTypes(): array
+    {
+        return [ValueType::String]; // strrev() only means anything for strings
     }
 }
 ```
@@ -279,6 +286,7 @@ new PalindromeString('');        // StrongTypeException -- empty (Nonempty runs 
 
 ```php
 use StrongType\Constraint\ConstraintInterface;
+use StrongType\Constraint\ValueType;
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final readonly class Luhn implements ConstraintInterface
@@ -308,6 +316,12 @@ final readonly class Luhn implements ConstraintInterface
     {
         return 200; // Runs after format checks
     }
+
+    /** @return non-empty-list<ValueType> */
+    public function acceptedValueTypes(): array
+    {
+        return [ValueType::String];
+    }
 }
 ```
 
@@ -325,6 +339,121 @@ new CreditCardNumber('1234567890123456'); // StrongTypeException -- fails Luhn
 ```
 
 No registration step — the validator automatically discovers any attribute implementing `ConstraintInterface`.
+
+## Value type applicability
+
+Every base type holds exactly one PHP value type, declared as a `VALUE_TYPE` class constant and inherited by every subclass:
+
+| Base | `VALUE_TYPE` |
+|------|--------------|
+| `Integer` | `ValueType::Int` |
+| `FloatingPoint` | `ValueType::Float` |
+| `StringType` | `ValueType::String` |
+| `BoolType` | `ValueType::Bool` |
+| `DateTime` | `ValueType::String` |
+| `ArrayType` | `ValueType::Array` |
+
+The constant is `final` — a subclass cannot relabel the value type it inherits.
+
+Every constraint declares the value types it applies to via `acceptedValueTypes()`. When `ConstraintValidator` first resolves a class's constraints, it checks each one against that class's `VALUE_TYPE` and throws `ConstraintConfigurationException` if the constraint could never engage:
+
+```php
+use StrongType\Constraint\{Positive, Even, Finite};
+
+#[Positive]
+readonly class Score extends StringType {}
+
+new Score('abc');
+// ConstraintConfigurationException:
+// Positive is not applicable to String values on Score; it applies to [Int, Float]
+
+#[Even]
+readonly class Ratio extends FloatingPoint {}   // Even applies to [Int]
+
+#[Finite]
+readonly class Count extends Integer {}          // Finite applies to [Float]
+```
+
+This is a **type-definition** error, not a validation failure: it is a `ConstraintConfigurationException` (a `\LogicException`), deliberately outside the `StrongTypeException` hierarchy, and it fires regardless of the value being constructed. It surfaces on the first construction of a value of that type — the same moment as the [constraint constructor invariants](architecture.md#constructor-invariants) — because that is when constraints are resolved.
+
+Without the check, a misapplied constraint would silently accept everything: every built-in constraint guards its value type (`is_string()`, `is_int() || is_float()`, …) and returns "valid" for anything else. The check turns three otherwise-invisible failure modes into loud errors:
+
+- **A misapplied constraint** validates nothing at all.
+- **`AnyOf` passes vacuously** — a child that cannot engage always "succeeds", so the whole `AnyOf` short-circuits to satisfied and accepts every value.
+- **`Not` rejects everything** — a child that cannot engage always "succeeds", so its inversion always fails.
+
+### Declaring a custom constraint's applicability
+
+Declare the types your `validate()` genuinely inspects:
+
+```php
+use StrongType\Constraint\{ConstraintInterface, ValueType};
+
+/** @return non-empty-list<ValueType> */
+public function acceptedValueTypes(): array
+{
+    return [ValueType::Int, ValueType::Float];
+}
+```
+
+For a constraint that is genuinely meaningful on every base — one whose predicate does not inspect a specific PHP type — the `AnyValueType` trait is a one-liner:
+
+```php
+use StrongType\Constraint\{AnyValueType, ConstraintInterface};
+
+#[\Attribute(\Attribute::TARGET_CLASS)]
+final readonly class NotDenylisted implements ConstraintInterface
+{
+    use AnyValueType;
+
+    public function validate(mixed $value, string $className): ?string { /* ... */ }
+    public function priority(): int { return 200; }
+}
+```
+
+Reach for it only when it is true. A constraint that guards on `is_string()` but declares "any" is silently dead on every other base — exactly what the applicability check exists to prevent.
+
+### `InList` and `InEnum` derive their domain from their arguments
+
+These two constraints have no fixed domain, so they compute one per instance from the values they were configured with:
+
+- **`InList`** takes the deduplicated value types of its allowed values. Membership is tested with `in_array(..., strict: true)`, so `#[InList(1, 2)]` on a `StringType` could never match a single value — and is now a definition error rather than a type that rejects everything. `null` and object operands are ignored (a strong type's value is never either), and an allowed set containing nothing else falls back to every type. That fallback is deliberately permissive — such a list can never match on any base either, but the check adjudicates domain *mismatches*, not empty domains, so it stays a runtime validation failure rather than a definition error. The same applies to a caseless *pure* enum under `InEnum` (a caseless *backed* enum still reports its backing type).
+- **`InEnum`** takes `[ValueType::Int]` for an int-backed enum and `[ValueType::String]` for a string-backed or pure enum (a pure enum is compared against its case *names*, which are strings).
+
+```php
+#[InList(1, 2, 3)]
+readonly class SmallCount extends Integer {}      // OK
+
+#[InList('red', 'green')]
+readonly class ColorName extends StringType {}    // OK
+
+#[InEnum(Priority::class)]                        // enum Priority: int
+readonly class TaskPriority extends Integer {}    // OK
+
+#[InEnum(Priority::class)]
+readonly class BadPriority extends StringType {}
+// ConstraintConfigurationException:
+// InEnum is not applicable to String values on BadPriority; it applies to [Int]
+```
+
+The trade-off: an `InList` deliberately mixing domains (`#[InList(1, 'one')]`) applies to *both*, so it can be attached to an `Integer` or a `StringType` base — but not to a base outside the operand types.
+
+### Combinator applicability is the intersection of its children
+
+`AnyOf`, `AllOf`, and `Not` derive their accepted set from their children — the **intersection**, not the union:
+
+```php
+#[AnyOf(new Even(), new Min(100))]
+readonly class Throughput extends Integer {}
+// [Int] ∩ [Int, Float] = [Int] — applicable to an Integer base
+
+#[AnyOf(new Min(0), new Pattern('/^SKU-/'))]
+readonly class OrderRef extends Integer {}
+// [Int, Float] ∩ [String] = [] — ConstraintConfigurationException wherever attached:
+// "AnyOf is not applicable to Int values on OrderRef; it applies to no value type"
+```
+
+Requiring *every* child to apply is what keeps the combinators honest: a child that cannot engage contributes nothing to an `AllOf`, silently satisfies an `AnyOf`, and inverts a `Not` into a reject-everything constraint. An empty intersection means no single base is supported by *every* child, so the combinator cannot engage anywhere and is a configuration error wherever it appears.
 
 ## Real-world domain modeling
 

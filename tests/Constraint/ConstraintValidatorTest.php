@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace StrongType\Tests\Constraint;
 
+use StrongType\Constraint\AnyValueType;
 use StrongType\Constraint\ConstraintInterface;
 use StrongType\Constraint\Min;
 use StrongType\Constraint\Max;
@@ -66,6 +67,9 @@ final class PriorityCollisionTracker
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final readonly class TaggedCollisionA implements ConstraintInterface
 {
+    // Type-agnostic recorder: it inspects nothing, so it applies to every value type.
+    use AnyValueType;
+
     #[\Override]
     public function validate(mixed $value, string $className): ?string
     {
@@ -83,6 +87,9 @@ final readonly class TaggedCollisionA implements ConstraintInterface
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final readonly class TaggedCollisionB implements ConstraintInterface
 {
+    // Type-agnostic recorder: it inspects nothing, so it applies to every value type.
+    use AnyValueType;
+
     #[\Override]
     public function validate(mixed $value, string $className): ?string
     {
@@ -114,6 +121,9 @@ final class ShortCircuitTracker
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final readonly class FailingFirstConstraint implements ConstraintInterface
 {
+    // Type-agnostic recorder: it inspects nothing, so it applies to every value type.
+    use AnyValueType;
+
     #[\Override]
     public function validate(mixed $value, string $className): ?string
     {
@@ -131,6 +141,9 @@ final readonly class FailingFirstConstraint implements ConstraintInterface
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final readonly class RecordingSecondConstraint implements ConstraintInterface
 {
+    // Type-agnostic recorder: it inspects nothing, so it applies to every value type.
+    use AnyValueType;
+
     #[\Override]
     public function validate(mixed $value, string $className): ?string
     {

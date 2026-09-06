@@ -30,4 +30,15 @@ final readonly class Nonempty implements ConstraintInterface
     {
         return 50;
     }
+
+    /**
+     * @return non-empty-list<ValueType>
+     */
+    #[\Override]
+    public function acceptedValueTypes(): array
+    {
+        // Guards both is_string() and is_array(): NonemptyString is a string type,
+        // NonemptyArray and AssociativeArray are array types.
+        return [ValueType::String, ValueType::Array];
+    }
 }

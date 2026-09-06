@@ -26,4 +26,13 @@ final readonly class Uuid implements ConstraintInterface
     {
         return 150;
     }
+
+    /**
+     * @return non-empty-list<ValueType>
+     */
+    #[\Override]
+    public function acceptedValueTypes(): array
+    {
+        return [ValueType::String];
+    }
 }

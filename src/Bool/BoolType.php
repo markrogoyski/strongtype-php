@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace StrongType\Bool;
 
 use StrongType\Constraint\ConstraintValidator;
+use StrongType\Constraint\ValueType;
 use StrongType\Exception\StrongTypeException;
 use StrongType\HasEquals;
 
 readonly abstract class BoolType implements \JsonSerializable, \Stringable, HasEquals
 {
+    final public const ValueType VALUE_TYPE = ValueType::Bool;
+
     public function __construct(public bool $value)
     {
         ConstraintValidator::validate($this, $this->value);

@@ -173,7 +173,7 @@ Float subtypes reject `INF`, `-INF`, and `NAN` by default (via inherited `#[Fini
 
 ## Constraint Attributes
 
-Stack attributes on the matching base type shown below — each attribute only validates against the value type it's designed for. Putting a string-only attribute (e.g. `#[Email]`) on an `Integer` subclass is a silent no-op, not a definition-time error.
+Stack attributes on the matching base type shown below — each attribute only validates against the value type it's designed for. Putting a string-only attribute (e.g. `#[Email]`) on an `Integer` subclass throws `ConstraintConfigurationException` the first time such a value is constructed: the constraint could never engage, so it is a type-definition error rather than a silent no-op. See [value type applicability](docs/constraint-attributes.md#value-type-applicability).
 
 ### Numeric
 
@@ -259,6 +259,8 @@ Stack attributes on the matching base type shown below — each attribute only v
 | [`AllOf`](docs/constraint-attributes.md#allof) | All children pass; first failure wins |
 | [`Not`](docs/constraint-attributes.md#not) | Inverts a single child |
 
+Every attribute applies to a fixed set of value types — numeric attributes to `Integer` / `FloatingPoint`, string attributes to `StringType` / `DateTime`, and so on. Attaching one to a base it cannot engage on throws `ConstraintConfigurationException` at type-definition time rather than silently validating nothing. **[Full applicability reference →](docs/constraint-attributes.md#value-type-applicability)**
+
 ## Defining Your Own Types
 
 Constraints inherit through the class hierarchy — stack attributes on a child class to layer additional rules on top of an existing validated type:
@@ -279,7 +281,9 @@ new CasePackQuantity(13);   // StrongTypeException -- not divisible by 12
 new CasePackQuantity(1008); // StrongTypeException -- exceeds Max(1000) (inherited)
 ```
 
-**[Full guide: defining types, inheritance, priority, custom constraints, combinators, wrapping enums →](docs/defining-types.md)**
+A custom constraint implements `ConstraintInterface`: `validate()` returns `null` or an error message, `priority()` orders execution, and `acceptedValueTypes()` declares the value types it applies to (the `AnyValueType` trait covers a type-agnostic one).
+
+**[Full guide: defining types, inheritance, priority, applicability, custom constraints, combinators, wrapping enums →](docs/defining-types.md)**
 
 ## Error Handling
 
@@ -292,6 +296,7 @@ new CasePackQuantity(1008); // StrongTypeException -- exceeds Max(1000) (inherit
 | Constraint attribute fails during validation | `ConstraintViolationException` |
 | Manual parse fails in `DateString` / `TimeString` | `FormatException` |
 | Constraint or type is misconfigured (e.g. `new DivisibleBy(0)`) | `ConstraintConfigurationException` |
+| Constraint attached to a value type it cannot engage on (e.g. `#[Positive]` on a `StringType`) | `ConstraintConfigurationException` |
 
 > **Strict types matter.** `\TypeError` for `new PositiveInt('5')` only fires from a caller file declared with `declare(strict_types=1)`. Without it, PHP coerces `'5'` to `5` and construction succeeds. Always declare strict types in your application code so type mismatches surface immediately.
 

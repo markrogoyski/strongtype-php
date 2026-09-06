@@ -12,6 +12,7 @@ use StrongType\Constraint\Nonzero;
 use StrongType\Constraint\Even;
 use StrongType\Constraint\Odd;
 use StrongType\Constraint\DivisibleBy;
+use StrongType\Exception\ConstraintConfigurationException;
 use StrongType\Exception\StrongTypeException;
 use StrongType\Int\Integer;
 use StrongType\Float\FloatingPoint;
@@ -46,7 +47,8 @@ use PHPUnit\Framework\Attributes\Test;
 #[Positive] readonly class PositiveTestFloat extends FloatingPoint
 {
 }
-// String-typed Nonzero fixture: numeric constraints must not fire on non-numeric values.
+// String-typed Nonzero fixture: a numeric constraint on a string base can never engage,
+// so the definition itself is rejected the first time the type is constructed.
 #[Nonzero] readonly class NonzeroTestString extends StringType
 {
 }
@@ -140,24 +142,15 @@ class NumericConstraintsTest extends \PHPUnit\Framework\TestCase
     }
 
     #[Test]
-    public function testNonzeroOnStringTypeIgnoresNonNumericValues()
+    public function testNonzeroOnStringTypeIsADefinitionError()
     {
-        // Given a non-numeric string value
-        // When constructing a string type that carries #[Nonzero]
-        $str = new NonzeroTestString('hello');
+        // Then -- a numeric constraint on a string base could only ever pass every value,
+        // so it is rejected as a mis-defined type rather than silently no-op'ing.
+        $this->expectException(ConstraintConfigurationException::class);
+        $this->expectExceptionMessage('Nonzero is not applicable to String values');
 
-        // Then the constraint must not fire (it only applies to numeric values),
-        // matching the gating behavior of sibling numeric constraints.
-        $this->assertSame('hello', $str->value);
-    }
-
-    #[Test]
-    public function testNonzeroOnStringTypeStillRejectsNumericZeroStrings()
-    {
-        // Numeric strings that equal 0 ('0', '0.0', '0e123') are still rejected:
-        // is_numeric() is true, and the loose-equality check fires.
-        $this->expectException(StrongTypeException::class);
-        new NonzeroTestString('0');
+        // When
+        new NonzeroTestString('hello');
     }
 
     // Even

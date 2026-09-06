@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace StrongType\DateTime;
 
 use StrongType\Constraint\ConstraintValidator;
+use StrongType\Constraint\ValueType;
 use StrongType\Exception\StrongTypeException;
 use StrongType\HasEquals;
 
@@ -14,6 +15,8 @@ use StrongType\HasEquals;
  */
 readonly abstract class DateTime implements \JsonSerializable, \Stringable, HasEquals
 {
+    final public const ValueType VALUE_TYPE = ValueType::String;
+
     public function __construct(public string $value)
     {
         ConstraintValidator::validate($this, $this->value);

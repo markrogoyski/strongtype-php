@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace StrongType\Arrays;
 
 use StrongType\Constraint\ConstraintValidator;
+use StrongType\Constraint\ValueType;
 use StrongType\Exception\StrongTypeException;
 use StrongType\HasEquals;
 use StrongType\Util\Stringify;
@@ -16,6 +17,8 @@ use StrongType\Util\Stringify;
  */
 abstract class ArrayType implements \JsonSerializable, \Countable, \IteratorAggregate, \Stringable, HasEquals
 {
+    final public const ValueType VALUE_TYPE = ValueType::Array;
+
     /** @var array<TKey, TValue> */
     public protected(set) array $values;
 

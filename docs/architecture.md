@@ -2,13 +2,13 @@
 
 Back to [README](../README.md) · [Documentation index](README.md)
 
-This document explains how the constraint system works internally, why a small set of types intentionally keeps hand-written constructors, the consistent-constructor contract that the inherited factories rely on, and the constructor invariants that fail fast when a constraint is configured impossibly.
+This document explains how the constraint system works internally, why a small set of types intentionally keeps hand-written constructors, the consistent-constructor contract that the inherited factories rely on, the value-type applicability check that rejects constraints which could never engage, and the constructor invariants that fail fast when a constraint is configured impossibly.
 
 ## How the constraint system works
 
 The constraint system uses PHP 8 attributes and reflection:
 
-1. **At first instantiation** of a type, `ConstraintValidator` reads all `ConstraintInterface` attributes from the class and its parents via reflection, sorts them by priority, and caches the result.
+1. **At first instantiation** of a type, `ConstraintValidator` reads all `ConstraintInterface` attributes from the class and its parents via reflection, sorts them by priority, [checks each one against the class's value type](#value-type-applicability), and caches the result.
 2. **On every instantiation**, it iterates the cached constraint list and calls `validate()` on each. The first failure throws `ConstraintViolationException` (a `StrongTypeException` subclass, which extends `\RuntimeException` — validation failures come from runtime input).
 3. **Subsequent instantiations** skip reflection entirely — it's a hash lookup plus iterating a small array.
 
@@ -41,6 +41,45 @@ The rule when you're defining your own types: **use attributes for value-shape r
 `BoolType` cannot carry the annotation either, because `TrueValue` and `FalseValue` narrow `bool` to `true` and `false` literal types in the constructor signature. Invalid values surface as `\TypeError`, which `tryFrom` catches.
 
 User subclasses that diverge from the base constructor must follow the same pattern: override the inherited factories, or only call the base constructor signature you actually support.
+
+## Value type applicability
+
+Every base declares the single PHP value type it holds as a typed class constant, inherited by every subclass:
+
+| Base | `VALUE_TYPE` |
+|------|--------------|
+| `Integer` | `ValueType::Int` |
+| `FloatingPoint` | `ValueType::Float` |
+| `StringType` | `ValueType::String` |
+| `BoolType` | `ValueType::Bool` |
+| `DateTime` | `ValueType::String` |
+| `ArrayType` | `ValueType::Array` |
+
+The constant is `final`: a subclass that redeclared it could relabel its own value domain and reopen the very hole this check closes.
+
+Every constraint declares the value types it can engage on via `ConstraintInterface::acceptedValueTypes(): list<ValueType>`. After `resolveConstraints()` has collected and sorted a class's constraints — and after the constructor invariants below have had their chance to fire — it reads the concrete class's `VALUE_TYPE` once and rejects any constraint whose accepted set excludes it:
+
+```
+Positive is not applicable to String values on App\Score; it applies to [Int, Float]
+```
+
+The throw happens **before** the resolved list is written to the cache, so a rejected definition never poisons the cache — and because nothing was cached, every subsequent construction of that class re-resolves and re-throws rather than silently succeeding. The cache therefore holds one entry per *successfully* resolved class, and the timing of the error matches the constructor invariants exactly (once resolved, on the first construction of a value of that type).
+
+**Why this is definition-time, not validation-time.** Every constraint guards its own value type (`is_string()`, `is_int() || is_float()`, …) and returns "valid" for anything else — a fail-open default that is correct within a single `validate()` call but wrong across a whole type. Because a base's value type is *fixed*, an inapplicable constraint can never engage on any value of that type, so the honest answer is to reject the definition rather than silently pass every value. That closes these failure modes at once:
+
+- A **misapplied constraint** (`#[Positive]` on a `StringType`) validates nothing.
+- **`Even` / `Odd` / `DivisibleBy` on a float type** no-op, because they guard `is_int()`.
+- **A numeric constraint on a string type** was only *half* dead — `is_numeric()` let `#[Positive]` reject `'-1'` while silently accepting every non-numeric string. Those guards are now `is_int() || is_float()`, matching the declared set, so the whole case is a definition error.
+- **`AnyOf` passes vacuously**: a child that cannot engage always "succeeds", so the OR short-circuits to satisfied and the type accepts everything.
+- **`Not` rejects everything**: the same always-succeeding child inverts to an always-failing constraint.
+
+**Derived sets.** Two constraints have no fixed domain and compute one per instance from their arguments — `InList` from the value types of its allowed values, `InEnum` from the enum's backing type (`Int` for an int-backed enum, `String` for a string-backed or pure one, since a pure enum is compared against its case names). Declaring them as "applies to anything" would have re-opened the same hole: `#[InList(1, 2)]` on a `StringType` passes an "any" check yet, under strict membership, could never match a value.
+
+**Combinators intersect.** `AnyOf`, `AllOf`, and `Not` derive their accepted set as the intersection of their children's. That is the conservative rule, and it is what makes the vacuous-pass and dead-`Not` cases above detectable. An empty intersection — children with no value type in common — means the combinator can never engage on any single type, so it is a configuration error wherever it is attached.
+
+**Custom constraints** must implement `acceptedValueTypes()`; it is a required interface method rather than an opt-in capability, because a partial guarantee would leave exactly the holes this check exists to close. The `AnyValueType` trait returns `ValueType::cases()` for a genuinely type-agnostic constraint in one line. No built-in uses it — every built-in inspects a specific value type.
+
+A class that does not declare `VALUE_TYPE` at all is skipped: it is not a strong type, so there is no domain to check against. `getReflectionConstant()` is used rather than `getConstant()` so that "absent" is distinguishable from a legitimately falsy constant value.
 
 ## Constructor invariants
 
@@ -84,11 +123,11 @@ Two independently catchable categories separate *what went wrong* from *who's at
 
 `StrongTypeException` extends `\RuntimeException`: every validation failure is triggered by a caller-supplied runtime value, so `catch (StrongTypeException $e)` (or the broader `catch (\RuntimeException $e)`) uniformly catches every invalid-value case across every type.
 
-`ConstraintConfigurationException` extends `\LogicException` and is the single catchable category for type/constraint mis-definition: an impossible constraint constructor argument (`new DivisibleBy(0)`), a combinator with zero children, or a `Nullable` pointed at a non-strong-type or abstract class. `catch (ConstraintConfigurationException $e)` (or `catch (\LogicException $e)`) catches every type-definition bug, cleanly separated from `StrongTypeException` in both directions — a `ConstraintConfigurationException` is never also a `StrongTypeException`, and vice versa.
+`ConstraintConfigurationException` extends `\LogicException` and is the single catchable category for type/constraint mis-definition: an impossible constraint constructor argument (`new DivisibleBy(0)`), a combinator with zero children, [a constraint attached to a value type it cannot engage on](#value-type-applicability), or a `Nullable` pointed at a non-strong-type or abstract class. `catch (ConstraintConfigurationException $e)` (or `catch (\LogicException $e)`) catches every type-definition bug, cleanly separated from `StrongTypeException` in both directions — a `ConstraintConfigurationException` is never also a `StrongTypeException`, and vice versa.
 
 `FixedSizeArray::tryFrom()` / `::nullable()` throw plain `\BadMethodCallException` rather than `ConstraintConfigurationException`: nothing about the type is misconfigured — the single-value factories are intentionally unavailable because `FixedSizeArray` requires a runtime `$size` they cannot supply. `\BadMethodCallException extends \LogicException`, so it still lands in the programmer-error bucket without claiming to be a configuration error.
 
-These are deliberately not caught by `StrongTypeException`. A divisor of zero, a regex that fails to compile, or an unavailable factory method is a bug in the type definition or its usage, not a runtime validation failure on a user-supplied value.
+These are deliberately not caught by `StrongTypeException`. A divisor of zero, a regex that fails to compile, a `#[Positive]` on a string type, or an unavailable factory method is a bug in the type definition or its usage, not a runtime validation failure on a user-supplied value.
 
 ---
 

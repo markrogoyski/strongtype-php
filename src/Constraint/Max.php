@@ -20,7 +20,7 @@ final readonly class Max implements ConstraintInterface
     {
         $short = ShortClassName::of($className);
 
-        if (\is_numeric($value)) {
+        if (\is_int($value) || \is_float($value)) {
             if ($this->exclusive) {
                 if ($value >= $this->max) {
                     return "{$short} type must be < {$this->max}, got {$value}";
@@ -39,5 +39,14 @@ final readonly class Max implements ConstraintInterface
     public function priority(): int
     {
         return 50;
+    }
+
+    /**
+     * @return non-empty-list<ValueType>
+     */
+    #[\Override]
+    public function acceptedValueTypes(): array
+    {
+        return [ValueType::Int, ValueType::Float];
     }
 }

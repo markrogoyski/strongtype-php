@@ -27,4 +27,14 @@ final readonly class Finite implements ConstraintInterface
     {
         return 40;
     }
+
+    /**
+     * @return non-empty-list<ValueType>
+     */
+    #[\Override]
+    public function acceptedValueTypes(): array
+    {
+        // Only floats carry INF/NAN; every other value type is finite by construction.
+        return [ValueType::Float];
+    }
 }

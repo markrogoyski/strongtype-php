@@ -13,13 +13,15 @@ The catalog covers six categories:
 - [Enum](#enum) — 1 attribute
 - [Combinators](#combinators) — 3 attributes
 
-The full priority-bands reference for ordering attribute execution is at the [bottom of this file](#priority-bands).
+The full priority-bands reference for ordering attribute execution is at the [bottom of this file](#priority-bands), and the full value-type applicability reference is in [Value type applicability](#value-type-applicability).
+
+Each category below lists the bases its attributes apply to. Applicability is **enforced**: attaching a constraint to a base it cannot engage on throws `ConstraintConfigurationException` the first time a value of that type is constructed. See [Value type applicability](#value-type-applicability).
 
 ---
 
 ## Numeric
 
-These attributes apply to `Integer` and `FloatingPoint` subclasses.
+These attributes apply to `Integer` and `FloatingPoint` subclasses, with three exceptions: `Even`, `Odd`, and `DivisibleBy` are integer-only (the modulo predicate is not meaningful for floats), `Finite` is float-only, and `InList` applies to whichever types its allowed values have.
 
 | Attribute | Parameters | Description |
 | --- | --- | --- |
@@ -31,11 +33,11 @@ These attributes apply to `Integer` and `FloatingPoint` subclasses.
 | [`Nonnegative`](#nonnegative) | none | `>= 0` |
 | [`Nonpositive`](#nonpositive) | none | `<= 0` |
 | [`Nonzero`](#nonzero) | none | `!= 0` |
-| [`Even`](#even) | none | `% 2 === 0` |
-| [`Odd`](#odd) | none | `% 2 !== 0` |
-| [`DivisibleBy`](#divisibleby) | `int $divisor` | `% $divisor === 0` |
-| [`Finite`](#finite) | none | Rejects `INF`, `-INF`, `NAN` (auto-applied to every `FloatingPoint` subtype) |
-| [`InList`](#inlist) | `mixed ...$allowed` | Strict allowlist membership |
+| [`Even`](#even) | none | `% 2 === 0` (`Integer` only) |
+| [`Odd`](#odd) | none | `% 2 !== 0` (`Integer` only) |
+| [`DivisibleBy`](#divisibleby) | `int $divisor` | `% $divisor === 0` (`Integer` only) |
+| [`Finite`](#finite) | none | Rejects `INF`, `-INF`, `NAN` (`FloatingPoint` only; auto-applied to every `FloatingPoint` subtype) |
+| [`InList`](#inlist) | `mixed ...$allowed` | Strict allowlist membership (applies to the value types of `$allowed`) |
 
 ### `Min`
 
@@ -237,7 +239,9 @@ new CentAmount(150);   // throws StrongTypeException
 
 ### `Finite`
 
-Rejects `INF`, `-INF`, and `NAN`. Already auto-applied to every `FloatingPoint` subtype at priority 40 (before any range check). Add it explicitly only if you've subclassed a non-Float base and want similar protection.
+Rejects `INF`, `-INF`, and `NAN`. Already auto-applied to every `FloatingPoint` subtype at priority 40 (before any range check), so you never need to add it yourself.
+
+**Applies to:** `FloatingPoint`. Only floats can carry `INF` / `NAN`, so `#[Finite]` on any other base is a definition error (`ConstraintConfigurationException`), not a silent no-op.
 
 **Constructor:** `Finite()`
 
@@ -257,6 +261,8 @@ Strict membership check against an allowlist.
 
 **Constructor invariants:** zero allowed values raises `ConstraintConfigurationException`.
 
+**Applies to:** the value types of `$allowed`, deduplicated — `#[InList(1, 2)]` applies to `Integer`, `#[InList('a', 'b')]` to `StringType`, `#[InList(1, 'a')]` to either. Membership is strict, so an operand-domain mismatch could never match a single value and is rejected as a definition error. `null` and object operands are ignored; an allowed set of nothing else falls back to every type — such a list can never match on any base either, but that stays a runtime validation failure rather than a definition error.
+
 ```php
 use StrongType\Constraint\InList;
 use StrongType\Int\Integer;
@@ -272,7 +278,7 @@ new CoinDenomination(3);   // throws StrongTypeException
 
 ## String
 
-These attributes apply to `StringType` subclasses.
+These attributes apply to `StringType` and `DateTime` subclasses (both hold a `string`). `Nonempty` additionally applies to `ArrayType`.
 
 | Attribute | Parameters | Description |
 | --- | --- | --- |
@@ -729,7 +735,7 @@ new FlexibleDate('  2024-01-15  '); // throws StrongTypeException — surroundin
 
 ## Array
 
-These attributes apply to `ArrayType` subclasses. `MinCount` / `MaxCount` / `ExactCount` count via `count()`. `ElementType` and `Unique` validate **direct children only** — see [shallow array validation](semantics.md#shallow-array-validation).
+These attributes apply to `ArrayType` subclasses (`Nonempty` also applies to `StringType` / `DateTime`). `MinCount` / `MaxCount` / `ExactCount` count via `count()`. `ElementType` and `Unique` validate **direct children only** — see [shallow array validation](semantics.md#shallow-array-validation).
 
 | Attribute | Parameters | Description |
 | --- | --- | --- |
@@ -893,7 +899,7 @@ new Headers(['a', 'b', 'c']);                         // throws StrongTypeExcept
 
 ## DateTime
 
-These attributes apply to `Integer` (for timestamps) or `StringType` subclasses (for parseable date/time strings).
+`DateFormat` and `TimeFormat` apply to `StringType` / `DateTime` subclasses; `InFuture` and `InPast` apply to `Integer` subclasses (they compare against a Unix timestamp). Crossing the two — `#[InFuture]` on a `DateTime` type, say — is a definition error.
 
 | Attribute | Parameters | Description |
 | --- | --- | --- |
@@ -984,7 +990,9 @@ new CreatedAtTimestamp(time() + 60);   // throws StrongTypeException
 
 ### `InEnum`
 
-Constrains a strong type's value to the enum's backing values (for `BackedEnum`) or case names (for pure `UnitEnum`). Works on `Integer` (for `int`-backed enums) and `StringType` (for `string`-backed or pure enums). No `EnumString` / `EnumInt` base class is needed.
+Constrains a strong type's value to the enum's backing values (for `BackedEnum`) or case names (for pure `UnitEnum`). No `EnumString` / `EnumInt` base class is needed.
+
+**Applies to:** `Integer` for an `int`-backed enum; `StringType` / `DateTime` for a `string`-backed or pure enum (a pure enum is compared against its case *names*, which are strings). The pairing is enforced: `#[InEnum(SomeIntEnum::class)]` on a `StringType` is a definition error rather than a constraint that silently never matches.
 
 **Constructor:** `InEnum(class-string $enumClass)`
 
@@ -1013,6 +1021,8 @@ For full coverage of int-backed and pure enums, see [wrapping enums](defining-ty
 ## Combinators
 
 Combinators wrap other constraints. Children are passed as constructor arguments using `new`, which PHP allows in attribute argument expressions. Combinators implement `ConstraintInterface` themselves, so they nest freely and compose with non-combinator attributes. **Effective priority is `min(children)`** — the combinator runs alongside its lowest-band child rather than at a fixed point.
+
+**Applicability is the intersection of the children's** — every child must apply to the base, or the combinator is a definition error there. An empty intersection (children with no value type in common) can never be attached anywhere. See [combinator applicability](defining-types.md#combinator-applicability-is-the-intersection-of-its-children).
 
 | Attribute | Parameters | Description |
 | --- | --- | --- |
@@ -1077,6 +1087,35 @@ readonly class NoAllCapsString extends StringType {}
 new NoAllCapsString('Hello');  // OK
 new NoAllCapsString('HELLO');  // throws StrongTypeException
 ```
+
+---
+
+## Value type applicability
+
+Every base type holds exactly one PHP value type, declared as a `final` `VALUE_TYPE` class constant: `Integer` → `Int`, `FloatingPoint` → `Float`, `StringType` → `String`, `BoolType` → `Bool`, `DateTime` → `String`, `ArrayType` → `Array`.
+
+Every constraint declares the value types it can engage on. `ConstraintValidator` checks each constraint against the class's `VALUE_TYPE` when it first resolves that class — on the first construction of a value of the type — and throws `ConstraintConfigurationException` when they do not overlap:
+
+```
+Positive is not applicable to String values on App\Score; it applies to [Int, Float]
+```
+
+That is a **type-definition** error (a `\LogicException`), not a validation failure, and it is deliberately outside the `StrongTypeException` hierarchy. Without it, a misapplied constraint would silently accept every value, `AnyOf` would pass vacuously, and `Not` would reject everything.
+
+| Accepted value types | Attributes |
+| --- | --- |
+| `Int`, `Float` | `Min`, `Max`, `InRange`, `Positive`, `Negative`, `Nonnegative`, `Nonpositive`, `Nonzero` |
+| `Int` | `Even`, `Odd`, `DivisibleBy`, `InFuture`, `InPast` |
+| `Float` | `Finite` |
+| `String` | `Nonblank`, `MinLength`, `MaxLength`, `Pattern`, `NotPattern`, `Alpha`, `Alphanumeric`, `NumericDigits`, `HexDigits`, `Lowercase`, `Uppercase`, `Base64`, `Email`, `Url`, `IpAddress`, `Ipv4`, `Ipv6`, `Cidr`, `Uuid`, `Json`, `Rfc3339`, `ClassExists`, `DateTimeParseable`, `DateFormat`, `TimeFormat` |
+| `Array` | `IsEmpty`, `MinCount`, `MaxCount`, `ExactCount`, `Unique`, `ElementType`, `IsList`, `IsAssociative` |
+| `String`, `Array` | `Nonempty` |
+| Derived from arguments | `InList` (the value types of its allowed values), `InEnum` (`Int` for an int-backed enum, `String` for a string-backed or pure one) |
+| Intersection of children | `AnyOf`, `AllOf`, `Not` |
+
+`DateTime` subclasses hold a `string`, so every `String` attribute applies to them as well.
+
+Custom constraints declare their own set via `acceptedValueTypes()`; the `AnyValueType` trait covers a genuinely type-agnostic one in a single line. See [defining your own types](defining-types.md#value-type-applicability).
 
 ---
 

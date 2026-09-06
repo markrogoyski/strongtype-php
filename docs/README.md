@@ -50,10 +50,11 @@ You've used the built-ins and now want a type the library doesn't ship.
 You're writing your own constraints or working with edge cases.
 
 1. [Write a custom constraint](defining-types.md#custom-constraints) implementing `ConstraintInterface`.
-2. [Wrap an enum with `InEnum`](defining-types.md#wrapping-enums-with-inenum) for string-backed, int-backed, or pure enums.
-3. [Use `Nullable` to model optional values](nullable-and-helpers.md#nullable-wrapper) without losing type identity.
-4. [Read the semantics doc](semantics.md) — byte-vs-Unicode length, format-vs-registry, shallow array validation, equality semantics — to avoid surprises on edge cases.
-5. [Skim the architecture doc](architecture.md) — how the constraint cache works, when to override factories, the constructor-invariants table.
+2. [Declare which value types it applies to](defining-types.md#value-type-applicability) — a misapplied constraint is a definition-time error, not a silent no-op.
+3. [Wrap an enum with `InEnum`](defining-types.md#wrapping-enums-with-inenum) for string-backed, int-backed, or pure enums.
+4. [Use `Nullable` to model optional values](nullable-and-helpers.md#nullable-wrapper) without losing type identity.
+5. [Read the semantics doc](semantics.md) — byte-vs-Unicode length, format-vs-registry, shallow array validation, equality semantics — to avoid surprises on edge cases.
+6. [Skim the architecture doc](architecture.md) — how the constraint cache works, when to override factories, the value-type applicability check, the constructor-invariants table.
 
 ---
 

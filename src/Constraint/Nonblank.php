@@ -26,4 +26,13 @@ final readonly class Nonblank implements ConstraintInterface
     {
         return 60;
     }
+
+    /**
+     * @return non-empty-list<ValueType>
+     */
+    #[\Override]
+    public function acceptedValueTypes(): array
+    {
+        return [ValueType::String];
+    }
 }

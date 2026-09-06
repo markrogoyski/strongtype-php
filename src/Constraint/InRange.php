@@ -29,7 +29,7 @@ final readonly class InRange implements ConstraintInterface
     {
         $short = ShortClassName::of($className);
 
-        if (\is_numeric($value)) {
+        if (\is_int($value) || \is_float($value)) {
             $leftBracket  = $this->exclusiveMin ? '(' : '[';
             $rightBracket = $this->exclusiveMax ? ')' : ']';
 
@@ -50,5 +50,14 @@ final readonly class InRange implements ConstraintInterface
     public function priority(): int
     {
         return 50;
+    }
+
+    /**
+     * @return non-empty-list<ValueType>
+     */
+    #[\Override]
+    public function acceptedValueTypes(): array
+    {
+        return [ValueType::Int, ValueType::Float];
     }
 }

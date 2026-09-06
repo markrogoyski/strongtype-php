@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace StrongType\Float;
 
 use StrongType\Constraint\ConstraintValidator;
+use StrongType\Constraint\ValueType;
 use StrongType\Constraint\Finite;
 use StrongType\Exception\StrongTypeException;
 use StrongType\HasEquals;
@@ -16,6 +17,8 @@ use StrongType\HasEquals;
 #[Finite]
 readonly abstract class FloatingPoint implements \JsonSerializable, \Stringable, HasEquals
 {
+    final public const ValueType VALUE_TYPE = ValueType::Float;
+
     public function __construct(public float $value)
     {
         ConstraintValidator::validate($this, $this->value);

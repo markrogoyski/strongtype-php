@@ -66,4 +66,13 @@ final readonly class DateFormat implements ConstraintInterface
     {
         return 100;
     }
+
+    /**
+     * @return non-empty-list<ValueType>
+     */
+    #[\Override]
+    public function acceptedValueTypes(): array
+    {
+        return [ValueType::String];
+    }
 }
