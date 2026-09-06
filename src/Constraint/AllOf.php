@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace StrongType\Constraint;
 
+use StrongType\Exception\ConstraintConfigurationException;
+
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final readonly class AllOf implements ConstraintInterface
 {
@@ -13,7 +15,7 @@ final readonly class AllOf implements ConstraintInterface
     public function __construct(ConstraintInterface ...$children)
     {
         if ($children === []) {
-            throw new \LogicException('AllOf requires at least one child constraint');
+            throw new ConstraintConfigurationException('AllOf requires at least one child constraint');
         }
         $this->children = \array_values($children);
     }

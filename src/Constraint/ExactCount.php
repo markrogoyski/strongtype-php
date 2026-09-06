@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace StrongType\Constraint;
 
+use StrongType\Exception\ConstraintConfigurationException;
 use StrongType\Util\ShortClassName;
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
@@ -12,7 +13,7 @@ final readonly class ExactCount implements ConstraintInterface
     public function __construct(private int $count)
     {
         if ($count < 0) {
-            throw new \LogicException("ExactCount: count must be >= 0, got {$count}");
+            throw new ConstraintConfigurationException("ExactCount: count must be >= 0, got {$count}");
         }
     }
 

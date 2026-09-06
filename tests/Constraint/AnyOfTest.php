@@ -9,6 +9,7 @@ use StrongType\Constraint\InRange;
 use StrongType\Constraint\Min;
 use StrongType\Constraint\MinLength;
 use StrongType\Constraint\Pattern;
+use StrongType\Exception\ConstraintConfigurationException;
 use StrongType\Exception\ConstraintViolationException;
 use StrongType\Exception\StrongTypeException;
 use StrongType\Int\Integer;
@@ -146,10 +147,10 @@ class AnyOfTest extends \PHPUnit\Framework\TestCase
     }
 
     #[Test]
-    public function testEmptyChildrenThrowsLogicException(): void
+    public function testEmptyChildrenThrowsConstraintConfigurationException(): void
     {
         // Then
-        $this->expectException(\LogicException::class);
+        $this->expectException(ConstraintConfigurationException::class);
 
         // When
         new AnyOf();

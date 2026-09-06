@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace StrongType\Tests\Constraint;
 
 use StrongType\Constraint\InRange;
+use StrongType\Exception\ConstraintConfigurationException;
 use StrongType\Exception\StrongTypeException;
 use StrongType\Float\FloatingPoint;
 use StrongType\Int\Integer;
@@ -167,26 +168,26 @@ class InRangeTest extends \PHPUnit\Framework\TestCase
         return [[-0.1], [1.1], [100.0]];
     }
 
-    // LogicException tests
+    // ConstraintConfigurationException tests
 
     #[Test]
-    public function testLogicExceptionWhenMinGreaterThanMax(): void
+    public function testConstraintConfigurationExceptionWhenMinGreaterThanMax(): void
     {
-        $this->expectException(\LogicException::class);
+        $this->expectException(ConstraintConfigurationException::class);
         new InRange(100, 1);
     }
 
     #[Test]
-    public function testLogicExceptionWhenEqualWithExclusiveMin(): void
+    public function testConstraintConfigurationExceptionWhenEqualWithExclusiveMin(): void
     {
-        $this->expectException(\LogicException::class);
+        $this->expectException(ConstraintConfigurationException::class);
         new InRange(5, 5, exclusiveMin: true);
     }
 
     #[Test]
-    public function testLogicExceptionWhenEqualWithExclusiveMax(): void
+    public function testConstraintConfigurationExceptionWhenEqualWithExclusiveMax(): void
     {
-        $this->expectException(\LogicException::class);
+        $this->expectException(ConstraintConfigurationException::class);
         new InRange(5, 5, exclusiveMax: true);
     }
 

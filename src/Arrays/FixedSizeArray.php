@@ -39,23 +39,23 @@ class FixedSizeArray extends ArrayType
      * FixedSizeArray requires a size and cannot be constructed from a single value.
      * Use `new FixedSizeArray($values, $size)` directly.
      *
-     * @throws \LogicException always
+     * @throws \BadMethodCallException always
      */
     #[\Override]
     public static function tryFrom(mixed $value): ?static
     {
-        throw new \LogicException('FixedSizeArray::tryFrom() is unsupported; use "new FixedSizeArray($values, $size)" directly.');
+        throw new \BadMethodCallException('FixedSizeArray::tryFrom() is unsupported; use "new FixedSizeArray($values, $size)" directly.');
     }
 
     /**
      * FixedSizeArray requires a size and cannot be wrapped via the single-value Nullable factory.
      * Construct with `new FixedSizeArray($values, $size)` and wrap in Nullable manually if needed.
      *
-     * @throws \LogicException always
+     * @throws \BadMethodCallException always
      */
     #[\Override]
     public static function nullable(mixed $value): \StrongType\Nullable
     {
-        throw new \LogicException('FixedSizeArray::nullable() is unsupported; construct manually and wrap in Nullable.');
+        throw new \BadMethodCallException('FixedSizeArray::nullable() is unsupported; construct manually and wrap in Nullable.');
     }
 }

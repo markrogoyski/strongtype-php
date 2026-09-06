@@ -9,7 +9,7 @@ This document explains how the constraint system works internally, why a small s
 The constraint system uses PHP 8 attributes and reflection:
 
 1. **At first instantiation** of a type, `ConstraintValidator` reads all `ConstraintInterface` attributes from the class and its parents via reflection, sorts them by priority, and caches the result.
-2. **On every instantiation**, it iterates the cached constraint list and calls `validate()` on each. The first failure throws `ConstraintViolationException` (a `StrongTypeException` subclass).
+2. **On every instantiation**, it iterates the cached constraint list and calls `validate()` on each. The first failure throws `ConstraintViolationException` (a `StrongTypeException` subclass, which extends `\RuntimeException` — validation failures come from runtime input).
 3. **Subsequent instantiations** skip reflection entirely — it's a hash lookup plus iterating a small array.
 
 The static cache is **process-local**: reflection runs once per class per process, and the cached entries persist for the life of the process. Eviction is intentionally not implemented. The keyspace is the set of strong-type classes, which is bounded at compile time, so the cache grows once at warm-up and then stays flat.
@@ -36,7 +36,7 @@ The rule when you're defining your own types: **use attributes for value-shape r
 
 **Subclasses that diverge from the base constructor signature must override these factories**, or the inherited factory will throw `ArgumentCountError` at runtime when the wrong number of arguments is forwarded to the subclass constructor. (`withValues` is an `ArrayType`-only factory; it does not exist on the scalar bases.)
 
-`ArrayType` cannot carry the consistency annotation because `FixedSizeArray` legitimately adds a `$size` parameter. The `new static` calls inside `ArrayType` are suppressed inline, and `FixedSizeArray` overrides all three factories (`withValues` handles the extra arg; `tryFrom` and `nullable` throw `\LogicException` since they cannot be satisfied without a size).
+`ArrayType` cannot carry the consistency annotation because `FixedSizeArray` legitimately adds a `$size` parameter. The `new static` calls inside `ArrayType` are suppressed inline, and `FixedSizeArray` overrides all three factories (`withValues` handles the extra arg; `tryFrom` and `nullable` throw `\BadMethodCallException` since they cannot be satisfied without a size — the factory is intentionally unavailable, not misconfigured, so it stays out of the `ConstraintConfigurationException` category below while remaining a `\LogicException` under the hood).
 
 `BoolType` cannot carry the annotation either, because `TrueValue` and `FalseValue` narrow `bool` to `true` and `false` literal types in the constructor signature. Invalid values surface as `\TypeError`, which `tryFrom` catches.
 
@@ -44,7 +44,7 @@ User subclasses that diverge from the base constructor must follow the same patt
 
 ## Constructor invariants
 
-Built-in constraints fail fast with `\LogicException` when configured impossibly — these are programmer errors, not validation failures, and surface during attribute instantiation (the first time a typed value of the affected class is constructed), not at PHP class-load time.
+Built-in constraints fail fast with `ConstraintConfigurationException` when configured impossibly — these are programmer errors, not validation failures, and surface during attribute instantiation (the first time a typed value of the affected class is constructed), not at PHP class-load time.
 
 | Constraint                        | Invariant                                       |
 | --------------------------------- | ----------------------------------------------- |
@@ -60,14 +60,35 @@ Built-in constraints fail fast with `\LogicException` when configured impossibly
 | `InEnum`                          | class must be an existing enum (`enum_exists`)  |
 
 ```php
-new MinLength(-1);            // \LogicException
-new DivisibleBy(0);           // \LogicException
-new Pattern('not-a-regex');   // \LogicException
-new ElementType('integer');   // \LogicException -- 'integer' is a PHP type alias, not a builtin name
-new InRange(100, 1);          // \LogicException
+new MinLength(-1);            // ConstraintConfigurationException
+new DivisibleBy(0);           // ConstraintConfigurationException
+new Pattern('not-a-regex');   // ConstraintConfigurationException
+new ElementType('integer');   // ConstraintConfigurationException -- 'integer' is a PHP type alias, not a builtin name
+new InRange(100, 1);          // ConstraintConfigurationException
 ```
 
-These are deliberately not caught by `StrongTypeException`. A divisor of zero or a regex that fails to compile is a bug in the type definition, not a runtime validation failure on a user-supplied value.
+## Exception hierarchy
+
+Two independently catchable categories separate *what went wrong* from *who's at fault*:
+
+```
+\RuntimeException
+  └── StrongTypeException           -- a validated VALUE was invalid (runtime input)
+        ├── ConstraintViolationException  -- a constraint attribute rejected the value
+        └── FormatException               -- a manual parse step rejected the string shape
+
+\LogicException
+  ├── ConstraintConfigurationException  -- a TYPE or CONSTRAINT is mis-defined (programmer error)
+  └── \BadMethodCallException           -- a factory is intentionally unavailable (FixedSizeArray::tryFrom()/nullable())
+```
+
+`StrongTypeException` extends `\RuntimeException`: every validation failure is triggered by a caller-supplied runtime value, so `catch (StrongTypeException $e)` (or the broader `catch (\RuntimeException $e)`) uniformly catches every invalid-value case across every type.
+
+`ConstraintConfigurationException` extends `\LogicException` and is the single catchable category for type/constraint mis-definition: an impossible constraint constructor argument (`new DivisibleBy(0)`), a combinator with zero children, or a `Nullable` pointed at a non-strong-type or abstract class. `catch (ConstraintConfigurationException $e)` (or `catch (\LogicException $e)`) catches every type-definition bug, cleanly separated from `StrongTypeException` in both directions — a `ConstraintConfigurationException` is never also a `StrongTypeException`, and vice versa.
+
+`FixedSizeArray::tryFrom()` / `::nullable()` throw plain `\BadMethodCallException` rather than `ConstraintConfigurationException`: nothing about the type is misconfigured — the single-value factories are intentionally unavailable because `FixedSizeArray` requires a runtime `$size` they cannot supply. `\BadMethodCallException extends \LogicException`, so it still lands in the programmer-error bucket without claiming to be a configuration error.
+
+These are deliberately not caught by `StrongTypeException`. A divisor of zero, a regex that fails to compile, or an unavailable factory method is a bug in the type definition or its usage, not a runtime validation failure on a user-supplied value.
 
 ---
 

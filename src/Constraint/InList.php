@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace StrongType\Constraint;
 
+use StrongType\Exception\ConstraintConfigurationException;
 use StrongType\Util\ShortClassName;
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
@@ -16,7 +17,7 @@ final readonly class InList implements ConstraintInterface
     {
         $this->allowed = \array_values($allowed);
         if ($this->allowed === []) {
-            throw new \LogicException('InList requires at least one allowed value');
+            throw new ConstraintConfigurationException('InList requires at least one allowed value');
         }
     }
 

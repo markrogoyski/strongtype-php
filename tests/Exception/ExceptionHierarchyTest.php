@@ -12,6 +12,7 @@ use StrongType\Constraint\Nonempty;
 use StrongType\DateTime\DateString;
 use StrongType\DateTime\DateTime;
 use StrongType\DateTime\TimeString;
+use StrongType\Exception\ConstraintConfigurationException;
 use StrongType\Exception\ConstraintViolationException;
 use StrongType\Exception\FormatException;
 use StrongType\Exception\StrongTypeException;
@@ -187,10 +188,10 @@ class ExceptionHierarchyTest extends \PHPUnit\Framework\TestCase
     }
 
     #[Test]
-    public function testNullableInvalidTypeReferenceThrowsLogicException()
+    public function testNullableInvalidTypeReferenceThrowsConstraintConfigurationException()
     {
         // Then
-        $this->expectException(\LogicException::class);
+        $this->expectException(ConstraintConfigurationException::class);
 
         // When
         new Nullable('NonExistentClass', 5);
@@ -205,7 +206,7 @@ class ExceptionHierarchyTest extends \PHPUnit\Framework\TestCase
         // When
         try {
             new Nullable('NonExistentClass', 5);
-        } catch (\LogicException $e) {
+        } catch (ConstraintConfigurationException $e) {
             $thrownIsStrongTypeException = $e instanceof StrongTypeException;
         }
 
@@ -214,10 +215,10 @@ class ExceptionHierarchyTest extends \PHPUnit\Framework\TestCase
     }
 
     #[Test]
-    public function testNullableAbstractTypeReferenceThrowsLogicException()
+    public function testNullableAbstractTypeReferenceThrowsConstraintConfigurationException()
     {
         // Then
-        $this->expectException(\LogicException::class);
+        $this->expectException(ConstraintConfigurationException::class);
 
         // When
         new Nullable(\StrongType\Int\Integer::class, 5);
@@ -232,11 +233,71 @@ class ExceptionHierarchyTest extends \PHPUnit\Framework\TestCase
         // When
         try {
             new Nullable(\StrongType\Int\Integer::class, 5);
-        } catch (\LogicException $e) {
+        } catch (ConstraintConfigurationException $e) {
             $thrownIsStrongTypeException = $e instanceof StrongTypeException;
         }
 
         // Then
         $this->assertFalse($thrownIsStrongTypeException);
+    }
+
+    #[Test]
+    public function testStrongTypeExceptionIsARuntimeException()
+    {
+        // When
+        $exception = new StrongTypeException('test');
+
+        // Then
+        $this->assertInstanceOf(\RuntimeException::class, $exception);
+    }
+
+    #[Test]
+    public function testConstraintConfigurationExceptionIsALogicException()
+    {
+        // When
+        $exception = new ConstraintConfigurationException('test');
+
+        // Then
+        $this->assertInstanceOf(\LogicException::class, $exception);
+    }
+
+    #[Test]
+    public function testConstraintConfigurationExceptionIsNotAStrongTypeException()
+    {
+        // When
+        $exception = new ConstraintConfigurationException('test');
+
+        // Then
+        $this->assertNotInstanceOf(StrongTypeException::class, $exception);
+    }
+
+    #[Test]
+    public function testBadMethodCallExceptionIsALogicException()
+    {
+        // When
+        $exception = new \BadMethodCallException('test');
+
+        // Then
+        $this->assertInstanceOf(\LogicException::class, $exception);
+    }
+
+    #[Test]
+    public function testFixedSizeArrayTryFromThrowsBadMethodCallException()
+    {
+        // Then
+        $this->expectException(\BadMethodCallException::class);
+
+        // When
+        \StrongType\Arrays\FixedSizeArray::tryFrom([1, 2, 3]);
+    }
+
+    #[Test]
+    public function testFixedSizeArrayNullableThrowsBadMethodCallException()
+    {
+        // Then
+        $this->expectException(\BadMethodCallException::class);
+
+        // When
+        \StrongType\Arrays\FixedSizeArray::nullable([1, 2, 3]);
     }
 }

@@ -22,6 +22,8 @@ use StrongType\DateTime\Timestamp;
 use StrongType\Arrays\ArrayType;
 use StrongType\Arrays\NonemptyArray;
 use StrongType\Arrays\FixedSizeArray;
+use StrongType\Constraint\MinLength;
+use StrongType\Exception\ConstraintConfigurationException;
 
 class TryFromTest extends TestCase
 {
@@ -240,7 +242,7 @@ class TryFromTest extends TestCase
     #[Test]
     public function testFixedSizeArrayTryFromThrows(): void
     {
-        $this->expectException(\LogicException::class);
+        $this->expectException(\BadMethodCallException::class);
         FixedSizeArray::tryFrom([1, 2, 3]);
     }
 
@@ -249,6 +251,26 @@ class TryFromTest extends TestCase
     {
         $this->expectException(\DivisionByZeroError::class);
         BuggyInteger::tryFrom(5);
+    }
+
+    #[Test]
+    public function testMisconfiguredConstraintSurfacesOnConstruction(): void
+    {
+        // Then
+        $this->expectException(ConstraintConfigurationException::class);
+
+        // When
+        new MisconfiguredMinLengthTestStr('whatever');
+    }
+
+    #[Test]
+    public function testMisconfiguredConstraintSurfacesOnTryFrom(): void
+    {
+        // Then
+        $this->expectException(ConstraintConfigurationException::class);
+
+        // When
+        MisconfiguredMinLengthTestStr::tryFrom('whatever');
     }
 }
 
@@ -271,5 +293,16 @@ readonly class BuggyInteger extends Integer
  */
 #[InList(true)]
 readonly class InListTrueOnlyBool extends BoolType
+{
+}
+
+/**
+ * Test fixture: a constraint configured impossibly (negative length). The
+ * misconfiguration must surface as ConstraintConfigurationException through
+ * both `new` and `tryFrom()`, since both resolve constraints via the same
+ * path in ConstraintValidator on first construction of this class.
+ */
+#[MinLength(-1)]
+readonly class MisconfiguredMinLengthTestStr extends StringType
 {
 }

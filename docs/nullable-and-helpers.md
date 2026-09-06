@@ -28,7 +28,7 @@ $value->equals(new Nullable(PositiveInt::class, null)); // false
 $value->equals(new PositiveInt(5));                     // false (Nullable<PositiveInt> != PositiveInt)
 ```
 
-`Nullable` validates the wrapped type at construction. Passing an abstract class, a non-existent class, or a class that does not implement both `HasEquals` and `\JsonSerializable` throws `\LogicException` immediately — even when `$value` is `null`. This is a programmer-error fail-fast, not a value-validation failure, which is why it is a `\LogicException` rather than a `StrongTypeException` subclass.
+`Nullable` validates the wrapped type at construction. Passing an abstract class, a non-existent class, or a class that does not implement both `HasEquals` and `\JsonSerializable` throws `StrongType\Exception\ConstraintConfigurationException` immediately — even when `$value` is `null`. This is a programmer-error fail-fast, not a value-validation failure, which is why it is a `ConstraintConfigurationException` (a `\LogicException`) rather than a `StrongTypeException` subclass.
 
 `PositiveInt::nullable($value)` is a convenience shortcut for `new Nullable(PositiveInt::class, $value)`; every base class exposes the same factory.
 
@@ -73,7 +73,7 @@ $b = new ListArray([1, 1, 2, 3]);
 $a->equalsUnordered($b);              // false — different multiset
 ```
 
-`FixedSizeArray::tryFrom` and `FixedSizeArray::nullable` throw `\LogicException` — the required `$size` parameter cannot be satisfied through these factories. Use `new FixedSizeArray($values, $size)` or `$existing->withValues($values)` instead. See [architecture.md](architecture.md#why-some-types-keep-manual-constructors) for the rationale.
+`FixedSizeArray::tryFrom` and `FixedSizeArray::nullable` throw `\BadMethodCallException` — the required `$size` parameter cannot be satisfied through these factories. Use `new FixedSizeArray($values, $size)` or `$existing->withValues($values)` instead. See [architecture.md](architecture.md#why-some-types-keep-manual-constructors) for the rationale.
 
 ## Implemented interfaces
 

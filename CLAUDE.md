@@ -46,7 +46,10 @@ src/
   Nullable.php          # Nullable wrapper for any strong type
   HasEquals.php         # Marker interface for structural equality
   Exception/
-    StrongTypeException.php   # All validation failures throw this
+    StrongTypeException.php   # extends \RuntimeException; umbrella for all validation failures
+    ConstraintViolationException.php  # StrongTypeException subclass: a constraint attribute rejected the value
+    FormatException.php               # StrongTypeException subclass: a manual parse step rejected the string shape
+    ConstraintConfigurationException.php  # extends \LogicException; type/constraint mis-definition (programmer error)
   Util/
     Stringify.php       # Value-to-string helper
 ```
@@ -67,7 +70,7 @@ Built-in types currently keeping manual constructors: `EmptyString` (default par
 
 `Integer`, `FloatingPoint`, `StringType`, and `DateTime` are marked `@phpstan-consistent-constructor` / `@psalm-consistent-constructor`. The inherited static factories (`tryFrom`, `nullable`) instantiate via `new static(...)` and assume subclasses share the base constructor signature. Subclasses that diverge (add params, reorder, etc.) **must override** these factories or they will throw `ArgumentCountError` at runtime. (`withValues` is an `ArrayType`-only factory; it does not exist on the scalar bases.)
 
-`ArrayType` cannot carry the annotation because `FixedSizeArray` legitimately adds a `$size` param; the `new static` calls there are suppressed inline and `FixedSizeArray` overrides all three factories (`withValues` handles the extra arg; `tryFrom` and `nullable` throw `\LogicException` since they can't be satisfied without a size).
+`ArrayType` cannot carry the annotation because `FixedSizeArray` legitimately adds a `$size` param; the `new static` calls there are suppressed inline and `FixedSizeArray` overrides all three factories (`withValues` handles the extra arg; `tryFrom` and `nullable` throw `\BadMethodCallException` since they can't be satisfied without a size -- the factory is intentionally unavailable, not misconfigured, so it stays out of `ConstraintConfigurationException`).
 
 `BoolType` cannot carry the annotation because `TrueValue` / `FalseValue` narrow `bool` to `true` / `false` literal types; those invalid values surface as `\TypeError` caught by `tryFrom`.
 
@@ -82,7 +85,11 @@ User subclasses with divergent constructors must follow the same pattern: overri
 
 ### Constraint Constructor Invariants
 
-Constraints with constructor parameters fail fast with `\LogicException` for impossible configurations: `DivisibleBy` rejects divisor 0; `MinLength`/`MaxLength`/`MinCount`/`MaxCount`/`ExactCount` reject negative bounds; `Pattern`/`NotPattern` reject regexes that fail to compile; `ElementType` rejects strings that are neither one of the locked builtin set (`string`, `int`, `float`, `bool`, `array`, `object`, `callable`, `resource`, `iterable`) nor an existing class/interface; `InRange` rejects `min > max` and equal bounds with an exclusive flag; `InList` rejects an empty allowed set; `DateFormat` rejects an empty format string or one containing an unescaped `!`/`|` (a backslash-escaped `\!`/`\|` is a literal character and is accepted); `AnyOf`/`AllOf` reject zero children; `InEnum` rejects any class name that is not an existing enum (non-existent class, interface, or non-enum class all fail `enum_exists`). These are surfaced when the constraint is instantiated — for attribute-driven types that means the first time `ReflectionAttribute::newInstance()` runs in `ConstraintValidator::resolveConstraints()` (i.e. the first construction of a value of the affected class), not at PHP class-load time.
+Constraints with constructor parameters fail fast with `StrongType\Exception\ConstraintConfigurationException` (extends `\LogicException`) for impossible configurations: `DivisibleBy` rejects divisor 0; `MinLength`/`MaxLength`/`MinCount`/`MaxCount`/`ExactCount` reject negative bounds; `Pattern`/`NotPattern` reject regexes that fail to compile; `ElementType` rejects strings that are neither one of the locked builtin set (`string`, `int`, `float`, `bool`, `array`, `object`, `callable`, `resource`, `iterable`) nor an existing class/interface; `InRange` rejects `min > max` and equal bounds with an exclusive flag; `InList` rejects an empty allowed set; `DateFormat` rejects an empty format string or one containing an unescaped `!`/`|` (a backslash-escaped `\!`/`\|` is a literal character and is accepted); `AnyOf`/`AllOf` reject zero children; `InEnum` rejects any class name that is not an existing enum (non-existent class, interface, or non-enum class all fail `enum_exists`). `Nullable` uses the same exception for its type-wiring guards (non-strong-type or abstract `$type`). These are surfaced when the constraint is instantiated — for attribute-driven types that means the first time `ReflectionAttribute::newInstance()` runs in `ConstraintValidator::resolveConstraints()` (i.e. the first construction of a value of the affected class), not at PHP class-load time.
+
+### Exception Hierarchy
+
+`StrongTypeException` extends `\RuntimeException` (a validated *value* was invalid — a runtime concern). `ConstraintConfigurationException` extends `\LogicException` (a *type or constraint* is mis-defined — a programmer error) and is never also a `StrongTypeException`; the two hierarchies are independently catchable in both directions. `FixedSizeArray::tryFrom()`/`nullable()` throw plain `\BadMethodCallException` instead of `ConstraintConfigurationException` — nothing is misconfigured, the single-value factory is just intentionally unavailable without a `$size`.
 
 ### Combinators
 

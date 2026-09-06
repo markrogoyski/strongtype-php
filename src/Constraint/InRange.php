@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace StrongType\Constraint;
 
+use StrongType\Exception\ConstraintConfigurationException;
 use StrongType\Util\ShortClassName;
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
@@ -16,10 +17,10 @@ final readonly class InRange implements ConstraintInterface
         private bool $exclusiveMax = false,
     ) {
         if ($this->min > $this->max) {
-            throw new \LogicException("InRange: min ({$this->min}) must not be greater than max ({$this->max})");
+            throw new ConstraintConfigurationException("InRange: min ({$this->min}) must not be greater than max ({$this->max})");
         }
         if ($this->min == $this->max && ($this->exclusiveMin || $this->exclusiveMax)) {
-            throw new \LogicException("InRange: min and max are equal ({$this->min}) but exclusive flag is set, resulting in an empty range");
+            throw new ConstraintConfigurationException("InRange: min and max are equal ({$this->min}) but exclusive flag is set, resulting in an empty range");
         }
     }
 

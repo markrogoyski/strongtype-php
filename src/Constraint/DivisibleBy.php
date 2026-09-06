@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace StrongType\Constraint;
 
+use StrongType\Exception\ConstraintConfigurationException;
 use StrongType\Util\ShortClassName;
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
@@ -12,7 +13,7 @@ final readonly class DivisibleBy implements ConstraintInterface
     public function __construct(private int $divisor)
     {
         if ($divisor === 0) {
-            throw new \LogicException('DivisibleBy: divisor must not be zero');
+            throw new ConstraintConfigurationException('DivisibleBy: divisor must not be zero');
         }
     }
 

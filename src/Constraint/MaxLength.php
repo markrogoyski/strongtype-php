@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace StrongType\Constraint;
 
+use StrongType\Exception\ConstraintConfigurationException;
 use StrongType\Util\ShortClassName;
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
@@ -12,7 +13,7 @@ final readonly class MaxLength implements ConstraintInterface
     public function __construct(private int $maxLength)
     {
         if ($maxLength < 0) {
-            throw new \LogicException("MaxLength: length must be >= 0, got {$maxLength}");
+            throw new ConstraintConfigurationException("MaxLength: length must be >= 0, got {$maxLength}");
         }
     }
 

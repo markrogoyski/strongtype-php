@@ -83,7 +83,7 @@ Combined `min..max` with optional open bounds. Convenience for stacking `Min` + 
 
 **Constructor:** `InRange(int|float $min, int|float $max, bool $exclusiveMin = false, bool $exclusiveMax = false)`
 
-**Constructor invariants:** `min > max` raises `\LogicException`; equal bounds combined with an exclusive flag raises `\LogicException` (the range would be empty).
+**Constructor invariants:** `min > max` raises `ConstraintConfigurationException`; equal bounds combined with an exclusive flag raises `ConstraintConfigurationException` (the range would be empty).
 
 ```php
 use StrongType\Constraint\InRange;
@@ -222,7 +222,7 @@ Divisor must evenly divide the value.
 
 **Constructor:** `DivisibleBy(int $divisor)`
 
-**Constructor invariants:** `divisor === 0` raises `\LogicException`.
+**Constructor invariants:** `divisor === 0` raises `ConstraintConfigurationException`.
 
 ```php
 use StrongType\Constraint\DivisibleBy;
@@ -255,7 +255,7 @@ Strict membership check against an allowlist.
 
 **Constructor:** `InList(mixed ...$allowed)`
 
-**Constructor invariants:** zero allowed values raises `\LogicException`.
+**Constructor invariants:** zero allowed values raises `ConstraintConfigurationException`.
 
 ```php
 use StrongType\Constraint\InList;
@@ -343,7 +343,7 @@ Minimum byte length.
 
 **Constructor:** `MinLength(int $minLength)`
 
-**Constructor invariants:** negative length raises `\LogicException`.
+**Constructor invariants:** negative length raises `ConstraintConfigurationException`.
 
 ```php
 use StrongType\Constraint\MinLength;
@@ -362,7 +362,7 @@ Maximum byte length.
 
 **Constructor:** `MaxLength(int $maxLength)`
 
-**Constructor invariants:** negative length raises `\LogicException`.
+**Constructor invariants:** negative length raises `ConstraintConfigurationException`.
 
 ```php
 use StrongType\Constraint\{MaxLength, Nonempty};
@@ -381,7 +381,7 @@ new TweetBody(str_repeat('x', 281));                          // throws StrongTy
 
 **Constructor:** `Pattern(string $pattern)`
 
-**Constructor invariants:** regex that fails to compile raises `\LogicException`.
+**Constructor invariants:** regex that fails to compile raises `ConstraintConfigurationException`.
 
 ```php
 use StrongType\Constraint\{Nonempty, Pattern};
@@ -400,7 +400,7 @@ Inverted pattern match — must not match. Repeatable.
 
 **Constructor:** `NotPattern(string $pattern)`
 
-**Constructor invariants:** regex that fails to compile raises `\LogicException`.
+**Constructor invariants:** regex that fails to compile raises `ConstraintConfigurationException`.
 
 ```php
 use StrongType\Constraint\{Nonempty, NotPattern};
@@ -766,7 +766,7 @@ Minimum element count.
 
 **Constructor:** `MinCount(int $minCount)`
 
-**Constructor invariants:** negative count raises `\LogicException`.
+**Constructor invariants:** negative count raises `ConstraintConfigurationException`.
 
 ```php
 use StrongType\Constraint\{MinCount, ElementType};
@@ -785,7 +785,7 @@ Maximum element count.
 
 **Constructor:** `MaxCount(int $maxCount)`
 
-**Constructor invariants:** negative count raises `\LogicException`.
+**Constructor invariants:** negative count raises `ConstraintConfigurationException`.
 
 ```php
 use StrongType\Constraint\{MaxCount, ElementType};
@@ -804,7 +804,7 @@ Element count must equal exactly `$count`.
 
 **Constructor:** `ExactCount(int $count)`
 
-**Constructor invariants:** negative count raises `\LogicException`.
+**Constructor invariants:** negative count raises `ConstraintConfigurationException`.
 
 ```php
 use StrongType\Constraint\{ExactCount, ElementType};
@@ -841,7 +841,7 @@ Every element must match the given type. Accepts a builtin (`string`, `int`, `fl
 
 **Constructor:** `ElementType(string $type)`
 
-**Constructor invariants:** anything other than the builtin set or an existing class/interface raises `\LogicException`. PHP type aliases (`integer`, `boolean`, `double`) are explicitly rejected — use the canonical name.
+**Constructor invariants:** anything other than the builtin set or an existing class/interface raises `ConstraintConfigurationException`. PHP type aliases (`integer`, `boolean`, `double`) are explicitly rejected — use the canonical name.
 
 ```php
 use StrongType\Constraint\{ElementType, Nonempty};
@@ -910,7 +910,7 @@ Validation is **wall-clock-independent**: fields absent from the format (for a p
 
 **Constructor:** `DateFormat(string $format)`
 
-**Constructor invariants:** empty format string raises `\LogicException`; a format containing an unescaped `!` or `|` raises `\LogicException` (both are parse-only reset directives that `format()` echoes literally, so they can never round-trip). A backslash-escaped `\!` or `\|` is a literal character in both directions and is accepted.
+**Constructor invariants:** empty format string raises `ConstraintConfigurationException`; a format containing an unescaped `!` or `|` raises `ConstraintConfigurationException` (both are parse-only reset directives that `format()` echoes literally, so they can never round-trip). A backslash-escaped `\!` or `\|` is a literal character in both directions and is accepted.
 
 ```php
 use StrongType\Constraint\DateFormat;
@@ -988,7 +988,7 @@ Constrains a strong type's value to the enum's backing values (for `BackedEnum`)
 
 **Constructor:** `InEnum(class-string $enumClass)`
 
-**Constructor invariants:** anything other than an existing enum class — non-existent class, interface, or non-enum class — raises `\LogicException`.
+**Constructor invariants:** anything other than an existing enum class — non-existent class, interface, or non-enum class — raises `ConstraintConfigurationException`.
 
 ```php
 use StrongType\Constraint\InEnum;
@@ -1026,7 +1026,7 @@ At least one child must pass. When every child fails, emits a composite message:
 
 **Constructor:** `AnyOf(ConstraintInterface ...$children)`
 
-**Constructor invariants:** zero children raises `\LogicException`.
+**Constructor invariants:** zero children raises `ConstraintConfigurationException`.
 
 ```php
 use StrongType\Constraint\{AnyOf, InRange};
@@ -1047,7 +1047,7 @@ Every child must pass. **Children run in argument order**, not priority order �
 
 **Constructor:** `AllOf(ConstraintInterface ...$children)`
 
-**Constructor invariants:** zero children raises `\LogicException`.
+**Constructor invariants:** zero children raises `ConstraintConfigurationException`.
 
 ```php
 use StrongType\Constraint\{AllOf, MinLength, Pattern};

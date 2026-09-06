@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace StrongType\Constraint;
 
+use StrongType\Exception\ConstraintConfigurationException;
 use StrongType\Util\ShortClassName;
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
@@ -15,7 +16,7 @@ final readonly class AnyOf implements ConstraintInterface
     public function __construct(ConstraintInterface ...$children)
     {
         if ($children === []) {
-            throw new \LogicException('AnyOf requires at least one child constraint');
+            throw new ConstraintConfigurationException('AnyOf requires at least one child constraint');
         }
         $this->children = \array_values($children);
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace StrongType\Constraint;
 
+use StrongType\Exception\ConstraintConfigurationException;
 use StrongType\Util\ShortClassName;
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
@@ -12,7 +13,7 @@ final readonly class DateFormat implements ConstraintInterface
     public function __construct(private string $format)
     {
         if ($format === '') {
-            throw new \LogicException('DateFormat: format must not be empty');
+            throw new ConstraintConfigurationException('DateFormat: format must not be empty');
         }
         // Unescaped '!' and '|' are parse-only reset directives: createFromFormat
         // consumes them, but format() echoes them as literal characters, so a format
@@ -20,7 +21,7 @@ final readonly class DateFormat implements ConstraintInterface
         // a literal character in both directions and round-trips fine, so only bare
         // occurrences are rejected.
         if (self::hasUnescapedResetDirective($format)) {
-            throw new \LogicException("DateFormat: format must not contain an unescaped '!' or '|', got {$format}");
+            throw new ConstraintConfigurationException("DateFormat: format must not contain an unescaped '!' or '|', got {$format}");
         }
     }
 

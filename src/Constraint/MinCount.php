@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace StrongType\Constraint;
 
+use StrongType\Exception\ConstraintConfigurationException;
 use StrongType\Util\ShortClassName;
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
@@ -12,7 +13,7 @@ final readonly class MinCount implements ConstraintInterface
     public function __construct(private int $minCount)
     {
         if ($minCount < 0) {
-            throw new \LogicException("MinCount: count must be >= 0, got {$minCount}");
+            throw new ConstraintConfigurationException("MinCount: count must be >= 0, got {$minCount}");
         }
     }
 

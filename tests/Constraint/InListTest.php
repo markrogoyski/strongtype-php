@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace StrongType\Tests\Constraint;
 
 use StrongType\Constraint\InList;
+use StrongType\Exception\ConstraintConfigurationException;
 use StrongType\Exception\StrongTypeException;
 use StrongType\Float\FloatingPoint;
 use StrongType\Int\Integer;
@@ -119,9 +120,9 @@ class InListTest extends \PHPUnit\Framework\TestCase
     }
 
     #[Test]
-    public function testLogicExceptionWhenNoAllowedValues(): void
+    public function testConstraintConfigurationExceptionWhenNoAllowedValues(): void
     {
-        $this->expectException(\LogicException::class);
+        $this->expectException(ConstraintConfigurationException::class);
         new InList();
     }
 }

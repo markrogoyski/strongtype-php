@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace StrongType\Tests;
 
+use StrongType\Exception\ConstraintConfigurationException;
 use StrongType\Exception\StrongTypeException;
 use StrongType\Int\PositiveInt;
 use StrongType\Nullable;
@@ -136,10 +137,10 @@ class NullableTest extends \PHPUnit\Framework\TestCase
     }
 
     #[Test]
-    public function testInvalidTypeThrowsLogicException()
+    public function testInvalidTypeThrowsConstraintConfigurationException()
     {
         // Then
-        $this->expectException(\LogicException::class);
+        $this->expectException(ConstraintConfigurationException::class);
 
         // When
         $nullable = new Nullable('NonExistentClass', 5);

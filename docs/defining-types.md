@@ -176,7 +176,7 @@ use StrongType\String\StringType;
 readonly class ScopedUsername extends StringType {}
 ```
 
-Combinators with zero children (`new AnyOf()`, `new AllOf()`) throw `\LogicException` at the same site as the other [constraint constructor invariants](architecture.md#constructor-invariants).
+Combinators with zero children (`new AnyOf()`, `new AllOf()`) throw `ConstraintConfigurationException` at the same site as the other [constraint constructor invariants](architecture.md#constructor-invariants).
 
 ## Wrapping enums with `InEnum`
 
@@ -229,7 +229,7 @@ new ColorName('Red');  // OK
 new ColorName('red');  // StrongTypeException -- case names are case-sensitive
 ```
 
-`InEnum` constructed with anything other than an existing enum class — a non-existent class, an interface, or a non-enum class — throws `\LogicException` at the same site as the other [constraint constructor invariants](architecture.md#constructor-invariants).
+`InEnum` constructed with anything other than an existing enum class — a non-existent class, an interface, or a non-enum class — throws `ConstraintConfigurationException` at the same site as the other [constraint constructor invariants](architecture.md#constructor-invariants).
 
 ## Custom constraints
 

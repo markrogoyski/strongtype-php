@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace StrongType\Constraint;
 
+use StrongType\Exception\ConstraintConfigurationException;
 use StrongType\Util\ShortClassName;
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
@@ -19,7 +20,7 @@ final readonly class ElementType implements ConstraintInterface
         if (\class_exists($type) || \interface_exists($type)) {
             return;
         }
-        throw new \LogicException("ElementType: type must be one of [" . \implode(', ', self::BUILTINS) . "] or a class/interface name, got '{$type}'");
+        throw new ConstraintConfigurationException("ElementType: type must be one of [" . \implode(', ', self::BUILTINS) . "] or a class/interface name, got '{$type}'");
     }
 
     #[\Override]

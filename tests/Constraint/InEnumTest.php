@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace StrongType\Tests\Constraint;
 
 use StrongType\Constraint\InEnum;
+use StrongType\Exception\ConstraintConfigurationException;
 use StrongType\Exception\ConstraintViolationException;
 use StrongType\Exception\StrongTypeException;
 use StrongType\Int\Integer;
@@ -219,30 +220,30 @@ class InEnumTest extends \PHPUnit\Framework\TestCase
     }
 
     #[Test]
-    public function testLogicExceptionWhenNonEnumClass(): void
+    public function testConstraintConfigurationExceptionWhenNonEnumClass(): void
     {
         // Then
-        $this->expectException(\LogicException::class);
+        $this->expectException(ConstraintConfigurationException::class);
 
         // When
         new InEnum(\stdClass::class);
     }
 
     #[Test]
-    public function testLogicExceptionWhenNonExistentClass(): void
+    public function testConstraintConfigurationExceptionWhenNonExistentClass(): void
     {
         // Then
-        $this->expectException(\LogicException::class);
+        $this->expectException(ConstraintConfigurationException::class);
 
         // When
         new InEnum('StrongType\\Tests\\Constraint\\DoesNotExistEnum');
     }
 
     #[Test]
-    public function testLogicExceptionWhenInterfaceName(): void
+    public function testConstraintConfigurationExceptionWhenInterfaceName(): void
     {
         // Then
-        $this->expectException(\LogicException::class);
+        $this->expectException(ConstraintConfigurationException::class);
 
         // When
         new InEnum(\Stringable::class);

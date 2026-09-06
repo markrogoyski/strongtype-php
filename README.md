@@ -283,7 +283,7 @@ new CasePackQuantity(1008); // StrongTypeException -- exceeds Max(1000) (inherit
 
 ## Error Handling
 
-`StrongType\Exception\StrongTypeException` is the umbrella for all validation failures. Catch it when you want to handle any invalid value uniformly; catch `ConstraintViolationException` or `FormatException` when you want to react to a specific failure mode.
+`StrongType\Exception\StrongTypeException` (extends `\RuntimeException`) is the umbrella for all validation failures. Catch it when you want to handle any invalid value uniformly; catch `ConstraintViolationException` or `FormatException` when you want to react to a specific failure mode. A misconfigured type or constraint (e.g. `new InRange(100, 1)`) is a *programmer* error, not a validation failure — it throws `ConstraintConfigurationException` (extends `\LogicException`), which is never also a `StrongTypeException`.
 
 | Failure mode | Result |
 | --- | --- |
@@ -291,6 +291,7 @@ new CasePackQuantity(1008); // StrongTypeException -- exceeds Max(1000) (inherit
 | `tryFrom()` with a type-mismatched argument | returns `null` |
 | Constraint attribute fails during validation | `ConstraintViolationException` |
 | Manual parse fails in `DateString` / `TimeString` | `FormatException` |
+| Constraint or type is misconfigured (e.g. `new DivisibleBy(0)`) | `ConstraintConfigurationException` |
 
 > **Strict types matter.** `\TypeError` for `new PositiveInt('5')` only fires from a caller file declared with `declare(strict_types=1)`. Without it, PHP coerces `'5'` to `5` and construction succeeds. Always declare strict types in your application code so type mismatches surface immediately.
 

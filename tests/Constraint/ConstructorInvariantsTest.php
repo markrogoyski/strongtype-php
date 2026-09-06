@@ -15,6 +15,7 @@ use StrongType\Constraint\MinCount;
 use StrongType\Constraint\MinLength;
 use StrongType\Constraint\NotPattern;
 use StrongType\Constraint\Pattern;
+use StrongType\Exception\ConstraintConfigurationException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 
@@ -38,10 +39,10 @@ class ConstructorInvariantsTest extends \PHPUnit\Framework\TestCase
     // DivisibleBy: divisor != 0
 
     #[Test]
-    public function testDivisibleByZeroDivisorThrowsLogicException(): void
+    public function testDivisibleByZeroDivisorThrowsConstraintConfigurationException(): void
     {
         // Then
-        $this->expectException(\LogicException::class);
+        $this->expectException(ConstraintConfigurationException::class);
 
         // When
         new DivisibleBy(0);
@@ -51,10 +52,10 @@ class ConstructorInvariantsTest extends \PHPUnit\Framework\TestCase
 
     #[Test]
     #[DataProvider('dataProviderForNegativeInts')]
-    public function testMinLengthNegativeThrowsLogicException(int $length): void
+    public function testMinLengthNegativeThrowsConstraintConfigurationException(int $length): void
     {
         // Then
-        $this->expectException(\LogicException::class);
+        $this->expectException(ConstraintConfigurationException::class);
 
         // When
         new MinLength($length);
@@ -62,10 +63,10 @@ class ConstructorInvariantsTest extends \PHPUnit\Framework\TestCase
 
     #[Test]
     #[DataProvider('dataProviderForNegativeInts')]
-    public function testMaxLengthNegativeThrowsLogicException(int $length): void
+    public function testMaxLengthNegativeThrowsConstraintConfigurationException(int $length): void
     {
         // Then
-        $this->expectException(\LogicException::class);
+        $this->expectException(ConstraintConfigurationException::class);
 
         // When
         new MaxLength($length);
@@ -100,10 +101,10 @@ class ConstructorInvariantsTest extends \PHPUnit\Framework\TestCase
 
     #[Test]
     #[DataProvider('dataProviderForNegativeInts')]
-    public function testMinCountNegativeThrowsLogicException(int $count): void
+    public function testMinCountNegativeThrowsConstraintConfigurationException(int $count): void
     {
         // Then
-        $this->expectException(\LogicException::class);
+        $this->expectException(ConstraintConfigurationException::class);
 
         // When
         new MinCount($count);
@@ -111,10 +112,10 @@ class ConstructorInvariantsTest extends \PHPUnit\Framework\TestCase
 
     #[Test]
     #[DataProvider('dataProviderForNegativeInts')]
-    public function testMaxCountNegativeThrowsLogicException(int $count): void
+    public function testMaxCountNegativeThrowsConstraintConfigurationException(int $count): void
     {
         // Then
-        $this->expectException(\LogicException::class);
+        $this->expectException(ConstraintConfigurationException::class);
 
         // When
         new MaxCount($count);
@@ -122,10 +123,10 @@ class ConstructorInvariantsTest extends \PHPUnit\Framework\TestCase
 
     #[Test]
     #[DataProvider('dataProviderForNegativeInts')]
-    public function testExactCountNegativeThrowsLogicException(int $count): void
+    public function testExactCountNegativeThrowsConstraintConfigurationException(int $count): void
     {
         // Then
-        $this->expectException(\LogicException::class);
+        $this->expectException(ConstraintConfigurationException::class);
 
         // When
         new ExactCount($count);
@@ -165,10 +166,10 @@ class ConstructorInvariantsTest extends \PHPUnit\Framework\TestCase
 
     #[Test]
     #[DataProvider('dataProviderForInvalidRegex')]
-    public function testPatternInvalidRegexThrowsLogicException(string $pattern): void
+    public function testPatternInvalidRegexThrowsConstraintConfigurationException(string $pattern): void
     {
         // Then
-        $this->expectException(\LogicException::class);
+        $this->expectException(ConstraintConfigurationException::class);
 
         // When
         new Pattern($pattern);
@@ -176,10 +177,10 @@ class ConstructorInvariantsTest extends \PHPUnit\Framework\TestCase
 
     #[Test]
     #[DataProvider('dataProviderForInvalidRegex')]
-    public function testNotPatternInvalidRegexThrowsLogicException(string $pattern): void
+    public function testNotPatternInvalidRegexThrowsConstraintConfigurationException(string $pattern): void
     {
         // Then
-        $this->expectException(\LogicException::class);
+        $this->expectException(ConstraintConfigurationException::class);
 
         // When
         new NotPattern($pattern);
@@ -200,7 +201,7 @@ class ConstructorInvariantsTest extends \PHPUnit\Framework\TestCase
     public function testPatternInvalidRegexSurfacesAtAttributeInstantiation(): void
     {
         // Then
-        $this->expectException(\LogicException::class);
+        $this->expectException(ConstraintConfigurationException::class);
 
         // When
         new PatternInvalidRegexTestStr('whatever');
@@ -210,7 +211,7 @@ class ConstructorInvariantsTest extends \PHPUnit\Framework\TestCase
     public function testNotPatternInvalidRegexSurfacesAtAttributeInstantiation(): void
     {
         // Then
-        $this->expectException(\LogicException::class);
+        $this->expectException(ConstraintConfigurationException::class);
 
         // When
         new NotPatternInvalidRegexTestStr('whatever');
@@ -270,7 +271,7 @@ class ConstructorInvariantsTest extends \PHPUnit\Framework\TestCase
     public function testElementTypeRejectsInvalidType(string $type): void
     {
         // Then
-        $this->expectException(\LogicException::class);
+        $this->expectException(ConstraintConfigurationException::class);
 
         // When
         new ElementType($type);
@@ -295,7 +296,7 @@ class ConstructorInvariantsTest extends \PHPUnit\Framework\TestCase
     public function testElementTypeInvalidSurfacesAtAttributeInstantiation(): void
     {
         // Then
-        $this->expectException(\LogicException::class);
+        $this->expectException(ConstraintConfigurationException::class);
 
         // When
         new ElementTypeInvalidAliasTestArr([]);
@@ -304,10 +305,10 @@ class ConstructorInvariantsTest extends \PHPUnit\Framework\TestCase
     // DateFormat: non-empty format
 
     #[Test]
-    public function testDateFormatEmptyStringThrowsLogicException(): void
+    public function testDateFormatEmptyStringThrowsConstraintConfigurationException(): void
     {
         // Then
-        $this->expectException(\LogicException::class);
+        $this->expectException(ConstraintConfigurationException::class);
 
         // When
         new DateFormat('');
@@ -317,10 +318,10 @@ class ConstructorInvariantsTest extends \PHPUnit\Framework\TestCase
 
     #[Test]
     #[DataProvider('dataProviderForDateFormatResetDirectives')]
-    public function testDateFormatResetDirectiveThrowsLogicException(string $format): void
+    public function testDateFormatResetDirectiveThrowsConstraintConfigurationException(string $format): void
     {
         // Then
-        $this->expectException(\LogicException::class);
+        $this->expectException(ConstraintConfigurationException::class);
 
         // When
         new DateFormat($format);

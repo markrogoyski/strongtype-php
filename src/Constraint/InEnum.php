@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace StrongType\Constraint;
 
+use StrongType\Exception\ConstraintConfigurationException;
 use StrongType\Util\ShortClassName;
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
@@ -18,7 +19,7 @@ final readonly class InEnum implements ConstraintInterface
     public function __construct(string $enumClass)
     {
         if (!\enum_exists($enumClass)) {
-            throw new \LogicException("InEnum: class must be an existing enum, got '{$enumClass}'");
+            throw new ConstraintConfigurationException("InEnum: class must be an existing enum, got '{$enumClass}'");
         }
         $this->enumClass = $enumClass;
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace StrongType\Constraint;
 
+use StrongType\Exception\ConstraintConfigurationException;
 use StrongType\Util\ShortClassName;
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
@@ -12,7 +13,7 @@ final readonly class MinLength implements ConstraintInterface
     public function __construct(private int $minLength)
     {
         if ($minLength < 0) {
-            throw new \LogicException("MinLength: length must be >= 0, got {$minLength}");
+            throw new ConstraintConfigurationException("MinLength: length must be >= 0, got {$minLength}");
         }
     }
 

@@ -161,18 +161,18 @@ class FixedSizeArrayTest extends \PHPUnit\Framework\TestCase
     }
 
     #[Test]
-    public function testTryFromThrowsLogicException()
+    public function testTryFromThrowsBadMethodCallException()
     {
-        $this->expectException(\LogicException::class);
+        $this->expectException(\BadMethodCallException::class);
         $this->expectExceptionMessage('FixedSizeArray::tryFrom() is unsupported');
 
         FixedSizeArray::tryFrom([1, 2, 3]);
     }
 
     #[Test]
-    public function testNullableThrowsLogicException()
+    public function testNullableThrowsBadMethodCallException()
     {
-        $this->expectException(\LogicException::class);
+        $this->expectException(\BadMethodCallException::class);
         $this->expectExceptionMessage('FixedSizeArray::nullable() is unsupported');
 
         FixedSizeArray::nullable([1, 2, 3]);

@@ -105,7 +105,7 @@ The intent is to push parsing and validation to the edges of your system — HTT
 
 ## Error handling
 
-`StrongType\Exception\StrongTypeException` is the umbrella for all validation failures and remains the right type to catch when you want to handle any invalid value uniformly. It has two subclasses for code that wants to distinguish between failure modes:
+`StrongType\Exception\StrongTypeException` extends `\RuntimeException` and is the umbrella for all validation failures — a validated *value* was invalid, which is a runtime concern, not a programming bug. It remains the right type to catch when you want to handle any invalid value uniformly. It has two subclasses for code that wants to distinguish between failure modes:
 
 | Failure mode | Result |
 | --- | --- |
@@ -113,6 +113,9 @@ The intent is to push parsing and validation to the edges of your system — HTT
 | `tryFrom()` with a type-mismatched argument | returns `null` |
 | Constraint attribute fails during validation | `ConstraintViolationException` |
 | Manual parse fails in `DateString` / `TimeString` | `FormatException` |
+| Constraint or type is misconfigured (e.g. `new DivisibleBy(0)`, `new Nullable('NotAStrongType', 1)`) | `StrongType\Exception\ConstraintConfigurationException` |
+
+`ConstraintConfigurationException` extends `\LogicException`, not `StrongTypeException` — a misconfigured constraint is a bug in the *type definition*, not a bad runtime value, so it belongs to a separate, independently-catchable hierarchy. See [Exception hierarchy](architecture.md#exception-hierarchy) for the full picture, including why `FixedSizeArray::tryFrom()` / `::nullable()` throw plain `\BadMethodCallException` instead.
 
 > **Strict types matter.** PHP only raises `\TypeError` for `new PositiveInt('5')` when the **caller's** file declares `declare(strict_types=1);`. Without it, PHP coerces `'5'` to `5` before the constructor runs and the value passes through validation. The library files all declare strict types; your application code should too. Add `declare(strict_types=1);` to every file that constructs strong types so type mismatches surface immediately rather than silently coercing.
 

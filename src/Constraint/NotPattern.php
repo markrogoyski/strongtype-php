@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace StrongType\Constraint;
 
+use StrongType\Exception\ConstraintConfigurationException;
 use StrongType\Util\ShortClassName;
 
 #[\Attribute(\Attribute::TARGET_CLASS | \Attribute::IS_REPEATABLE)]
@@ -13,7 +14,7 @@ final readonly class NotPattern implements ConstraintInterface
     public function __construct(private string $pattern)
     {
         if (@\preg_match($pattern, '') === false) {
-            throw new \LogicException("NotPattern: invalid regex pattern: {$pattern}");
+            throw new ConstraintConfigurationException("NotPattern: invalid regex pattern: {$pattern}");
         }
     }
 

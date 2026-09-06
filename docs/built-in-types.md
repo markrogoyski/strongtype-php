@@ -808,7 +808,7 @@ new UniqueArray([]);            // throws StrongTypeException — must be non-em
 
 ### `FixedSizeArray`
 
-Exact element count chosen at construction time. Uses a manual constructor with a runtime `$size` parameter — see [why some types keep manual constructors](architecture.md#why-some-types-keep-manual-constructors). `FixedSizeArray::tryFrom` and `FixedSizeArray::nullable` throw `\LogicException` because the `$size` argument can't be supplied through the inherited factory; use `withValues()` on an existing instance instead.
+Exact element count chosen at construction time. Uses a manual constructor with a runtime `$size` parameter — see [why some types keep manual constructors](architecture.md#why-some-types-keep-manual-constructors). `FixedSizeArray::tryFrom` and `FixedSizeArray::nullable` throw `\BadMethodCallException` because the `$size` argument can't be supplied through the inherited factory; use `withValues()` on an existing instance instead.
 
 ```php
 use StrongType\Arrays\FixedSizeArray;
@@ -817,7 +817,7 @@ $pair = new FixedSizeArray(['x', 'y'], 2);            // OK
 $pair = $pair->withValues(['a', 'b']);                // OK — same size
 
 new FixedSizeArray(['x'], 2);                         // throws StrongTypeException
-FixedSizeArray::tryFrom(['x', 'y']);                  // \LogicException
+FixedSizeArray::tryFrom(['x', 'y']);                  // \BadMethodCallException
 ```
 
 ### `ListArray`
