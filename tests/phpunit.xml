@@ -36,5 +36,12 @@
   </source>
   <php>
     <ini name="memory_limit" value="512M"/>
+    <!--
+      Float string/JSON expectations are hard-coded digit for digit. serialize_precision=-1
+      (json_encode's shortest round-trip rendering) and precision=14 are PHP's defaults, not
+      language guarantees, so pin both rather than inherit whatever php.ini the runner has.
+    -->
+    <ini name="serialize_precision" value="-1"/>
+    <ini name="precision" value="14"/>
   </php>
 </phpunit>

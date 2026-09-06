@@ -10,6 +10,6 @@ use StrongType\Constraint\ElementType;
  * @extends NonemptyArray<array-key, array<mixed>>
  */
 #[ElementType('array')]
-class ArrayOfArrays extends NonemptyArray
+readonly class ArrayOfArrays extends NonemptyArray
 {
 }

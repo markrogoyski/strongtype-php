@@ -11,7 +11,7 @@ use StrongType\Exception\StrongTypeException;
  * @template TValue
  * @extends ArrayType<TKey, TValue>
  */
-class FixedSizeArray extends ArrayType
+readonly class FixedSizeArray extends ArrayType
 {
     /**
      * @param array<TKey, TValue> $values

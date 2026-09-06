@@ -10,6 +10,6 @@ use StrongType\Constraint\ElementType;
  * @extends NonemptyArray<array-key, iterable<mixed>>
  */
 #[ElementType('iterable')]
-class ArrayOfIterables extends NonemptyArray
+readonly class ArrayOfIterables extends NonemptyArray
 {
 }

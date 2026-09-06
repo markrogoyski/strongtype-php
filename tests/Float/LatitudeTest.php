@@ -58,6 +58,9 @@ class LatitudeTest extends \PHPUnit\Framework\TestCase
             [-90.0],
             [45.5],
             [-45.5],
+            [12.345678901234567],
+            [-89.99999999999999],
+            [1.0e-20],
         ];
     }
 
@@ -97,7 +100,26 @@ class LatitudeTest extends \PHPUnit\Framework\TestCase
             [-90.0, '-90'],
             [45.5, '45.5'],
             [-45.5, '-45.5'],
+            // High-precision and scientific-notation values, where __toString's
+            // json_encode rendering differs from strval's 14-digit, upper-case-E one.
+            [12.345678901234567, '12.345678901234567'],
+            [-89.99999999999999, '-89.99999999999999'],
+            [1.0e-20, '1.0e-20'],
         ];
+    }
+
+    #[Test]
+    #[DataProvider('dataProviderForValidValues')]
+    public function testStringRepresentationMatchesJsonEncoding(float $value)
+    {
+        // Given
+        $latitude = new Latitude($value);
+
+        // When
+        $stringRepresentation = (string) $latitude;
+
+        // Then
+        $this->assertSame(\json_encode($latitude), $stringRepresentation);
     }
 
     #[Test]

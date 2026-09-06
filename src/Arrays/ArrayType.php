@@ -15,12 +15,12 @@ use StrongType\Util\Stringify;
  * @template TValue
  * @implements \IteratorAggregate<TKey, TValue>
  */
-abstract class ArrayType implements \JsonSerializable, \Countable, \IteratorAggregate, \Stringable, HasEquals
+readonly abstract class ArrayType implements \JsonSerializable, \Countable, \IteratorAggregate, \Stringable, HasEquals
 {
     final public const ValueType VALUE_TYPE = ValueType::Array;
 
     /** @var array<TKey, TValue> */
-    public protected(set) array $values;
+    public array $values;
 
     /**
      * @param array<TKey, TValue> $values
@@ -223,7 +223,7 @@ abstract class ArrayType implements \JsonSerializable, \Countable, \IteratorAggr
         foreach ($this->values as $value) {
             $found = false;
             foreach ($remaining as $index => $candidate) {
-                if ($candidate === $value) {
+                if (self::sameElement($candidate, $value)) {
                     unset($remaining[$index]);
                     $found = true;
                     break;
@@ -234,6 +234,23 @@ abstract class ArrayType implements \JsonSerializable, \Countable, \IteratorAggr
             }
         }
         return true;
+    }
+
+    /**
+     * Strict element comparison that treats two NAN floats as the same value.
+     *
+     * `===` says NAN !== NAN, which would make equalsUnordered() non-reflexive for an
+     * array containing NAN — equals() has no such problem, because PHP's array identity
+     * comparison short-circuits when both operands are the same array. Matching the NAN
+     * handling {@see \StrongType\Constraint\Unique} already uses keeps the two notions
+     * of "same element" consistent across the library.
+     */
+    private static function sameElement(mixed $a, mixed $b): bool
+    {
+        if (\is_float($a) && \is_float($b) && \is_nan($a) && \is_nan($b)) {
+            return true;
+        }
+        return $a === $b;
     }
 
     public static function nullable(mixed $value): \StrongType\Nullable

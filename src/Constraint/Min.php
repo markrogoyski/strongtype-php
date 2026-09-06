@@ -21,13 +21,14 @@ final readonly class Min implements ConstraintInterface
         $short = ShortClassName::of($className);
 
         if (\is_int($value) || \is_float($value)) {
+            $min = \var_export($this->min, true);
             if ($this->exclusive) {
                 if ($value <= $this->min) {
-                    return "{$short} type must be > {$this->min}, got {$value}";
+                    return "{$short} type must be > {$min}, got {$value}";
                 }
             } else {
                 if ($value < $this->min) {
-                    return "{$short} type must be >= {$this->min}, got {$value}";
+                    return "{$short} type must be >= {$min}, got {$value}";
                 }
             }
         }

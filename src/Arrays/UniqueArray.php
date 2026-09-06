@@ -12,6 +12,6 @@ use StrongType\Constraint\Unique;
  * @extends NonemptyArray<TKey, TValue>
  */
 #[Unique]
-class UniqueArray extends NonemptyArray
+readonly class UniqueArray extends NonemptyArray
 {
 }

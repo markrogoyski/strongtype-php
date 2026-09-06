@@ -21,13 +21,14 @@ final readonly class Max implements ConstraintInterface
         $short = ShortClassName::of($className);
 
         if (\is_int($value) || \is_float($value)) {
+            $max = \var_export($this->max, true);
             if ($this->exclusive) {
                 if ($value >= $this->max) {
-                    return "{$short} type must be < {$this->max}, got {$value}";
+                    return "{$short} type must be < {$max}, got {$value}";
                 }
             } else {
                 if ($value > $this->max) {
-                    return "{$short} type must be <= {$this->max}, got {$value}";
+                    return "{$short} type must be <= {$max}, got {$value}";
                 }
             }
         }

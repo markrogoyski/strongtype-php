@@ -35,10 +35,33 @@ readonly abstract class FloatingPoint implements \JsonSerializable, \Stringable,
         return $this->value;
     }
 
+    /**
+     * Rendered through json_encode so the string form matches jsonSerialize() (scoped below).
+     * strval() applies the `precision` ini and upper-case exponents, which diverges from
+     * json_encode's `serialize_precision` rendering for high-precision values
+     * (1.2345678901234567) and scientific notation (1.0e+20). Under PHP's defaults
+     * (precision=14, serialize_precision=-1) that is a 14-digit vs shortest-round-trip
+     * difference; the point is that both forms now come from the same setting, whatever
+     * it is, so they cannot disagree with each other.
+     *
+     * The cast is a deliberate choice over JSON_THROW_ON_ERROR. PHP has allowed __toString()
+     * to throw since 7.4, but a string cast is reached from interpolation, concatenation and
+     * error-message building, where an exception is far more disruptive than an odd string --
+     * so this one does not throw.
+     *
+     * It does not need to: for any instance built through this constructor the inherited
+     * #[Finite] constraint rules out NAN/INF, the only float values json_encode refuses, so
+     * the call cannot return false. The `(string) $obj === json_encode($obj)` guarantee is
+     * likewise scoped to such validated instances using the inherited methods under default
+     * JSON options. An instance that bypassed validation entirely (a subclass constructor
+     * that never calls parent::__construct, or crafted unserialize() data) can still hold
+     * NAN, and there the three renderings genuinely differ -- '' here, false from
+     * json_encode(), NAN from jsonSerialize().
+     */
     #[\Override]
     public function __toString(): string
     {
-        return \strval($this->value);
+        return (string) \json_encode($this->value);
     }
 
     /**

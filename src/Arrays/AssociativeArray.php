@@ -14,6 +14,6 @@ use StrongType\Constraint\Nonempty;
  */
 #[Nonempty]
 #[IsAssociative]
-class AssociativeArray extends ArrayType
+readonly class AssociativeArray extends ArrayType
 {
 }

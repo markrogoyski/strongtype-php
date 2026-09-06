@@ -10,6 +10,6 @@ use StrongType\Constraint\IsEmpty;
  * @extends ArrayType<array-key, never>
  */
 #[IsEmpty]
-class EmptyArray extends ArrayType
+readonly class EmptyArray extends ArrayType
 {
 }

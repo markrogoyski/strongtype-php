@@ -20,7 +20,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 
 #[ElementType('integer')]
-class ElementTypeInvalidAliasTestArr extends ArrayType
+readonly class ElementTypeInvalidAliasTestArr extends ArrayType
 {
 }
 

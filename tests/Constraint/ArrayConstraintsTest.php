@@ -16,31 +16,31 @@ use StrongType\Arrays\ArrayType;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 
-#[Nonempty] class NonemptyTestArr extends ArrayType
+#[Nonempty] readonly class NonemptyTestArr extends ArrayType
 {
 }
-#[IsEmpty] class IsEmptyTestArr extends ArrayType
+#[IsEmpty] readonly class IsEmptyTestArr extends ArrayType
 {
 }
-#[MinCount(2)] class MinCountTestArr extends ArrayType
+#[MinCount(2)] readonly class MinCountTestArr extends ArrayType
 {
 }
-#[MaxCount(3)] class MaxCountTestArr extends ArrayType
+#[MaxCount(3)] readonly class MaxCountTestArr extends ArrayType
 {
 }
-#[ExactCount(2)] class ExactCountTestArr extends ArrayType
+#[ExactCount(2)] readonly class ExactCountTestArr extends ArrayType
 {
 }
-#[Unique] class UniqueTestArr extends ArrayType
+#[Unique] readonly class UniqueTestArr extends ArrayType
 {
 }
-#[ElementType('int')] class IntElementTestArr extends ArrayType
+#[ElementType('int')] readonly class IntElementTestArr extends ArrayType
 {
 }
-#[ElementType('string')] class StringElementTestArr extends ArrayType
+#[ElementType('string')] readonly class StringElementTestArr extends ArrayType
 {
 }
-#[ElementType('array')] class ArrayElementTestArr extends ArrayType
+#[ElementType('array')] readonly class ArrayElementTestArr extends ArrayType
 {
 }
 

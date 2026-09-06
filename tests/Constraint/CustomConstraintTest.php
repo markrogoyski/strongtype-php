@@ -98,7 +98,7 @@ readonly class AnyValueTypeDateTime extends DateTime
 }
 
 #[NotForbidden]
-class AnyValueTypeArray extends ArrayType
+readonly class AnyValueTypeArray extends ArrayType
 {
 }
 

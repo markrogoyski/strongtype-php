@@ -12,6 +12,6 @@ use StrongType\Constraint\Nonempty;
  * @extends ArrayType<TKey, TValue>
  */
 #[Nonempty]
-class NonemptyArray extends ArrayType
+readonly class NonemptyArray extends ArrayType
 {
 }

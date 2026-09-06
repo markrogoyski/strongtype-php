@@ -50,13 +50,13 @@ readonly class TrackingNumber extends StringType {}
 
 // Array shapes
 #[Nonempty, Unique, ElementType('string')]
-class TagSet extends ArrayType {}
+readonly class TagSet extends ArrayType {}
 
 #[Nonempty, ElementType('int'), Unique]
-class UniqueIdList extends ArrayType {}
+readonly class UniqueIdList extends ArrayType {}
 ```
 
-> **Note:** scalar subclasses (`Integer`, `FloatingPoint`, `StringType`, `BoolType`, `DateTime`) are declared `readonly`, but `ArrayType` subclasses are **not** — the base class uses a `protected(set)` property that can't appear inside a `readonly` class. The value remains immutable in practice; you simply omit the keyword.
+> **Note:** every base class is `readonly`, including `ArrayType`, so your subclasses must be `readonly` too. PHP forbids a non-readonly class extending a readonly one (and vice versa), so omitting the keyword on an `ArrayType` subclass is a fatal error, not a stylistic choice.
 
 ## Inheriting constraints
 
@@ -491,7 +491,7 @@ readonly class Hostname extends StringType {}
 
 // Configuration
 #[Nonempty, Unique, ElementType('string'), MaxCount(50)]
-class FeatureFlags extends ArrayType {}
+readonly class FeatureFlags extends ArrayType {}
 ```
 
 Or build on top of an existing validated type when you only need to layer one extra rule:

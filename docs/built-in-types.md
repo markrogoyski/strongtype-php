@@ -183,6 +183,16 @@ All float types extend `StrongType\Float\FloatingPoint`. Float subtypes reject `
 
 `FloatingPoint::tryFrom` accepts `int` and widens to `float`, mirroring PHP's native int-to-float parameter widening. Every other base class is strict.
 
+`(string) $float` and `json_encode($float)` always agree: `__toString()` renders through `json_encode` rather than `strval()`, so both forms come from the same PHP setting (`serialize_precision`) instead of two different ones. Under PHP's defaults — `serialize_precision=-1`, meaning the shortest representation that round-trips back to the same double, and `precision=14` for `strval()` — the outputs below are what you get; the guarantee that the two agree holds regardless of how those are configured.
+
+```php
+use StrongType\Float\PositiveFloat;
+
+(string) new PositiveFloat(1.2345678901234567);  // "1.2345678901234567"  (strval: "1.2345678901235")
+(string) new PositiveFloat(1.0e20);              // "1.0e+20"             (strval: "1.0E+20")
+(string) new PositiveFloat(2.5);                 // "2.5"                 — ordinary values are unchanged
+```
+
 | Type | Constraint | Details |
 | --- | --- | --- |
 | [`PositiveFloat`](#positivefloat) | `> 0` | Strictly positive |
@@ -334,7 +344,7 @@ All string types extend `StrongType\String\StringType`. `MinLength` and `MaxLeng
 | [`IpAddressString`](#ipaddressstring) | `FILTER_VALIDATE_IP` | Valid IP address (v4 or v6) |
 | [`Ipv4AddressString`](#ipv4addressstring) | IPv4 filter | Valid IPv4 address only |
 | [`Ipv6AddressString`](#ipv6addressstring) | IPv6 filter | Valid IPv6 address only |
-| [`CidrString`](#cidrstring) | CIDR notation | `ip/prefix` with prefix in valid range |
+| [`CidrString`](#cidrstring) | CIDR notation | `ip/prefix` with a canonical, in-range prefix |
 | [`MacAddressString`](#macaddressstring) | MAC pattern | `xx:xx:xx:xx:xx:xx` |
 | [`UuidString`](#uuidstring) | UUID pattern | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` |
 | [`JwtString`](#jwtstring) | JWT pattern | `header.payload.signature` base64url segments |
@@ -548,7 +558,10 @@ use StrongType\String\CidrString;
 new CidrString('10.0.0.0/24');     // OK
 new CidrString('2001:db8::/32');   // OK
 new CidrString('10.0.0.0/33');     // throws StrongTypeException — prefix out of range
+new CidrString('10.0.0.0/08');     // throws StrongTypeException — non-canonical prefix
 ```
+
+The prefix length must be canonical decimal (`0`, or no leading zero), so each prefix *length* has exactly one accepted spelling. The address half is not normalized — `2001:db8::/32` and `2001:0db8:0:0:0:0:0:0/32` both pass and are not equal, and host bits are allowed (`10.0.0.1/24`). See the [`Cidr` attribute](constraint-attributes.md#cidr) for the full scope.
 
 ### `MacAddressString`
 
@@ -747,7 +760,9 @@ new EmptyString(' ');   // throws StrongTypeException
 
 ## Arrays
 
-All array types extend `StrongType\Arrays\ArrayType`. `ArrayType` subclasses are **not** declared `readonly` — the base class uses a `protected(set)` property that can't appear inside a `readonly` class. The value remains immutable in practice.
+All array types extend `StrongType\Arrays\ArrayType`. `ArrayType` and every one of its subclasses are declared `readonly`, so `$values` cannot be reassigned after construction — from outside the object or from a subclass method. Your own array types must be `readonly class` as well; PHP rejects a non-readonly subclass of a readonly class outright.
+
+Immutability is at the array level: **elements** are validated, not copied, so mutating an object or resource element through a handle you still hold is visible through the strong type — and an element passed *by reference* can even be replaced with a different type after validation. See [element aliasing](semantics.md#element-aliasing) for the full policy.
 
 `MinCount`, `MaxCount`, and `ExactCount` count elements via `count()` regardless of key type. `ElementType` and `Unique` validate **direct children only** — see [shallow array validation](semantics.md#shallow-array-validation).
 
@@ -1096,7 +1111,7 @@ readonly class Hostname extends StringType {}
 
 // Configuration
 #[Nonempty, Unique, ElementType('string'), MaxCount(50)]
-class FeatureFlags extends ArrayType {}
+readonly class FeatureFlags extends ArrayType {}
 ```
 
 For a deeper guide on how to compose your own types, see [defining types](defining-types.md).

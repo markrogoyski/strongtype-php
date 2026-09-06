@@ -12,7 +12,7 @@ use StrongType\Constraint\IsList;
 use StrongType\Arrays\ArrayType;
 
 #[IsList]
-class IsListTestArray extends ArrayType
+readonly class IsListTestArray extends ArrayType
 {
 }
 

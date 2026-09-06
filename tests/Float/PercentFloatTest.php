@@ -57,6 +57,9 @@ class PercentFloatTest extends \PHPUnit\Framework\TestCase
             [50.0],
             [100.0],
             [99.9],
+            [12.345678901234567],
+            [99.99999999999999],
+            [1.0e-20],
         ];
     }
 
@@ -95,7 +98,26 @@ class PercentFloatTest extends \PHPUnit\Framework\TestCase
             [50.0, '50'],
             [100.0, '100'],
             [99.9, '99.9'],
+            // High-precision and scientific-notation values, where __toString's
+            // json_encode rendering differs from strval's 14-digit, upper-case-E one.
+            [12.345678901234567, '12.345678901234567'],
+            [99.99999999999999, '99.99999999999999'],
+            [1.0e-20, '1.0e-20'],
         ];
+    }
+
+    #[Test]
+    #[DataProvider('dataProviderForValidValues')]
+    public function testStringRepresentationMatchesJsonEncoding(float $value)
+    {
+        // Given
+        $percentFloat = new PercentFloat($value);
+
+        // When
+        $stringRepresentation = (string) $percentFloat;
+
+        // Then
+        $this->assertSame(\json_encode($percentFloat), $stringRepresentation);
     }
 
     #[Test]

@@ -26,6 +26,11 @@ readonly class MinTestFloat extends FloatingPoint
 {
 }
 
+#[Min(1.5, exclusive: true)]
+readonly class MinExclusiveTestFloat extends FloatingPoint
+{
+}
+
 class MinTest extends \PHPUnit\Framework\TestCase
 {
     #[Test]
@@ -91,5 +96,32 @@ class MinTest extends \PHPUnit\Framework\TestCase
         } catch (StrongTypeException $e) {
             $this->assertSame('MinTestInt type must be >= 0, got -5', $e->getMessage());
         }
+    }
+
+    /**
+     * The bound is rendered with var_export, so a float bound keeps its float spelling
+     * (0.0, not 0) and reads consistently with InRange's message.
+     */
+    #[Test]
+    #[DataProvider('dataProviderForBoundRendering')]
+    public function testBoundIsRenderedWithItsOwnType(string $class, int|float $value, string $expectedMessage)
+    {
+        // Then
+        $this->expectException(StrongTypeException::class);
+        $this->expectExceptionMessage($expectedMessage);
+
+        // When
+        new $class($value);
+    }
+
+    public static function dataProviderForBoundRendering(): array
+    {
+        return [
+            'int bound, inclusive'     => [MinTestInt::class, -1, 'MinTestInt type must be >= 0, got -1'],
+            'int bound, exclusive'     => [MinExclusiveTestInt::class, 5, 'MinExclusiveTestInt type must be > 5, got 5'],
+            'float bound, inclusive'   => [MinTestFloat::class, -0.5, 'MinTestFloat type must be >= 0.0, got -0.5'],
+            'float bound, exclusive'   => [MinExclusiveTestFloat::class, 1.5, 'MinExclusiveTestFloat type must be > 1.5, got 1.5'],
+            'float bound, int-ish arg' => [MinTestFloat::class, -1.0, 'MinTestFloat type must be >= 0.0, got -1'],
+        ];
     }
 }

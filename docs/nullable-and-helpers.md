@@ -28,9 +28,53 @@ $value->equals(new Nullable(PositiveInt::class, null)); // false
 $value->equals(new PositiveInt(5));                     // false (Nullable<PositiveInt> != PositiveInt)
 ```
 
-`Nullable` validates the wrapped type at construction. Passing an abstract class, a non-existent class, or a class that does not implement both `HasEquals` and `\JsonSerializable` throws `StrongType\Exception\ConstraintConfigurationException` immediately — even when `$value` is `null`. This is a programmer-error fail-fast, not a value-validation failure, which is why it is a `ConstraintConfigurationException` (a `\LogicException`) rather than a `StrongTypeException` subclass.
+`Nullable` validates the wrapped type at construction. Passing an abstract class, a non-existent class, a class whose constructor is not public, or a class that does not implement all three of `HasEquals`, `\JsonSerializable`, and `\Stringable` throws `StrongType\Exception\ConstraintConfigurationException` immediately — even when `$value` is `null`. So does wrapping a type whose constructor *requires* more than the single value `Nullable` can supply — `FixedSizeArray`, which also takes a `$size`. (Only required parameters count: a constructor with optional or variadic extras is still wrappable.) These are programmer-error fail-fasts, not value-validation failures, which is why they are `ConstraintConfigurationException` (a `\LogicException`) rather than a `StrongTypeException` subclass.
+
+The arity check is a reflection precheck on the wrapped class's own constructor, not a `catch` around the instantiation. An `\ArgumentCountError` raised from *inside* an otherwise wrappable one-argument constructor is a different bug and propagates unchanged rather than being relabelled as a `Nullable` configuration error.
+
+```php
+use StrongType\Nullable;
+use StrongType\Arrays\FixedSizeArray;
+use StrongType\Int\Integer;
+
+new Nullable(Integer::class, 5);            // ConstraintConfigurationException — abstract
+new Nullable('NoSuchClass', 5);             // ConstraintConfigurationException — not a strong type
+new Nullable(FixedSizeArray::class, [1, 2]); // ConstraintConfigurationException — constructor needs $size
+new Nullable(FixedSizeArray::class, null);   // ConstraintConfigurationException — same, even for null
+```
 
 `PositiveInt::nullable($value)` is a convenience shortcut for `new Nullable(PositiveInt::class, $value)`; every base class exposes the same factory.
+
+### `getValue()` vs `unwrap()`
+
+`Nullable` offers two accessors, and they return different things:
+
+| Method | Returns | Use when |
+| --- | --- | --- |
+| `getValue()` | the wrapped value **serialized to a primitive** (`$strongType->jsonSerialize()`), or `null` | you want the plain `int` / `string` / `bool` / `array` behind the wrapper |
+| `unwrap()` | the wrapped **strong type object** — `(\JsonSerializable&\Stringable&HasEquals)\|null` | you need the object itself: its own accessors, `equals()`, or its string form |
+
+```php
+use StrongType\Nullable;
+use StrongType\Arrays\ArrayOfStrings;
+use StrongType\String\EmailString;
+
+$email = new Nullable(EmailString::class, 'ops@example.com');
+
+$email->getValue();          // 'ops@example.com' — the primitive
+$email->unwrap();            // EmailString('ops@example.com') — the object
+$email->unwrap()?->equals(new EmailString('ops@example.com')); // true
+
+$roles = new Nullable(ArrayOfStrings::class, ['admin', 'auditor']);
+$roles->unwrap()?->getValues();  // ['admin', 'auditor']
+$roles->unwrap()?->count();      // 2 — reachable only through the object
+
+(new Nullable(EmailString::class, null))->unwrap();  // null
+```
+
+`unwrap()` is declared with the intersection type `(\JsonSerializable&\Stringable&HasEquals)|null` rather than `?HasEquals`, so `jsonSerialize()`, `__toString()`, and `equals()` are all reachable without a narrowing cast. Reaching a type-specific method such as `getValues()` or `count()` still needs an `instanceof` check (or a cast) to satisfy static analysis, since `Nullable` is not parameterised by the wrapped class.
+
+There is deliberately no single unified value accessor across the library: scalar types expose `getValue()` and array types expose `getValues()`, returning different shapes. `unwrap()->getValue()` / `unwrap()->getValues()` covers both without collapsing that distinction.
 
 ## Base class methods
 
@@ -40,7 +84,7 @@ Base classes provide these helpers (array-only helpers are prefixed with `ArrayT
 | --- | --- | --- |
 | `tryFrom(mixed $value)` | `static \| null` | Returns an instance or `null` if the input is the wrong PHP type or fails validation. Does **not** widen across scalar types (strict matching) — except `FloatingPoint::tryFrom` accepts `int` and widens to `float`, mirroring PHP's native int-to-float param coercion. |
 | `equals(HasEquals $other)` | `bool` | Strict structural equality: same concrete class and same value (`ArrayType::equals` compares values **and** key-order, since insertion order is part of the array identity). |
-| `ArrayType::equalsUnordered(HasEquals $other)` | `bool` | Multiset equality: same concrete subclass and same values (each repeated the same number of times) regardless of keys or insertion order. Strict element comparison; nested arrays are compared as-is. Only defined on `ArrayType`. |
+| `ArrayType::equalsUnordered(HasEquals $other)` | `bool` | Multiset equality: same concrete subclass and same values (each repeated the same number of times) regardless of keys or insertion order. Strict element comparison, except that two top-level `NAN` floats count as the same element — an element-comparison difference from `equals()` on top of ignoring keys and order (see [semantics.md](semantics.md#equality-semantics)); nested arrays are compared as-is. Only defined on `ArrayType`. |
 | `nullable(mixed $value)` | `Nullable` | Convenience shortcut for `new Nullable(static::class, $value)`. |
 | `ArrayType::withValues(array $values)` | `static` | Returns a new instance of the same concrete subclass with a different value array. Only defined on `ArrayType`. |
 
@@ -81,7 +125,7 @@ Every strong type implements a small, stable set of standard interfaces so it ca
 
 | Interface | Where | What you get |
 | --- | --- | --- |
-| `\Stringable` | All types | `__toString()` — cast any strong type to `string` (integers/floats/bools use `strval`; strings pass through; arrays and datetimes JSON-encode). |
+| `\Stringable` | All types | `__toString()` — cast any strong type to `string` (integers/bools use `strval`; floats render through `json_encode`; strings pass through; arrays and datetimes JSON-encode). |
 | `\JsonSerializable` | All types | `jsonSerialize()` — `json_encode($value)` produces the underlying scalar/array. |
 | `\StrongType\HasEquals` | All types and `Nullable` | `equals(HasEquals $other): bool` — strict structural equality. Lets generic code compare two strong-type instances without knowing the concrete type. Type-hint against `HasEquals` when you want to accept "any strong type" (including a `Nullable`) in a signature. |
 | `\Countable` | `ArrayType` only | `count($arr)` returns the element count. |

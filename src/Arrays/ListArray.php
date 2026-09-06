@@ -11,6 +11,6 @@ use StrongType\Constraint\IsList;
  * @extends ArrayType<int, TValue>
  */
 #[IsList]
-class ListArray extends ArrayType
+readonly class ListArray extends ArrayType
 {
 }

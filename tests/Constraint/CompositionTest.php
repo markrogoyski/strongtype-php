@@ -29,7 +29,7 @@ readonly class TestShortSlug extends StringType
 }
 
 #[Nonempty, Unique, ElementType('string')]
-class TestUniqueStrings extends ArrayType
+readonly class TestUniqueStrings extends ArrayType
 {
 }
 

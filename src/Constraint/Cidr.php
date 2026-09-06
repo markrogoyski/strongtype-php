@@ -24,11 +24,21 @@ final readonly class Cidr implements ConstraintInterface
     private function isValidCidr(string $value): bool
     {
         $parts = \explode('/', $value);
-        if (\count($parts) !== 2 || !\ctype_digit($parts[1])) {
+        if (\count($parts) !== 2) {
             return false;
         }
 
         [$ip, $prefix] = $parts;
+
+        // Canonical decimal only: "0" or a leading-zero-free run of digits. A leading
+        // zero ("/08", "/00") is not a distinct prefix length, just a second spelling of
+        // one, so this gives each prefix length exactly one accepted form. Scope is the
+        // prefix length only -- Cidr is a format constraint, so the address half keeps
+        // whatever spelling the caller used and host bits are not required to be zero.
+        if (\preg_match('/\A(0|[1-9]\d*)\z/', $prefix) !== 1) {
+            return false;
+        }
+
         $prefixInt = (int) $prefix;
 
         $isIpv4 = \filter_var($ip, \FILTER_VALIDATE_IP, \FILTER_FLAG_IPV4) !== false;

@@ -6,6 +6,7 @@ namespace StrongType\Tests\Constraint;
 
 use StrongType\Constraint\Max;
 use StrongType\Exception\StrongTypeException;
+use StrongType\Float\FloatingPoint;
 use StrongType\Int\Integer;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -17,6 +18,16 @@ readonly class MaxTestInt extends Integer
 
 #[Max(100, exclusive: true)]
 readonly class MaxExclusiveTestInt extends Integer
+{
+}
+
+#[Max(1.0)]
+readonly class MaxTestFloat extends FloatingPoint
+{
+}
+
+#[Max(1.5, exclusive: true)]
+readonly class MaxExclusiveTestFloat extends FloatingPoint
 {
 }
 
@@ -71,5 +82,52 @@ class MaxTest extends \PHPUnit\Framework\TestCase
         } catch (StrongTypeException $e) {
             $this->assertSame('MaxTestInt type must be <= 100, got 200', $e->getMessage());
         }
+    }
+
+    #[Test]
+    public function testMaxFloatAcceptsTheBound()
+    {
+        // When
+        $float = new MaxTestFloat(1.0);
+
+        // Then
+        $this->assertSame(1.0, $float->value);
+    }
+
+    #[Test]
+    public function testMaxFloatRejectsAboveTheBound()
+    {
+        // Then
+        $this->expectException(StrongTypeException::class);
+
+        // When
+        new MaxTestFloat(1.1);
+    }
+
+    /**
+     * The bound is rendered with var_export, so a float bound keeps its float spelling
+     * (1.0, not 1) and reads consistently with InRange's message.
+     */
+    #[Test]
+    #[DataProvider('dataProviderForBoundRendering')]
+    public function testBoundIsRenderedWithItsOwnType(string $class, int|float $value, string $expectedMessage)
+    {
+        // Then
+        $this->expectException(StrongTypeException::class);
+        $this->expectExceptionMessage($expectedMessage);
+
+        // When
+        new $class($value);
+    }
+
+    public static function dataProviderForBoundRendering(): array
+    {
+        return [
+            'int bound, inclusive'     => [MaxTestInt::class, 101, 'MaxTestInt type must be <= 100, got 101'],
+            'int bound, exclusive'     => [MaxExclusiveTestInt::class, 100, 'MaxExclusiveTestInt type must be < 100, got 100'],
+            'float bound, inclusive'   => [MaxTestFloat::class, 1.5, 'MaxTestFloat type must be <= 1.0, got 1.5'],
+            'float bound, exclusive'   => [MaxExclusiveTestFloat::class, 1.5, 'MaxExclusiveTestFloat type must be < 1.5, got 1.5'],
+            'float bound, int-ish arg' => [MaxTestFloat::class, 2.0, 'MaxTestFloat type must be <= 1.0, got 2'],
+        ];
     }
 }

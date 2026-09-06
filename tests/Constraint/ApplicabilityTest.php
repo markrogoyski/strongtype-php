@@ -101,7 +101,7 @@ readonly class StringOnBoolType extends BoolType
 }
 
 #[Positive]
-class NumericOnArrayType extends ArrayType
+readonly class NumericOnArrayType extends ArrayType
 {
 }
 

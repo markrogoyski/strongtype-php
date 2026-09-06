@@ -12,7 +12,7 @@ use StrongType\Constraint\IsAssociative;
 use StrongType\Arrays\ArrayType;
 
 #[IsAssociative]
-class IsAssociativeTestArray extends ArrayType
+readonly class IsAssociativeTestArray extends ArrayType
 {
 }
 

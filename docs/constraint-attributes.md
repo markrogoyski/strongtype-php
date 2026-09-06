@@ -62,6 +62,18 @@ new StrictlyPositive(1);  // OK
 new StrictlyPositive(0);  // StrongTypeException: "StrictlyPositive type must be > 0, got 0"
 ```
 
+The bound is rendered in the message with its own type, so a float bound reads as a float — matching [`InRange`](#inrange):
+
+```php
+use StrongType\Constraint\Min;
+use StrongType\Float\FloatingPoint;
+
+#[Min(0.0)]
+readonly class Rainfall extends FloatingPoint {}
+
+new Rainfall(-1.5);  // StrongTypeException: "Rainfall type must be >= 0.0, got -1.5"
+```
+
 ### `Max`
 
 Upper bound (inclusive by default).
@@ -78,6 +90,8 @@ readonly class PercentRangeInt extends Integer {}
 new PercentRangeInt(99);   // OK
 new PercentRangeInt(100);  // throws StrongTypeException
 ```
+
+As with `Min`, a float bound keeps its float spelling in the message — `UnitFloat` reports `"UnitFloat type must be <= 1.0, got 1.5"`.
 
 ### `InRange`
 
@@ -640,8 +654,13 @@ readonly class AllowedSubnet extends StringType {}
 
 new AllowedSubnet('10.0.0.0/8');     // OK
 new AllowedSubnet('2001:db8::/32');  // OK
-new AllowedSubnet('10.0.0.0/33');    // throws StrongTypeException
+new AllowedSubnet('10.0.0.0/33');    // throws StrongTypeException — prefix out of range
+new AllowedSubnet('10.0.0.0/08');    // throws StrongTypeException — non-canonical prefix
 ```
+
+The prefix length must be written canonically: `0`, or a digit run with no leading zero. `/08` and `/00` denote in-range prefix lengths but are a second spelling of `/8` and `/0`, so rejecting them gives each prefix length exactly one accepted form.
+
+This canonicalizes the **prefix length only** — it is not network canonicalization. `Cidr` is a format constraint (see [format vs. registry validation](semantics.md#format-vs-registry-validation)): the address half keeps whatever spelling the input used (`2001:db8::/32` and `2001:0db8:0:0:0:0:0:0/32` are both accepted and are not `equals()`), and host bits are not required to be zero (`10.0.0.1/24` is accepted). Two `Cidr` values that compare unequal can still denote the same network. If you need that, normalize before constructing: `inet_pton`/`inet_ntop` collapses the address spelling, but clearing host bits additionally requires masking the packed address by the prefix length.
 
 ### `Uuid`
 
@@ -760,7 +779,7 @@ use StrongType\Constraint\IsEmpty;
 use StrongType\Arrays\ArrayType;
 
 #[IsEmpty]
-class MustBeEmpty extends ArrayType {}
+readonly class MustBeEmpty extends ArrayType {}
 
 new MustBeEmpty([]);    // OK
 new MustBeEmpty([1]);   // throws StrongTypeException
@@ -779,7 +798,7 @@ use StrongType\Constraint\{MinCount, ElementType};
 use StrongType\Arrays\ArrayType;
 
 #[MinCount(2), ElementType('string')]
-class Cosigners extends ArrayType {}
+readonly class Cosigners extends ArrayType {}
 
 new Cosigners(['alice', 'bob']);   // OK
 new Cosigners(['alice']);          // throws StrongTypeException
@@ -798,7 +817,7 @@ use StrongType\Constraint\{MaxCount, ElementType};
 use StrongType\Arrays\ArrayType;
 
 #[MaxCount(50), ElementType('string')]
-class FeatureFlags extends ArrayType {}
+readonly class FeatureFlags extends ArrayType {}
 
 new FeatureFlags(['flag1', 'flag2']);                            // OK
 new FeatureFlags(array_map(fn($i) => "flag$i", range(1, 51)));   // throws StrongTypeException
@@ -818,7 +837,7 @@ use StrongType\Arrays\ArrayType;
 
 // RGB color: exactly 3 channels.
 #[ExactCount(3), ElementType('int')]
-class RgbChannels extends ArrayType {}
+readonly class RgbChannels extends ArrayType {}
 
 new RgbChannels([255, 128, 0]);   // OK
 new RgbChannels([255, 128]);      // throws StrongTypeException
@@ -835,7 +854,7 @@ use StrongType\Constraint\{Unique, Nonempty, ElementType};
 use StrongType\Arrays\ArrayType;
 
 #[Nonempty, Unique, ElementType('int')]
-class UserIds extends ArrayType {}
+readonly class UserIds extends ArrayType {}
 
 new UserIds([1, 2, 3]);   // OK
 new UserIds([1, 1, 2]);   // throws StrongTypeException
@@ -854,7 +873,7 @@ use StrongType\Constraint\{ElementType, Nonempty};
 use StrongType\Arrays\ArrayType;
 
 #[Nonempty, ElementType(\DateTimeImmutable::class)]
-class EventDates extends ArrayType {}
+readonly class EventDates extends ArrayType {}
 
 new EventDates([new \DateTimeImmutable('2024-01-15')]);  // OK
 new EventDates(['2024-01-15']);                          // throws StrongTypeException
@@ -871,7 +890,7 @@ use StrongType\Constraint\IsList;
 use StrongType\Arrays\ArrayType;
 
 #[IsList]
-class OrderedSteps extends ArrayType {}
+readonly class OrderedSteps extends ArrayType {}
 
 new OrderedSteps(['init', 'fetch', 'render']);  // OK
 new OrderedSteps(['a' => 1]);                   // throws StrongTypeException
@@ -888,7 +907,7 @@ use StrongType\Constraint\IsAssociative;
 use StrongType\Arrays\ArrayType;
 
 #[IsAssociative]
-class Headers extends ArrayType {}
+readonly class Headers extends ArrayType {}
 
 new Headers(['Content-Type' => 'application/json']);  // OK
 new Headers([]);                                      // throws StrongTypeException

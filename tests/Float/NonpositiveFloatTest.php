@@ -62,6 +62,9 @@ class NonpositiveFloatTest extends \PHPUnit\Framework\TestCase
             [-8973298792.777],
             [-\PHP_FLOAT_MIN],
             [-\PHP_FLOAT_MAX],
+            [-1.2345678901234567],
+            [-1.0e+20],
+            [-1.0e-20],
         ];
     }
 
@@ -103,7 +106,28 @@ class NonpositiveFloatTest extends \PHPUnit\Framework\TestCase
             [-10.1, '-10.1'],
             [-1000.005, '-1000.005'],
             [-8973298792.777, '-8973298792.777'],
+            // High-precision and scientific-notation values, where __toString's
+            // json_encode rendering differs from strval's 14-digit, upper-case-E one.
+            [-1.2345678901234567, '-1.2345678901234567'],
+            [-1.0e+20, '-1.0e+20'],
+            [-1.0e-20, '-1.0e-20'],
+            [-\PHP_FLOAT_MAX, '-1.7976931348623157e+308'],
+            [-\PHP_FLOAT_MIN, '-2.2250738585072014e-308'],
         ];
+    }
+
+    #[Test]
+    #[DataProvider('dataProviderForValidValues')]
+    public function testStringRepresentationMatchesJsonEncoding(float $value)
+    {
+        // Given
+        $nonpositiveFloat = new NonpositiveFloat($value);
+
+        // When
+        $stringRepresentation = (string) $nonpositiveFloat;
+
+        // Then
+        $this->assertSame(\json_encode($nonpositiveFloat), $stringRepresentation);
     }
 
     #[Test]

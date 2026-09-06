@@ -10,6 +10,6 @@ use StrongType\Constraint\ElementType;
  * @extends NonemptyArray<array-key, bool>
  */
 #[ElementType('bool')]
-class ArrayOfBools extends NonemptyArray
+readonly class ArrayOfBools extends NonemptyArray
 {
 }

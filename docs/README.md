@@ -12,7 +12,7 @@ This index is the front door for the deep documentation. The top-level [README](
 ### Reference
 - **[Built-in types](built-in-types.md)** — every concrete type (integers, floats, strings, arrays, booleans, datetimes) with an example per row.
 - **[Constraint attributes](constraint-attributes.md)** — every constraint attribute (numeric, string, array, datetime, enum, combinators) with an example per row.
-- **[Nullable & base-class helpers](nullable-and-helpers.md)** — `Nullable` wrapper, `tryFrom`, `equals`, `equalsUnordered`, `withValues`, implemented standard interfaces.
+- **[Nullable & base-class helpers](nullable-and-helpers.md)** — `Nullable` wrapper (`getValue()` vs `unwrap()`), `tryFrom`, `equals`, `equalsUnordered`, `withValues`, implemented standard interfaces.
 
 ### Guides
 - **[Defining your own types](defining-types.md)** — declarative composition, inheritance, priority ordering, custom constraints, combinators, wrapping enums.
@@ -65,7 +65,7 @@ Real reader intents mapped to the right doc page.
 - **I want to validate user input at an HTTP boundary** → [type hints throughout your domain code](getting-started.md#type-hints-throughout-your-domain-code) + browse the [string catalog](built-in-types.md#strings) for `EmailString`, `UrlString`, `UuidString`.
 - **I want to model a domain concept** → [defining your own types](defining-types.md), then the [domain modeling examples](defining-types.md#real-world-domain-modeling).
 - **I want to add a validation rule the library doesn't ship** → [custom constraints](defining-types.md#custom-constraints) (Palindrome, Luhn examples).
-- **I want to handle null safely** → [Nullable wrapper](nullable-and-helpers.md#nullable-wrapper).
+- **I want to handle null safely** → [Nullable wrapper](nullable-and-helpers.md#nullable-wrapper), and [`getValue()` vs `unwrap()`](nullable-and-helpers.md#getvalue-vs-unwrap) for getting back to the wrapped type.
 - **I want to catch a specific failure mode** → [error handling](getting-started.md#error-handling).
 - **I want to constrain a value to enum cases** → [wrapping enums with `InEnum`](defining-types.md#wrapping-enums-with-inenum).
 - **I want to combine "either of these" / "all of these" / "not this" rules** → [combinators](defining-types.md#combinators-anyof-allof-not).
@@ -81,7 +81,7 @@ Flat list of every doc with a one-line summary.
 - **[built-in-types.md](built-in-types.md)** — the catalog of integer, float, string, array, boolean, and datetime types.
 - **[constraint-attributes.md](constraint-attributes.md)** — the catalog of constraint attributes and the priority bands table.
 - **[defining-types.md](defining-types.md)** — composition, inheritance, priority, combinators, custom constraints, wrapping enums, real-world modeling.
-- **[nullable-and-helpers.md](nullable-and-helpers.md)** — `Nullable` wrapper, base-class methods, implemented interfaces.
+- **[nullable-and-helpers.md](nullable-and-helpers.md)** — `Nullable` wrapper (including `unwrap()`), base-class methods, implemented interfaces.
 - **[semantics.md](semantics.md)** — cross-cutting policies governing every type and constraint.
 - **[architecture.md](architecture.md)** — internal mechanics: how constraints are resolved, manual-constructor exceptions, consistent-constructor contract, constructor invariants.
 

@@ -42,7 +42,7 @@ readonly class Port extends \StrongType\Int\Integer {}
 readonly class Username extends \StrongType\String\StringType {}
 
 #[Nonempty, Unique, ElementType('int')]
-class UserIds extends \StrongType\Arrays\ArrayType {}
+readonly class UserIds extends \StrongType\Arrays\ArrayType {}
 
 new Port(8080);                  // OK
 new Port(0);                     // StrongTypeException: "Port type must be >= 1, got 0"
@@ -311,6 +311,7 @@ A few cross-cutting policies govern every type and constraint. The full reasonin
 - **[First-error behavior](docs/semantics.md#first-error-behavior)** — validation stops at the first failing constraint.
 - **[Equality is type-strict](docs/semantics.md#equality-semantics)** — same concrete subclass required; `ArrayType::equals` is order-sensitive.
 - **[Shallow array validation](docs/semantics.md#shallow-array-validation)** — `ElementType` / `Unique` check direct children only.
+- **[Immutability is at the value level](docs/semantics.md#mutability)** — every type is a `readonly class`; object elements of an array type stay externally mutable.
 
 ## Documentation
 

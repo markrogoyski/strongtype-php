@@ -115,8 +115,9 @@ All types implement `\Stringable`, `\JsonSerializable`, and `\StrongType\HasEqua
 
 ### Key Conventions
 
-- All base types are `readonly abstract` (except `ArrayType` which is `abstract` without `readonly` due to `protected(set)` property).
-- Concrete types are `readonly` (except array types which are non-readonly).
+- All base types are `readonly abstract`, `ArrayType` included — its `$values` is a plain `public readonly array`, written once in the constructor.
+- Concrete types are `readonly`, array types included. PHP forbids a readonly class extending a non-readonly one and vice versa, so the whole `src/Arrays/` hierarchy is readonly or none of it is; a user subclass of `ArrayType` must be `readonly class` too. `FixedSizeArray`'s promoted `private(set) int $size` stays legal inside a readonly class (it becomes write-once).
+- Immutability is at the value level, not the element level: object/resource elements of an `ArrayType` are validated, not copied, so they remain externally mutable by design (shallow validation). An element passed *by reference* can additionally be replaced with a value of another type after validation, defeating even `ElementType` — documented in `docs/semantics.md#element-aliasing`, deliberately not defended against (detaching references would cost a copy on every construction).
 - Error messages follow: `"{ShortClassName} type must {description}, got {value}"`.
 - Short class name extracted via: `StrongType\Util\ShortClassName::of($className)` (correctly handles classes in the global namespace; do not use the inline `\substr(..., \strrpos(...) + 1)` form — it drops the first character when the FQCN has no `\`).
 - Namespace maps directly to directory: `StrongType\` -> `src/`, `StrongType\Tests\` -> `tests/`.

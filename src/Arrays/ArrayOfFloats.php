@@ -10,6 +10,6 @@ use StrongType\Constraint\ElementType;
  * @extends NonemptyArray<array-key, float>
  */
 #[ElementType('float')]
-class ArrayOfFloats extends NonemptyArray
+readonly class ArrayOfFloats extends NonemptyArray
 {
 }

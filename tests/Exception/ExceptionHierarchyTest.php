@@ -28,7 +28,7 @@ readonly class ExceptionHierarchyTrueOnlyBool extends BoolType
 }
 
 #[IsList]
-class ExceptionHierarchyListArray extends ArrayType
+readonly class ExceptionHierarchyListArray extends ArrayType
 {
 }
 

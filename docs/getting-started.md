@@ -12,7 +12,7 @@ composer require markrogoyski/strongtype-php
 
 **Requirements**
 
-- PHP 8.4 or newer. The library uses class-level `readonly` and `protected(set)` properties, both PHP 8.4 features.
+- PHP 8.4 or newer. The library uses class-level `readonly` (PHP 8.2) and asymmetric property visibility — `FixedSizeArray`'s `private(set) int $size` — which is PHP 8.4.
 - Three PHP extensions, all bundled with PHP by default: `ctype`, `filter`, `json`.
 
 To verify the install and confirm your environment is ready:
