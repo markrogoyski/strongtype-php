@@ -15,7 +15,7 @@ final readonly class IsList implements ConstraintInterface
         $short = ShortClassName::of($className);
 
         if (\is_array($value) && !\array_is_list($value)) {
-            return "{$short} type must be a list (sequential integer keys starting from 0), got " . \print_r($value, true);
+            return "{$short} type must be a list (sequential integer keys starting from 0), got a non-list array (" . \count($value) . " element(s))";
         }
 
         return null;

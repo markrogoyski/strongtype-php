@@ -707,7 +707,7 @@ new HandlerClassName('App\\NoSuchClass');         // throws StrongTypeException
 
 ### `DateTimeParseable`
 
-`new \DateTimeImmutable($value)` succeeds.
+`new \DateTimeImmutable($value)` succeeds. Surrounding whitespace is rejected (even though `\DateTimeImmutable` tolerates it), so the stored value is always exactly the trimmed input.
 
 **Constructor:** `DateTimeParseable()`
 
@@ -721,6 +721,8 @@ readonly class FlexibleDate extends StringType {}
 new FlexibleDate('2024-01-15');     // OK
 new FlexibleDate('next Tuesday');   // OK — relative formats accepted
 new FlexibleDate('not-a-date');     // throws StrongTypeException
+new FlexibleDate("2024-01-15\n");   // throws StrongTypeException — surrounding whitespace
+new FlexibleDate('  2024-01-15  '); // throws StrongTypeException — surrounding whitespace
 ```
 
 ---
@@ -904,9 +906,11 @@ These attributes apply to `Integer` (for timestamps) or `StringType` subclasses 
 
 Validates a string against a `DateTimeImmutable::createFromFormat()` format with a round-trip check (the parsed date must serialize back to the same string).
 
+Validation is **wall-clock-independent**: fields absent from the format (for a partial format such as `m-d`) are reset to the Unix epoch rather than inheriting the current date, so the result is identical on any day. (Consequently `#[DateFormat('m-d')]` rejects `02-29` — the pinned year 1970 is not a leap year.)
+
 **Constructor:** `DateFormat(string $format)`
 
-**Constructor invariants:** empty format string raises `\LogicException`.
+**Constructor invariants:** empty format string raises `\LogicException`; a format containing an unescaped `!` or `|` raises `\LogicException` (both are parse-only reset directives that `format()` echoes literally, so they can never round-trip). A backslash-escaped `\!` or `\|` is a literal character in both directions and is accepted.
 
 ```php
 use StrongType\Constraint\DateFormat;

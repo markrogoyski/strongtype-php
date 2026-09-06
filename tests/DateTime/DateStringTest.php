@@ -140,6 +140,12 @@ class DateStringTest extends \PHPUnit\Framework\TestCase
             ['2024-02-30'],
             // Day 00 is never valid.
             ['2024-01-00'],
+            // Trailing / embedded newlines must not slip past the anchors.
+            ["2024-01-01\n"],
+            ["\n2024-01-01"],
+            ["2024-01-01\n2024-01-01"],
+            // Trailing whitespace is not part of a YYYY-MM-DD date.
+            ['2024-01-01 '],
         ];
     }
 

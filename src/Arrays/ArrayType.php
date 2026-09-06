@@ -123,10 +123,10 @@ abstract class ArrayType implements \JsonSerializable, \Countable, \IteratorAggr
             return self::stringifyJsonishValue($serialized, $depth + 1);
         }
         if (\is_object($value)) {
-            // Plain objects: avoid Stringify::value() (which uses print_r and
-            // calls __debugInfo() — a throwing or non-array-returning __debugInfo
-            // would fatal the process). json_encode walks public properties and
-            // can still propagate from a nested JsonSerializable, so guard it.
+            // Plain objects: json_encode public properties rather than
+            // Stringify::value() (which renders a bare type name), since __toString()
+            // aims for a JSON-shaped representation here. json_encode can still
+            // propagate from a nested JsonSerializable, so guard it.
             // JSON_THROW_ON_ERROR makes encoding failures throw JsonException
             // (caught by the same handler) and signals to static analysis that
             // the call is throwing.

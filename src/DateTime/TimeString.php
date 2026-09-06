@@ -12,7 +12,7 @@ readonly class TimeString extends DateTime
     {
         parent::__construct($value);
 
-        if (!\preg_match('/^([01]\d|2[0-3]):[0-5]\d:[0-5]\d$/', $this->value)) {
+        if (!\preg_match('/\A([01]\d|2[0-3]):[0-5]\d:[0-5]\d\z/', $this->value)) {
             throw new FormatException("TimeString type must be a valid HH:MM:SS time, got {$this->value}");
         }
     }

@@ -141,6 +141,10 @@ class TimeStringTest extends \PHPUnit\Framework\TestCase
             ['12:00:00Z'],
             ['12:00:00 '],
             [' 12:00:00'],
+            // Trailing / embedded newlines must not slip past the anchors.
+            ["12:00:00\n"],
+            ["\n12:00:00"],
+            ["12:00:00\n12:00:00"],
             // Fractional seconds are not part of HH:MM:SS.
             ['12:00:00.5'],
         ];

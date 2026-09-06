@@ -88,7 +88,17 @@ class DateTimeConstraintsTest extends \PHPUnit\Framework\TestCase
 
     public static function dataProviderForInvalidTimeFormat(): array
     {
-        return [['24:00:00'], ['12:60:00'], ['12:00:60'], ['12:00'], ['not-a-time']];
+        return [
+            ['24:00:00'],
+            ['12:60:00'],
+            ['12:00:60'],
+            ['12:00'],
+            ['not-a-time'],
+            // Trailing / embedded newlines must not slip past the anchors.
+            ["12:30:45\n"],
+            ["\n12:30:45"],
+            ["12:30:45\n12:30:45"],
+        ];
     }
 
     // InFuture

@@ -51,6 +51,10 @@ class UuidTest extends \PHPUnit\Framework\TestCase
             'wrong format'    => ['not-a-uuid-at-all'],
             'extra chars'     => ['550e8400-e29b-41d4-a716-44665544000g'],
             'empty string'    => [''],
+            // Trailing / embedded newlines must not slip past the anchors.
+            'trailing newline' => ["550e8400-e29b-41d4-a716-446655440000\n"],
+            'leading newline'  => ["\n550e8400-e29b-41d4-a716-446655440000"],
+            'embedded newline' => ["550e8400-e29b-41d4-a716-446655440000\n550e8400-e29b-41d4-a716-446655440000"],
         ];
     }
 }

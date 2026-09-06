@@ -125,6 +125,8 @@ class UuidStringTest extends \PHPUnit\Framework\TestCase
             ['550e8400e29b41d4a716446655440000'],
             ['550e8400-e29b-41d4-a716-44665544000'],
             ['ZZZZZZZZ-ZZZZ-ZZZZ-ZZZZ-ZZZZZZZZZZZZ'],
+            // A trailing newline must not slip past the anchors.
+            ["550e8400-e29b-41d4-a716-446655440000\n"],
         ];
     }
 }

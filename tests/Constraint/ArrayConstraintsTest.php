@@ -76,6 +76,47 @@ class ArrayConstraintsTest extends \PHPUnit\Framework\TestCase
         new IsEmptyTestArr([1]);
     }
 
+    #[Test]
+    #[DataProvider('dataProviderForIsEmptyElementCountMessages')]
+    public function testIsEmptyRejectionMessageReportsElementCount(array $value, string $expectedMessage)
+    {
+        // Then
+        $this->expectException(StrongTypeException::class);
+        $this->expectExceptionMessage($expectedMessage);
+
+        // When
+        new IsEmptyTestArr($value);
+    }
+
+    public static function dataProviderForIsEmptyElementCountMessages(): array
+    {
+        return [
+            'singular' => [[1], 'got an array with 1 element(s)'],
+            'plural'   => [[1, 2], 'got an array with 2 element(s)'],
+        ];
+    }
+
+    #[Test]
+    public function testIsEmptyRejectionWithHostileElementIsCatchable()
+    {
+        // Given
+        // An element whose __debugInfo() throws: the old print_r-based message
+        // would turn this rejection into an uncatchable warning. The bounded,
+        // print_r-free message must keep it a catchable StrongTypeException.
+        $hostile = new class {
+            public function __debugInfo(): array
+            {
+                throw new \RuntimeException('boom');
+            }
+        };
+
+        // Then
+        $this->expectException(StrongTypeException::class);
+
+        // When
+        new IsEmptyTestArr([$hostile]);
+    }
+
     // MinCount
     #[Test]
     public function testMinCountAccepts()

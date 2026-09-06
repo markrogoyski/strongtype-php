@@ -52,4 +52,44 @@ class IsAssociativeTest extends TestCase
             [[]],
         ];
     }
+
+    #[Test]
+    #[DataProvider('dataProviderForElementCountMessages')]
+    public function testRejectionMessageReportsElementCount(array $value, string $expectedMessage): void
+    {
+        // Then
+        $this->expectException(StrongTypeException::class);
+        $this->expectExceptionMessage($expectedMessage);
+
+        // When
+        new IsAssociativeTestArray($value);
+    }
+
+    public static function dataProviderForElementCountMessages(): array
+    {
+        return [
+            'singular' => [[1], 'got a list array (1 element(s))'],
+            'plural'   => [[1, 2], 'got a list array (2 element(s))'],
+        ];
+    }
+
+    #[Test]
+    public function testListRejectionWithHostileElementIsCatchable(): void
+    {
+        // Given
+        // A list array (so IsAssociative fails) whose element has a throwing
+        // __debugInfo(): the old print_r-based message would fatal here.
+        $hostile = new class {
+            public function __debugInfo(): array
+            {
+                throw new \RuntimeException('boom');
+            }
+        };
+
+        // Then
+        $this->expectException(StrongTypeException::class);
+
+        // When
+        new IsAssociativeTestArray([$hostile]);
+    }
 }

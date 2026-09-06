@@ -15,7 +15,7 @@ final readonly class IsEmpty implements ConstraintInterface
         $short = ShortClassName::of($className);
 
         if (\is_array($value) && \count($value) !== 0) {
-            return "{$short} type must be empty, got " . \print_r($value, true);
+            return "{$short} type must be empty, got an array with " . \count($value) . " element(s)";
         }
 
         return null;

@@ -75,6 +75,10 @@ class Rfc3339Test extends TestCase
             ['2024-01-15T10:30:00'],
             ['2024-01-15T10:30:00+25:00'],
             ['2024-01-15 10:30:00Z'],
+            // Trailing / embedded newlines must not slip past the anchors.
+            ["2024-01-15T10:30:00Z\n"],
+            ["\n2024-01-15T10:30:00Z"],
+            ["2024-01-15T10:30:00Z\n2024-01-15T10:30:00Z"],
         ];
     }
 

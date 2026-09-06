@@ -127,6 +127,18 @@ class DateTimeStringTest extends \PHPUnit\Framework\TestCase
             ['not a date'],
             ['abc123'],
             ['99/99/9999'],
+            // new \DateTimeImmutable() tolerates surrounding whitespace and would
+            // store it verbatim; the constraint must reject it instead.
+            ["2024-01-01\n"],
+            ["\n2024-01-01"],
+            ['  2024-01-01  '],
+            ["\t2024-01-01"],
+            ['2024-01-01 '],
+            // Unicode whitespace separators are tolerated by \DateTimeImmutable too,
+            // and ASCII-only \trim() would miss them.
+            ["\u{00A0}2024-01-01"],
+            ["2024-01-01\u{00A0}"],
+            ["2024-01-01\u{202F}"],
         ];
     }
 }

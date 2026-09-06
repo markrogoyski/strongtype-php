@@ -64,6 +64,8 @@ class Rfc3339DateTimeStringTest extends \PHPUnit\Framework\TestCase
             ['2024-01-15'],
             ['not-a-date'],
             ['2024-02-30T10:30:00+00:00'],
+            // A trailing newline must not slip past the anchors.
+            ["2024-01-15T10:30:00Z\n"],
         ];
     }
 }

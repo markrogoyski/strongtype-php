@@ -312,4 +312,54 @@ class ConstructorInvariantsTest extends \PHPUnit\Framework\TestCase
         // When
         new DateFormat('');
     }
+
+    // DateFormat: unescaped reset directives '!' and '|' cannot round-trip
+
+    #[Test]
+    #[DataProvider('dataProviderForDateFormatResetDirectives')]
+    public function testDateFormatResetDirectiveThrowsLogicException(string $format): void
+    {
+        // Then
+        $this->expectException(\LogicException::class);
+
+        // When
+        new DateFormat($format);
+    }
+
+    public static function dataProviderForDateFormatResetDirectives(): array
+    {
+        return [
+            'leading reset'  => ['!Y-m-d'],
+            'embedded reset' => ['Y-m-d!'],
+            'pipe'           => ['Y-m-d|'],
+            'pipe only'      => ['|'],
+            'bang only'      => ['!'],
+            // A backslash-escaped directive is still a reset directive if the
+            // backslash itself is escaped first (\\! is a literal backslash
+            // followed by a bare, unescaped '!').
+            'escaped backslash then bang' => ['\\\\!'],
+        ];
+    }
+
+    // DateFormat: an escaped '!' or '|' is a literal character, not a reset
+    // directive, and is accepted — it round-trips through format() unchanged.
+
+    #[Test]
+    #[DataProvider('dataProviderForDateFormatEscapedLiterals')]
+    public function testDateFormatEscapedLiteralDoesNotThrow(string $format): void
+    {
+        // When
+        new DateFormat($format);
+
+        // Then
+        $this->expectNotToPerformAssertions();
+    }
+
+    public static function dataProviderForDateFormatEscapedLiterals(): array
+    {
+        return [
+            'escaped bang' => ['Y\\!m'],
+            'escaped pipe' => ['Y\\|m'],
+        ];
+    }
 }

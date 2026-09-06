@@ -55,7 +55,7 @@ Built-in constraints fail fast with `\LogicException` when configured impossibly
 | `ElementType`                     | type must be a builtin (`string`, `int`, `float`, `bool`, `array`, `object`, `callable`, `resource`, `iterable`) or an existing class/interface name |
 | `InRange`                         | `min <= max`; if equal, no exclusive flag       |
 | `InList`                          | at least one allowed value                      |
-| `DateFormat`                      | format string must be non-empty                 |
+| `DateFormat`                      | format string must be non-empty and must not contain `!` or `|` |
 | `AnyOf`, `AllOf`                  | at least one child constraint                   |
 | `InEnum`                          | class must be an existing enum (`enum_exists`)  |
 

@@ -15,7 +15,7 @@ final readonly class IsAssociative implements ConstraintInterface
         $short = ShortClassName::of($className);
 
         if (\is_array($value) && \array_is_list($value)) {
-            return "{$short} type must be an associative array, got " . \print_r($value, true);
+            return "{$short} type must be an associative array, got a list array (" . \count($value) . " element(s))";
         }
 
         return null;

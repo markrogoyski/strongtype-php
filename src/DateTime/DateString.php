@@ -12,7 +12,7 @@ readonly class DateString extends DateTime
     {
         parent::__construct($value);
 
-        if (!\preg_match('/^\d{4}-\d{2}-\d{2}$/', $this->value)) {
+        if (!\preg_match('/\A\d{4}-\d{2}-\d{2}\z/', $this->value)) {
             throw new FormatException("DateString type must be a valid YYYY-MM-DD date, got {$this->value}");
         }
 
