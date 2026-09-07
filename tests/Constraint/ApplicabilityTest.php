@@ -222,6 +222,37 @@ readonly class InheritedMisapplicationChild extends InheritedMisapplicationParen
 {
 }
 
+// A user-defined base (not one of the six built-in bases) that declares its own VALUE_TYPE
+// constant with the wrong type -- present, but not a ValueType case. This must fail loudly
+// rather than silently skip the applicability check, the way a genuinely absent constant does.
+readonly class MalformedValueTypeType implements \JsonSerializable, \Stringable, \StrongType\HasEquals
+{
+    public const string VALUE_TYPE = 'not-a-value-type';
+
+    public function __construct(public string $value)
+    {
+        \StrongType\Constraint\ConstraintValidator::validate($this, $this->value);
+    }
+
+    #[\Override]
+    public function jsonSerialize(): string
+    {
+        return $this->value;
+    }
+
+    #[\Override]
+    public function __toString(): string
+    {
+        return $this->value;
+    }
+
+    #[\Override]
+    public function equals(\StrongType\HasEquals $other): bool
+    {
+        return $other instanceof self && $other->value === $this->value;
+    }
+}
+
 class ApplicabilityTest extends \PHPUnit\Framework\TestCase
 {
     // --- Base value types ---
@@ -362,6 +393,19 @@ class ApplicabilityTest extends \PHPUnit\Framework\TestCase
 
         // When
         new NumericOnStringType('abc');
+    }
+
+    #[Test]
+    public function testMalformedValueTypeConstantThrowsInsteadOfSilentlySkipping()
+    {
+        // Then
+        $this->expectException(ConstraintConfigurationException::class);
+        $this->expectExceptionMessage(
+            MalformedValueTypeType::class . '::VALUE_TYPE must be a ' . ValueType::class . ' case, got string'
+        );
+
+        // When
+        new MalformedValueTypeType('abc');
     }
 
     #[Test]

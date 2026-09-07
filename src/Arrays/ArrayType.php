@@ -9,6 +9,7 @@ use StrongType\Constraint\ValueType;
 use StrongType\Exception\StrongTypeException;
 use StrongType\HasEquals;
 use StrongType\Util\Stringify;
+use StrongType\Util\ValueEquality;
 
 /**
  * @template TKey of array-key
@@ -223,7 +224,7 @@ readonly abstract class ArrayType implements \JsonSerializable, \Countable, \Ite
         foreach ($this->values as $value) {
             $found = false;
             foreach ($remaining as $index => $candidate) {
-                if (self::sameElement($candidate, $value)) {
+                if (ValueEquality::same($candidate, $value)) {
                     unset($remaining[$index]);
                     $found = true;
                     break;
@@ -234,23 +235,6 @@ readonly abstract class ArrayType implements \JsonSerializable, \Countable, \Ite
             }
         }
         return true;
-    }
-
-    /**
-     * Strict element comparison that treats two NAN floats as the same value.
-     *
-     * `===` says NAN !== NAN, which would make equalsUnordered() non-reflexive for an
-     * array containing NAN — equals() has no such problem, because PHP's array identity
-     * comparison short-circuits when both operands are the same array. Matching the NAN
-     * handling {@see \StrongType\Constraint\Unique} already uses keeps the two notions
-     * of "same element" consistent across the library.
-     */
-    private static function sameElement(mixed $a, mixed $b): bool
-    {
-        if (\is_float($a) && \is_float($b) && \is_nan($a) && \is_nan($b)) {
-            return true;
-        }
-        return $a === $b;
     }
 
     public static function nullable(mixed $value): \StrongType\Nullable

@@ -9,6 +9,8 @@ use StrongType\Exception\ConstraintConfigurationException;
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final readonly class AllOf implements ConstraintInterface
 {
+    use IntersectsChildValueTypes;
+
     /** @var non-empty-list<ConstraintInterface> */
     private array $children;
 
@@ -39,27 +41,9 @@ final readonly class AllOf implements ConstraintInterface
         return \min(\array_map(static fn(ConstraintInterface $c): int => $c->priority(), $this->children));
     }
 
-    /**
-     * The intersection of the children's sets: a child that cannot engage on the value
-     * type contributes nothing to the conjunction, so requiring every child to apply is
-     * what keeps `AllOf` honest. An empty intersection means no single type can satisfy
-     * the combinator, so attaching it anywhere is a configuration error.
-     *
-     * @return list<ValueType>
-     */
-    #[\Override]
-    public function acceptedValueTypes(): array
-    {
-        $accepted = ValueType::cases();
-
-        foreach ($this->children as $child) {
-            $childAccepted = $child->acceptedValueTypes();
-            $accepted = \array_values(\array_filter(
-                $accepted,
-                static fn(ValueType $valueType): bool => \in_array($valueType, $childAccepted, true),
-            ));
-        }
-
-        return $accepted;
-    }
+    // acceptedValueTypes(): the intersection of the children's sets -- a child that cannot
+    // engage on the value type contributes nothing to the conjunction, so requiring every
+    // child to apply is what keeps `AllOf` honest. An empty intersection means no single
+    // type can satisfy the combinator, so attaching it anywhere is a configuration error.
+    // Shared with AnyOf via IntersectsChildValueTypes.
 }

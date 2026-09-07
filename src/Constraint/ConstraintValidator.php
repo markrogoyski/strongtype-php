@@ -81,8 +81,17 @@ final class ConstraintValidator
         // class constants, so static analysis would mis-type the enum instance.
         $classValueType = \constant("{$class}::VALUE_TYPE");
 
+        // Every built-in base declares VALUE_TYPE as `final public const ValueType`, so
+        // this can't fail for them -- PHP enforces the type at declaration. It guards a
+        // user-defined base that declares its own VALUE_TYPE constant with the wrong
+        // type (e.g. copy-pasted without the enum type, or a typo'd value): that class did
+        // opt into the applicability check, so a malformed constant should fail loudly
+        // rather than silently disable the check for it, the way a genuinely absent
+        // constant (handled above) legitimately does.
         if (!$classValueType instanceof ValueType) {
-            return;
+            throw new ConstraintConfigurationException(
+                "{$class}::VALUE_TYPE must be a " . ValueType::class . ' case, got ' . \get_debug_type($classValueType)
+            );
         }
 
         foreach ($constraints as $constraint) {

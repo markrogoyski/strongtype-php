@@ -10,6 +10,15 @@ use StrongType\Util\ShortClassName;
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final readonly class DateFormat implements ConstraintInterface
 {
+    /**
+     * '!' prepended to $format, precomputed once since $format never changes after
+     * construction. Resets fields absent from the format to the Unix epoch, so partial
+     * formats (e.g. 'm-d') validate identically on any day instead of inheriting the
+     * current wall-clock year. Used for parsing only -- the round-trip check uses the
+     * original format, since format() would emit a leading '!' as a literal character.
+     */
+    private string $resetParseFormat;
+
     public function __construct(private string $format)
     {
         if ($format === '') {
@@ -23,6 +32,7 @@ final readonly class DateFormat implements ConstraintInterface
         if (self::hasUnescapedResetDirective($format)) {
             throw new ConstraintConfigurationException("DateFormat: format must not contain an unescaped '!' or '|', got {$format}");
         }
+        $this->resetParseFormat = '!' . $format;
     }
 
     private static function hasUnescapedResetDirective(string $format): bool
@@ -47,12 +57,7 @@ final readonly class DateFormat implements ConstraintInterface
         $short = ShortClassName::of($className);
 
         if (\is_string($value)) {
-            // Prepend '!' to the parse format only: it resets fields absent from the
-            // format to the Unix epoch, so partial formats (e.g. 'm-d') validate
-            // identically on any day instead of inheriting the current wall-clock year.
-            // The round-trip check below uses the original format, since format() would
-            // emit a leading '!' as a literal character.
-            $parsed = \DateTimeImmutable::createFromFormat('!' . $this->format, $value);
+            $parsed = \DateTimeImmutable::createFromFormat($this->resetParseFormat, $value);
             if ($parsed === false || $parsed->format($this->format) !== $value) {
                 return "{$short} type must match date format {$this->format}, got {$value}";
             }

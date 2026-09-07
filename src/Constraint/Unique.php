@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace StrongType\Constraint;
 
 use StrongType\Util\ShortClassName;
+use StrongType\Util\ValueEquality;
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final readonly class Unique implements ConstraintInterface
@@ -27,8 +28,7 @@ final readonly class Unique implements ConstraintInterface
     /**
      * Pairwise strict comparison so uniqueness matches the library's strict-equality
      * semantics: 0 vs '0', true vs 1, and 1 vs '1' are distinct, while two NaN floats
-     * are treated as duplicates (PHP's `===` says NAN !== NAN, but they are
-     * indistinguishable as values for the purposes of "no duplicates").
+     * are treated as duplicates (see {@see ValueEquality::same()}).
      *
      * @param array<array-key, mixed> $values
      */
@@ -38,20 +38,12 @@ final readonly class Unique implements ConstraintInterface
         $count = \count($list);
         for ($i = 0; $i < $count; $i++) {
             for ($j = $i + 1; $j < $count; $j++) {
-                if ($this->same($list[$i], $list[$j])) {
+                if (ValueEquality::same($list[$i], $list[$j])) {
                     return true;
                 }
             }
         }
         return false;
-    }
-
-    private function same(mixed $a, mixed $b): bool
-    {
-        if (\is_float($a) && \is_float($b) && \is_nan($a) && \is_nan($b)) {
-            return true;
-        }
-        return $a === $b;
     }
 
     #[\Override]
