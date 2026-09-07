@@ -10,6 +10,8 @@ use StrongType\Util\ShortClassName;
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final readonly class InRange implements ConstraintInterface
 {
+    use NumericValueType;
+
     public function __construct(
         private int|float $min,
         private int|float $max,
@@ -50,14 +52,5 @@ final readonly class InRange implements ConstraintInterface
     public function priority(): int
     {
         return 50;
-    }
-
-    /**
-     * @return non-empty-list<ValueType>
-     */
-    #[\Override]
-    public function acceptedValueTypes(): array
-    {
-        return [ValueType::Int, ValueType::Float];
     }
 }

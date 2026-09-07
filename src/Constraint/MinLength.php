@@ -10,6 +10,8 @@ use StrongType\Util\ShortClassName;
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final readonly class MinLength implements ConstraintInterface
 {
+    use StringValueType;
+
     public function __construct(private int $minLength)
     {
         if ($minLength < 0) {
@@ -33,14 +35,5 @@ final readonly class MinLength implements ConstraintInterface
     public function priority(): int
     {
         return 50;
-    }
-
-    /**
-     * @return non-empty-list<ValueType>
-     */
-    #[\Override]
-    public function acceptedValueTypes(): array
-    {
-        return [ValueType::String];
     }
 }

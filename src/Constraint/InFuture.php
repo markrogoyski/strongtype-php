@@ -9,6 +9,9 @@ use StrongType\Util\ShortClassName;
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final readonly class InFuture implements ConstraintInterface
 {
+    // Compares against a Unix timestamp, so only integer types qualify.
+    use IntValueType;
+
     #[\Override]
     public function validate(mixed $value, string $className): ?string
     {
@@ -25,15 +28,5 @@ final readonly class InFuture implements ConstraintInterface
     public function priority(): int
     {
         return 100;
-    }
-
-    /**
-     * @return non-empty-list<ValueType>
-     */
-    #[\Override]
-    public function acceptedValueTypes(): array
-    {
-        // Compares against a Unix timestamp, so only integer types qualify.
-        return [ValueType::Int];
     }
 }

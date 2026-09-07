@@ -26,6 +26,8 @@ use StrongType\Util\ShortClassName;
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final readonly class Rfc3339 implements ConstraintInterface
 {
+    use StringValueType;
+
     #[\Override]
     public function validate(mixed $value, string $className): ?string
     {
@@ -73,14 +75,5 @@ final readonly class Rfc3339 implements ConstraintInterface
     public function priority(): int
     {
         return 150;
-    }
-
-    /**
-     * @return non-empty-list<ValueType>
-     */
-    #[\Override]
-    public function acceptedValueTypes(): array
-    {
-        return [ValueType::String];
     }
 }

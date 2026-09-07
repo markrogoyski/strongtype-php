@@ -10,6 +10,8 @@ use StrongType\Util\ShortClassName;
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final readonly class DateFormat implements ConstraintInterface
 {
+    use StringValueType;
+
     /**
      * '!' prepended to $format, precomputed once since $format never changes after
      * construction. Resets fields absent from the format to the Unix epoch, so partial
@@ -70,14 +72,5 @@ final readonly class DateFormat implements ConstraintInterface
     public function priority(): int
     {
         return 100;
-    }
-
-    /**
-     * @return non-empty-list<ValueType>
-     */
-    #[\Override]
-    public function acceptedValueTypes(): array
-    {
-        return [ValueType::String];
     }
 }

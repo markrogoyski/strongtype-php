@@ -9,6 +9,9 @@ use StrongType\Util\ShortClassName;
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final readonly class Even implements ConstraintInterface
 {
+    // The modulo predicate is integer-only: it is not meaningful for float values.
+    use IntValueType;
+
     #[\Override]
     public function validate(mixed $value, string $className): ?string
     {
@@ -25,15 +28,5 @@ final readonly class Even implements ConstraintInterface
     public function priority(): int
     {
         return 50;
-    }
-
-    /**
-     * @return non-empty-list<ValueType>
-     */
-    #[\Override]
-    public function acceptedValueTypes(): array
-    {
-        // The modulo predicate is integer-only: it is not meaningful for float values.
-        return [ValueType::Int];
     }
 }

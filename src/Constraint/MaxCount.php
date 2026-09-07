@@ -10,6 +10,8 @@ use StrongType\Util\ShortClassName;
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final readonly class MaxCount implements ConstraintInterface
 {
+    use ArrayValueType;
+
     public function __construct(private int $maxCount)
     {
         if ($maxCount < 0) {
@@ -33,14 +35,5 @@ final readonly class MaxCount implements ConstraintInterface
     public function priority(): int
     {
         return 50;
-    }
-
-    /**
-     * @return non-empty-list<ValueType>
-     */
-    #[\Override]
-    public function acceptedValueTypes(): array
-    {
-        return [ValueType::Array];
     }
 }

@@ -10,6 +10,9 @@ use StrongType\Util\ShortClassName;
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final readonly class DivisibleBy implements ConstraintInterface
 {
+    // The modulo predicate is integer-only: it is not meaningful for float values.
+    use IntValueType;
+
     public function __construct(private int $divisor)
     {
         if ($divisor === 0) {
@@ -33,15 +36,5 @@ final readonly class DivisibleBy implements ConstraintInterface
     public function priority(): int
     {
         return 50;
-    }
-
-    /**
-     * @return non-empty-list<ValueType>
-     */
-    #[\Override]
-    public function acceptedValueTypes(): array
-    {
-        // The modulo predicate is integer-only: it is not meaningful for float values.
-        return [ValueType::Int];
     }
 }

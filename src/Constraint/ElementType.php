@@ -10,6 +10,8 @@ use StrongType\Util\ShortClassName;
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final readonly class ElementType implements ConstraintInterface
 {
+    use ArrayValueType;
+
     private const BUILTINS = ['string', 'int', 'float', 'bool', 'array', 'object', 'callable', 'resource', 'iterable'];
 
     public function __construct(private string $type)
@@ -56,14 +58,5 @@ final readonly class ElementType implements ConstraintInterface
     public function priority(): int
     {
         return 100;
-    }
-
-    /**
-     * @return non-empty-list<ValueType>
-     */
-    #[\Override]
-    public function acceptedValueTypes(): array
-    {
-        return [ValueType::Array];
     }
 }

@@ -10,6 +10,8 @@ use StrongType\Util\ShortClassName;
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final readonly class ExactCount implements ConstraintInterface
 {
+    use ArrayValueType;
+
     public function __construct(private int $count)
     {
         if ($count < 0) {
@@ -33,14 +35,5 @@ final readonly class ExactCount implements ConstraintInterface
     public function priority(): int
     {
         return 50;
-    }
-
-    /**
-     * @return non-empty-list<ValueType>
-     */
-    #[\Override]
-    public function acceptedValueTypes(): array
-    {
-        return [ValueType::Array];
     }
 }

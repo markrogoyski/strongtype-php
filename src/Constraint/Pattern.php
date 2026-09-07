@@ -10,6 +10,8 @@ use StrongType\Util\ShortClassName;
 #[\Attribute(\Attribute::TARGET_CLASS | \Attribute::IS_REPEATABLE)]
 final readonly class Pattern implements ConstraintInterface
 {
+    use StringValueType;
+
     /** @param non-empty-string $pattern */
     public function __construct(private string $pattern)
     {
@@ -34,14 +36,5 @@ final readonly class Pattern implements ConstraintInterface
     public function priority(): int
     {
         return 100;
-    }
-
-    /**
-     * @return non-empty-list<ValueType>
-     */
-    #[\Override]
-    public function acceptedValueTypes(): array
-    {
-        return [ValueType::String];
     }
 }
