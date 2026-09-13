@@ -260,6 +260,26 @@ class ArrayOfArraysTest extends \PHPUnit\Framework\TestCase
     }
 
     #[Test]
+    public function testEqualsHandlesSelfReferentialArraysWithoutThrowing()
+    {
+        // Given two distinct self-referential inner arrays of identical shape. Native ===
+        // throws ("Nesting level too deep") comparing them directly.
+        $innerA = [];
+        $innerA[] = &$innerA;
+        $innerB = [];
+        $innerB[] = &$innerB;
+        $a = new ArrayOfArrays([$innerA]);
+        $b = new ArrayOfArrays([$innerB]);
+
+        // When
+        $result = $a->equals($b);
+
+        // Then: no crash, and no false claim of equality for two structures this method
+        // cannot safely compare all the way through (see ValueEquality::strictSame()).
+        $this->assertFalse($result);
+    }
+
+    #[Test]
     #[DataProvider('dataProviderForInvalidValues')]
     public function testInvalidValue(array $values)
     {

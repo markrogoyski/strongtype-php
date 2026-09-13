@@ -287,7 +287,7 @@ A custom constraint implements `ConstraintInterface`: `validate()` returns `null
 
 ## Error Handling
 
-`StrongType\Exception\StrongTypeException` (extends `\RuntimeException`) is the umbrella for all validation failures. Catch it when you want to handle any invalid value uniformly; catch `ConstraintViolationException` or `FormatException` when you want to react to a specific failure mode. A misconfigured type or constraint (e.g. `new InRange(100, 1)`) is a *programmer* error, not a validation failure — it throws `ConstraintConfigurationException` (extends `\LogicException`), which is never also a `StrongTypeException`.
+`StrongType\Exception\StrongTypeException` (extends `\RuntimeException`) is the umbrella for all validation failures. Catch it when you want to handle any invalid value uniformly; catch `ConstraintViolationException`, `FormatException`, or `ConstraintEvaluationException` when you want to react to a specific failure mode. A misconfigured type or constraint (e.g. `new InRange(100, 1)`) is a *programmer* error, not a validation failure — it throws `ConstraintConfigurationException` (extends `\LogicException`), which is never also a `StrongTypeException`.
 
 | Failure mode | Result |
 | --- | --- |
@@ -295,6 +295,7 @@ A custom constraint implements `ConstraintInterface`: `validate()` returns `null
 | `tryFrom()` with a type-mismatched argument | returns `null` |
 | Constraint attribute fails during validation | `ConstraintViolationException` |
 | Manual parse fails in `DateString` / `TimeString` | `FormatException` |
+| A constraint could not be evaluated at all (e.g. a regex engine failure, an indeterminate `Unique` cyclic-array comparison) | `ConstraintEvaluationException` |
 | Constraint or type is misconfigured (e.g. `new DivisibleBy(0)`) | `ConstraintConfigurationException` |
 | Constraint attached to a value type it cannot engage on (e.g. `#[Positive]` on a `StringType`) | `ConstraintConfigurationException` |
 
@@ -312,6 +313,7 @@ A few cross-cutting policies govern every type and constraint. The full reasonin
 - **[Equality is type-strict](docs/semantics.md#equality-semantics)** — same concrete subclass required; `ArrayType::equals` is order-sensitive.
 - **[Shallow array validation](docs/semantics.md#shallow-array-validation)** — `ElementType` / `Unique` check direct children only.
 - **[Immutability is at the value level](docs/semantics.md#mutability)** — every type is a `readonly class`; object elements of an array type stay externally mutable.
+- **[Native `serialize()`/`unserialize()` revalidates](docs/architecture.md#serialization)** — unserializing re-enters the constructor, so a tampered or hand-crafted payload throws instead of silently producing an invalid instance.
 
 ## Documentation
 

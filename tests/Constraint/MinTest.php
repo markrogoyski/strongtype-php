@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace StrongType\Tests\Constraint;
 
 use StrongType\Constraint\Min;
+use StrongType\Exception\ConstraintConfigurationException;
 use StrongType\Exception\StrongTypeException;
 use StrongType\Int\Integer;
 use StrongType\Float\FloatingPoint;
@@ -123,5 +124,19 @@ class MinTest extends \PHPUnit\Framework\TestCase
             'float bound, exclusive'   => [MinExclusiveTestFloat::class, 1.5, 'MinExclusiveTestFloat type must be > 1.5, got 1.5'],
             'float bound, int-ish arg' => [MinTestFloat::class, -1.0, 'MinTestFloat type must be >= 0.0, got -1'],
         ];
+    }
+
+    /**
+     * NAN compares false against everything, so a NAN bound would never reject a value --
+     * the same fail-open shape as a misapplied constraint, so it is rejected up front.
+     */
+    #[Test]
+    public function testNanBoundIsRejected(): void
+    {
+        // Then
+        $this->expectException(ConstraintConfigurationException::class);
+
+        // When
+        new Min(\NAN);
     }
 }

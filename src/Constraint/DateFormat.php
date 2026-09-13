@@ -59,7 +59,14 @@ final readonly class DateFormat implements ConstraintInterface
         $short = ShortClassName::of($className);
 
         if (\is_string($value)) {
-            $parsed = \DateTimeImmutable::createFromFormat($this->resetParseFormat, $value);
+            // createFromFormat() throws ValueError for a NUL byte in $value (it never
+            // returns false for that case) -- a shape createFromFormat itself rejects, not
+            // a value this constraint should let escape as an uncaught engine exception.
+            try {
+                $parsed = \DateTimeImmutable::createFromFormat($this->resetParseFormat, $value);
+            } catch (\ValueError) {
+                return "{$short} type must match date format {$this->format}, got {$value}";
+            }
             if ($parsed === false || $parsed->format($this->format) !== $value) {
                 return "{$short} type must match date format {$this->format}, got {$value}";
             }

@@ -260,4 +260,18 @@ class DateFormatTest extends TestCase
         // When
         new DateFormatEscapedBangTest('2024-01');
     }
+
+    // A NUL byte makes DateTimeImmutable::createFromFormat() throw ValueError instead of
+    // returning false -- that must surface as a constraint violation, not an uncaught
+    // engine exception.
+
+    #[Test]
+    public function testNulByteRejectsAsConstraintViolationNotValueError(): void
+    {
+        // Then
+        $this->expectException(StrongTypeException::class);
+
+        // When
+        new DateFormatCompleteTest("2024-01-01\0");
+    }
 }

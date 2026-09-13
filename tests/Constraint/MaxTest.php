@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace StrongType\Tests\Constraint;
 
 use StrongType\Constraint\Max;
+use StrongType\Exception\ConstraintConfigurationException;
 use StrongType\Exception\StrongTypeException;
 use StrongType\Float\FloatingPoint;
 use StrongType\Int\Integer;
@@ -129,5 +130,19 @@ class MaxTest extends \PHPUnit\Framework\TestCase
             'float bound, exclusive'   => [MaxExclusiveTestFloat::class, 1.5, 'MaxExclusiveTestFloat type must be < 1.5, got 1.5'],
             'float bound, int-ish arg' => [MaxTestFloat::class, 2.0, 'MaxTestFloat type must be <= 1.0, got 2'],
         ];
+    }
+
+    /**
+     * NAN compares false against everything, so a NAN bound would never reject a value --
+     * the same fail-open shape as a misapplied constraint, so it is rejected up front.
+     */
+    #[Test]
+    public function testNanBoundIsRejected(): void
+    {
+        // Then
+        $this->expectException(ConstraintConfigurationException::class);
+
+        // When
+        new Max(\NAN);
     }
 }

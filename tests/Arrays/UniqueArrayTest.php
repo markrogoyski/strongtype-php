@@ -137,4 +137,25 @@ class UniqueArrayTest extends \PHPUnit\Framework\TestCase
             [[\NAN, \NAN]],
         ];
     }
+
+    #[Test]
+    public function testSelfReferentialArrayElementsAreRejectedAsIndeterminateRatherThanCrashing(): void
+    {
+        // Given two distinct self-referential array elements of identical shape. Native
+        // === throws ("Nesting level too deep") comparing them directly, which the
+        // duplicate check must not let escape as a raw \Error.
+        $innerA = [];
+        $innerA[] = &$innerA;
+        $innerB = [];
+        $innerB[] = &$innerB;
+
+        // Then -- no crash, but also no silent pass: Unique cannot verify these two
+        // elements are distinct (or that they aren't), and treating an unprovable pair as
+        // "not a duplicate" would let a genuinely duplicated circular structure through.
+        $this->expectException(StrongTypeException::class);
+        $this->expectExceptionMessage('UniqueArray type must not contain elements whose uniqueness cannot be verified (circular array reference)');
+
+        // When
+        new UniqueArray([$innerA, $innerB]);
+    }
 }

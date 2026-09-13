@@ -8,9 +8,12 @@ use StrongType\Constraint\ConstraintValidator;
 use StrongType\Constraint\ValueType;
 use StrongType\Exception\StrongTypeException;
 use StrongType\HasEquals;
+use StrongType\Util\SerializationStateGuard;
 
 readonly abstract class BoolType implements \JsonSerializable, \Stringable, HasEquals
 {
+    use SerializationStateGuard;
+
     final public const ValueType VALUE_TYPE = ValueType::Bool;
 
     public function __construct(public bool $value)
@@ -80,5 +83,32 @@ readonly abstract class BoolType implements \JsonSerializable, \Stringable, HasE
     public static function nullable(mixed $value): \StrongType\Nullable
     {
         return new \StrongType\Nullable(static::class, $value);
+    }
+
+    /**
+     * Native unserialize() populates readonly properties directly, bypassing the
+     * constructor entirely. __unserialize() re-enters via $this->__construct() (virtual
+     * dispatch, so a subclass's own narrower literal-type check -- e.g. TrueValue's
+     * `true $value` -- runs too, not just this base's ConstraintValidator call), which is
+     * also the only write this property ever gets, satisfying readonly's write-once rule.
+     *
+     * @return array{value: bool}
+     */
+    public function __serialize(): array
+    {
+        $this->assertNoUnhandledSerializationState(['value']);
+        $this->assertConstructorIsSafeToInherit(1);
+        return ['value' => $this->value];
+    }
+
+    /**
+     * @param array{value: bool} $data
+     * @psalm-suppress DirectConstructorCall Deliberate: unserialize() creates this object
+     *     without ever initializing it, so this is the sole write this property gets, not
+     *     a re-initialization of an already-constructed instance.
+     */
+    public function __unserialize(array $data): void
+    {
+        $this->__construct($data['value']);
     }
 }

@@ -10,7 +10,9 @@ use StrongType\Constraint\IsEmpty;
 use StrongType\Constraint\MaxCount;
 use StrongType\Constraint\MinCount;
 use StrongType\Constraint\Nonempty;
+use StrongType\Constraint\Not;
 use StrongType\Constraint\Unique;
+use StrongType\Exception\ConstraintEvaluationException;
 use StrongType\Exception\StrongTypeException;
 use StrongType\Arrays\ArrayType;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -32,6 +34,9 @@ use PHPUnit\Framework\Attributes\Test;
 {
 }
 #[Unique] readonly class UniqueTestArr extends ArrayType
+{
+}
+#[Not(new Unique())] readonly class NotUniqueTestArr extends ArrayType
 {
 }
 #[ElementType('int')] readonly class IntElementTestArr extends ArrayType
@@ -200,6 +205,49 @@ class ArrayConstraintsTest extends \PHPUnit\Framework\TestCase
         // values; Unique treats them as duplicates.
         $this->expectException(StrongTypeException::class);
         new UniqueTestArr([\NAN, \NAN]);
+    }
+
+    #[Test]
+    public function testUniqueRejectsWhenComparisonIsIndeterminateDueToCircularReference()
+    {
+        // Given two distinct self-referential array elements: native === cannot determine
+        // whether they are duplicates without risking unbounded recursion.
+        $innerA = [];
+        $innerA[] = &$innerA;
+        $innerB = [];
+        $innerB[] = &$innerB;
+
+        // Then -- Unique rejects rather than silently treating an unprovable pair as distinct.
+        $this->expectException(StrongTypeException::class);
+
+        // When
+        new UniqueTestArr([$innerA, $innerB]);
+    }
+
+    /**
+     * Regression test: Unique throws ConstraintEvaluationException (rather than returning a
+     * normal violation string) for the indeterminate-cyclic-comparison case specifically so
+     * a #[Not(new Unique)] composition can't invert "couldn't tell whether these are
+     * duplicates" into "so they must be duplicates, which is exactly what I wanted". Before
+     * this fix, the indeterminate case returned an ordinary violation string, which Not read
+     * as "Unique failed (found something wrong)" and inverted into an accept -- silently
+     * admitting a value neither side had actually confirmed contained a duplicate.
+     */
+    #[Test]
+    public function testNotUniqueDoesNotInvertAnIndeterminateComparisonIntoAnAccept()
+    {
+        // Given two distinct self-referential array elements: native === cannot determine
+        // whether they are duplicates without risking unbounded recursion.
+        $innerA = [];
+        $innerA[] = &$innerA;
+        $innerB = [];
+        $innerB[] = &$innerB;
+
+        // Then
+        $this->expectException(ConstraintEvaluationException::class);
+
+        // When
+        new NotUniqueTestArr([$innerA, $innerB]);
     }
 
     // ElementType

@@ -19,7 +19,7 @@ This index is the front door for the deep documentation. The top-level [README](
 - **[Library semantics](semantics.md)** — cross-cutting policies: format-vs-registry, byte-vs-Unicode length, first-error behavior, equality semantics, shallow array validation, mutability.
 
 ### Internals
-- **[Architecture](architecture.md)** — how the constraint system works, why some types keep manual constructors, the consistent-constructor contract, constructor invariants.
+- **[Architecture](architecture.md)** — how the constraint system works, why some types keep manual constructors, the consistent-constructor contract, constructor invariants, serialization.
 
 ---
 
@@ -83,7 +83,7 @@ Flat list of every doc with a one-line summary.
 - **[defining-types.md](defining-types.md)** — composition, inheritance, priority, combinators, custom constraints, wrapping enums, real-world modeling.
 - **[nullable-and-helpers.md](nullable-and-helpers.md)** — `Nullable` wrapper (including `unwrap()`), base-class methods, implemented interfaces.
 - **[semantics.md](semantics.md)** — cross-cutting policies governing every type and constraint.
-- **[architecture.md](architecture.md)** — internal mechanics: how constraints are resolved, manual-constructor exceptions, consistent-constructor contract, constructor invariants.
+- **[architecture.md](architecture.md)** — internal mechanics: how constraints are resolved, manual-constructor exceptions, consistent-constructor contract, constructor invariants, serialization.
 
 ---
 

@@ -403,6 +403,8 @@ new TweetBody(str_repeat('x', 281));                          // throws StrongTy
 
 **Constructor invariants:** regex that fails to compile raises `ConstraintConfigurationException`.
 
+A value the regex engine cannot evaluate against the pattern at all — e.g. malformed UTF-8 under a `/u` pattern — throws `StrongType\Exception\ConstraintEvaluationException` rather than being treated as "no match" (which would fail open) or reported as an ordinary violation (which a `#[Not(new Pattern(...))]` composition could then invert into an accept — see [Combinators](defining-types.md#combinators-anyof-allof-not)).
+
 ```php
 use StrongType\Constraint\{Nonempty, Pattern};
 use StrongType\String\StringType;
@@ -421,6 +423,8 @@ Inverted pattern match — must not match. Repeatable.
 **Constructor:** `NotPattern(string $pattern)`
 
 **Constructor invariants:** regex that fails to compile raises `ConstraintConfigurationException`.
+
+A value the regex engine cannot evaluate against the pattern at all — e.g. malformed UTF-8 under a `/u` pattern — throws `StrongType\Exception\ConstraintEvaluationException` rather than being treated as "no match" (which would fail open) or reported as an ordinary violation (which a `#[Not(new NotPattern(...))]` composition could then invert into an accept — see [Combinators](defining-types.md#combinators-anyof-allof-not)).
 
 ```php
 use StrongType\Constraint\{Nonempty, NotPattern};
@@ -848,6 +852,8 @@ new RgbChannels([255, 128]);      // throws StrongTypeException
 No duplicate values at the top level. Use strict comparison.
 
 **Constructor:** `Unique()`
+
+Two elements that are both self-referential arrays can make an ordinary strict comparison undecidable (native `===` throws on two *distinct* cyclic arrays). `Unique` throws `StrongType\Exception\ConstraintEvaluationException` in that case rather than guessing "distinct" — see [equality semantics](semantics.md#equality-semantics) and [Combinators](defining-types.md#combinators-anyof-allof-not).
 
 ```php
 use StrongType\Constraint\{Unique, Nonempty, ElementType};

@@ -8,6 +8,7 @@ use StrongType\Constraint\ConstraintValidator;
 use StrongType\Constraint\ValueType;
 use StrongType\Exception\StrongTypeException;
 use StrongType\HasEquals;
+use StrongType\Util\SerializationStateGuard;
 
 /**
  * @phpstan-consistent-constructor
@@ -15,6 +16,8 @@ use StrongType\HasEquals;
  */
 readonly abstract class Integer implements \JsonSerializable, \Stringable, HasEquals
 {
+    use SerializationStateGuard;
+
     final public const ValueType VALUE_TYPE = ValueType::Int;
 
     public function __construct(public int $value)
@@ -76,5 +79,33 @@ readonly abstract class Integer implements \JsonSerializable, \Stringable, HasEq
     public static function nullable(mixed $value): \StrongType\Nullable
     {
         return new \StrongType\Nullable(static::class, $value);
+    }
+
+    /**
+     * Native unserialize() populates readonly properties directly, bypassing the
+     * constructor entirely -- a crafted payload could otherwise produce e.g. a
+     * PositiveInt holding a negative value. __unserialize() re-enters via $this->__construct()
+     * (virtual dispatch, so a subclass's own manual checks run too, not just this base's
+     * ConstraintValidator call), which is also the only write these properties ever get,
+     * satisfying readonly's write-once rule.
+     *
+     * @return array{value: int}
+     */
+    public function __serialize(): array
+    {
+        $this->assertNoUnhandledSerializationState(['value']);
+        $this->assertConstructorIsSafeToInherit(1);
+        return ['value' => $this->value];
+    }
+
+    /**
+     * @param array{value: int} $data
+     * @psalm-suppress DirectConstructorCall Deliberate: unserialize() creates this object
+     *     without ever initializing it, so this is the sole write these properties get,
+     *     not a re-initialization of an already-constructed instance.
+     */
+    public function __unserialize(array $data): void
+    {
+        $this->__construct($data['value']);
     }
 }

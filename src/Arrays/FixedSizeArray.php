@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace StrongType\Arrays;
 
 use StrongType\Exception\StrongTypeException;
+use StrongType\Util\SerializationStateGuard;
 
 /**
  * @template TKey of array-key
@@ -13,6 +14,12 @@ use StrongType\Exception\StrongTypeException;
  */
 readonly class FixedSizeArray extends ArrayType
 {
+    // Trait methods are private per using-class, not inherited across the hierarchy, so
+    // FixedSizeArray needs its own `use` even though ArrayType already has one -- otherwise
+    // $this->assertNoUnhandledSerializationState() below would be calling a method private
+    // to ArrayType from FixedSizeArray's scope.
+    use SerializationStateGuard;
+
     /**
      * @param array<TKey, TValue> $values
      */
@@ -57,5 +64,36 @@ readonly class FixedSizeArray extends ArrayType
     public static function nullable(mixed $value): \StrongType\Nullable
     {
         throw new \BadMethodCallException('FixedSizeArray::nullable() is unsupported; construct manually and wrap in Nullable.');
+    }
+
+    /**
+     * Overrides the base: FixedSizeArray's constructor also requires $size, so
+     * ArrayType::__unserialize()'s single-argument $this->__construct($values) call would
+     * under-supply it. The wider/stricter $data shape here (an extra required 'size' key)
+     * is deliberate, not an LSP oversight, so it's suppressed the same way withValues()
+     * above suppresses its own necessary-but-narrower override.
+     *
+     * @return array{values: array<TKey, TValue>, size: int}
+     * @psalm-suppress ImplementedReturnTypeMismatch
+     */
+    #[\Override]
+    public function __serialize(): array
+    {
+        $this->assertNoUnhandledSerializationState(['values', 'size']);
+        $this->assertConstructorIsSafeToInherit(2);
+        return ['values' => $this->values, 'size' => $this->size];
+    }
+
+    /**
+     * @param array{values: array<TKey, TValue>, size: int} $data
+     * @psalm-suppress ImplementedParamTypeMismatch, DirectConstructorCall Deliberate:
+     *     unserialize() creates this object without ever initializing it, so this is the
+     *     sole write these properties get, not a re-initialization of an
+     *     already-constructed instance.
+     */
+    #[\Override] // @phpstan-ignore method.childParameterType
+    public function __unserialize(array $data): void
+    {
+        $this->__construct($data['values'], $data['size']);
     }
 }

@@ -9,8 +9,10 @@ use StrongType\Constraint\Max;
 use StrongType\Constraint\MaxLength;
 use StrongType\Constraint\Min;
 use StrongType\Constraint\MinLength;
+use StrongType\Constraint\NotPattern;
 use StrongType\Constraint\Pattern;
 use StrongType\Exception\ConstraintConfigurationException;
+use StrongType\Exception\ConstraintEvaluationException;
 use StrongType\Exception\ConstraintViolationException;
 use StrongType\Exception\StrongTypeException;
 use StrongType\Int\Integer;
@@ -25,6 +27,20 @@ readonly class AllOfTestPercentage extends Integer
 
 #[AllOf(new MinLength(3), new MaxLength(10), new Pattern('/^[a-z]+$/'))]
 readonly class AllOfTestSlug extends StringType
+{
+}
+
+// An unevaluable child followed by one that definitely fails -- exercises that AllOf
+// prefers reporting the known violation over the indeterminate exception (see the
+// class-level docblock on AllOf::validate()).
+#[AllOf(new NotPattern('/x/u'), new MinLength(5))]
+readonly class AllOfEvaluationErrorThenDefiniteFailureTestString extends StringType
+{
+}
+// An unevaluable child followed by one that passes -- nothing left to confirm the AND, so
+// the indeterminate result must surface.
+#[AllOf(new NotPattern('/x/u'), new MinLength(1))]
+readonly class AllOfEvaluationErrorThenAllElsePassTestString extends StringType
 {
 }
 
@@ -147,5 +163,39 @@ class AllOfTest extends \PHPUnit\Framework\TestCase
         // Then
         // Pattern=100, MinLength=50 -> min=50
         $this->assertSame(50, $priority);
+    }
+
+    /**
+     * Regression test: a malformed-UTF-8 one-byte-per-char string makes NotPattern's `/u`
+     * pattern throw ConstraintEvaluationException (a regex engine error, not a match
+     * failure). MinLength(5) still definitely fails (2 bytes < 5) regardless of whether
+     * NotPattern could be evaluated, so AllOf should report that known violation rather
+     * than the indeterminate exception -- the AND is confirmed false either way.
+     */
+    #[Test]
+    public function testEvaluationErrorInOneChildPrefersALaterDefiniteFailureOverTheException(): void
+    {
+        // Then
+        $this->expectException(StrongTypeException::class);
+        $this->expectExceptionMessage('length >= 5');
+
+        // When
+        new AllOfEvaluationErrorThenDefiniteFailureTestString("\xB1\x31");
+    }
+
+    /**
+     * When every other child passes and one child couldn't be evaluated, AllOf cannot
+     * confirm the AND holds -- the indeterminate child might have failed. It must surface
+     * that uncertainty by throwing, not by silently treating "everything else passed" as a
+     * confirmed pass.
+     */
+    #[Test]
+    public function testEvaluationErrorInOneChildThrowsWhenEveryOtherChildPasses(): void
+    {
+        // Then
+        $this->expectException(ConstraintEvaluationException::class);
+
+        // When
+        new AllOfEvaluationErrorThenAllElsePassTestString("\xB1\x31");
     }
 }

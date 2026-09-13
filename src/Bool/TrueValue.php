@@ -11,6 +11,15 @@ readonly class TrueValue extends BoolType
         parent::__construct($value);
     }
 
+    // Validation-only override: stores $value verbatim via parent::__construct() (the
+    // narrowed `true` parameter type only rejects `false` earlier, via TypeError), so
+    // inherited __serialize()/__unserialize() stays safe to reuse.
+    #[\Override]
+    protected static function constructorPreservesSerializedStateVerbatim(): bool
+    {
+        return true;
+    }
+
     /**
      * @psalm-suppress MoreSpecificReturnType, LessSpecificReturnStatement
      */

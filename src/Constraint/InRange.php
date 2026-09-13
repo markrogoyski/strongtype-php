@@ -18,6 +18,16 @@ final readonly class InRange implements ConstraintInterface
         private bool $exclusiveMin = false,
         private bool $exclusiveMax = false,
     ) {
+        // Every comparison against NAN is false, so a NAN bound would silently accept
+        // every finite value instead of ever engaging -- checked before the min > max
+        // comparison below, since NAN > anything is also false and would otherwise slip
+        // past that guard unnoticed.
+        if (\is_float($this->min) && \is_nan($this->min)) {
+            throw new ConstraintConfigurationException('InRange: min must not be NAN');
+        }
+        if (\is_float($this->max) && \is_nan($this->max)) {
+            throw new ConstraintConfigurationException('InRange: max must not be NAN');
+        }
         if ($this->min > $this->max) {
             throw new ConstraintConfigurationException("InRange: min ({$this->min}) must not be greater than max ({$this->max})");
         }

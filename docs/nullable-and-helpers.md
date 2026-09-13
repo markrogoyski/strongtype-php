@@ -87,6 +87,7 @@ Base classes provide these helpers (array-only helpers are prefixed with `ArrayT
 | `ArrayType::equalsUnordered(HasEquals $other)` | `bool` | Multiset equality: same concrete subclass and same values (each repeated the same number of times) regardless of keys or insertion order. Strict element comparison, except that two top-level `NAN` floats count as the same element — an element-comparison difference from `equals()` on top of ignoring keys and order (see [semantics.md](semantics.md#equality-semantics)); nested arrays are compared as-is. Only defined on `ArrayType`. |
 | `nullable(mixed $value)` | `Nullable` | Convenience shortcut for `new Nullable(static::class, $value)`. |
 | `ArrayType::withValues(array $values)` | `static` | Returns a new instance of the same concrete subclass with a different value array. Only defined on `ArrayType`. |
+| `__serialize()` / `__unserialize()` | `array` / `void` | Implement native PHP `serialize()`/`unserialize()` safely: unserializing re-validates through the constructor, so a tampered or hand-crafted payload throws instead of silently producing an invalid instance. See [architecture.md](architecture.md#serialization) for how, and the subclassing obligation this places on extra constructor state. |
 
 ```php
 use StrongType\Int\PositiveInt;
@@ -120,6 +121,33 @@ $a->equalsUnordered($b);              // false — different multiset
 ```
 
 `FixedSizeArray::tryFrom` and `FixedSizeArray::nullable` throw `\BadMethodCallException` — the required `$size` parameter cannot be satisfied through these factories. Use `new FixedSizeArray($values, $size)` or `$existing->withValues($values)` instead. See [architecture.md](architecture.md#why-some-types-keep-manual-constructors) for the rationale.
+
+```php
+use StrongType\Int\PositiveInt;
+use StrongType\Nullable;
+
+$original = new PositiveInt(5);
+$restored = unserialize(serialize($original));   // revalidates through the constructor
+$original->equals($restored);                    // true
+
+// A tampered payload is rejected rather than silently producing an invalid instance.
+$tampered = str_replace('i:5;', 'i:-5;', serialize($original));
+unserialize($tampered);                           // throws StrongTypeException
+
+// Nullable serializes the wrapped object itself, so its own validation reruns too.
+unserialize(serialize(new Nullable(PositiveInt::class, 5)));   // Nullable<PositiveInt>(5)
+```
+
+`Nullable` additionally requires the wrapped type to be safely serializable in its own right: the wrapped class must implement `__serialize()`/`__unserialize()` itself (every built-in base does) and must not also implement the legacy `\Serializable` interface (which a crafted payload could select instead, regardless of a safe `__unserialize()` sitting next to it). A custom wrapped type that doesn't meet this is still fully usable through `Nullable` — construction, `equals()`, `getValue()`/`unwrap()`, JSON — it just cannot be serialized, since `serialize()`/`unserialize()` would have no way to guarantee that type's own constructor invariants are re-checked on the way back in. The check only applies when there's an actual wrapped object to protect: a `Nullable` currently holding `null` serializes fine regardless of what `$type` names, since there is no wrapped instance for an unsafe reconstruction to corrupt.
+
+```php
+use StrongType\Nullable;
+
+// A custom wrapped type without its own __serialize()/__unserialize().
+new Nullable(MyCustomType::class, $value);            // works fine
+serialize(new Nullable(MyCustomType::class, $value));  // throws ConstraintConfigurationException
+serialize(new Nullable(MyCustomType::class, null));     // fine -- nothing wrapped to protect
+```
 
 ## Implemented interfaces
 

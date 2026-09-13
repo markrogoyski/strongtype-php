@@ -198,6 +198,42 @@ class InRangeTest extends \PHPUnit\Framework\TestCase
         $this->assertNull($range->validate(5, 'Test'));
     }
 
+    /**
+     * NAN compares false against everything, so a NAN bound would never reject a value --
+     * the same fail-open shape as a misapplied constraint, so it is rejected up front.
+     * Checked before the min > max comparison, since NAN > anything is also false and
+     * would otherwise slip past that guard unnoticed.
+     */
+    #[Test]
+    public function testNanMinIsRejected(): void
+    {
+        // Then
+        $this->expectException(ConstraintConfigurationException::class);
+
+        // When
+        new InRange(\NAN, 10);
+    }
+
+    #[Test]
+    public function testNanMaxIsRejected(): void
+    {
+        // Then
+        $this->expectException(ConstraintConfigurationException::class);
+
+        // When
+        new InRange(0, \NAN);
+    }
+
+    #[Test]
+    public function testBothNanIsRejected(): void
+    {
+        // Then
+        $this->expectException(ConstraintConfigurationException::class);
+
+        // When
+        new InRange(\NAN, \NAN);
+    }
+
     // Error message format tests
 
     #[Test]

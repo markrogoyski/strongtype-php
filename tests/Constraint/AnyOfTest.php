@@ -8,8 +8,10 @@ use StrongType\Constraint\AnyOf;
 use StrongType\Constraint\InRange;
 use StrongType\Constraint\Min;
 use StrongType\Constraint\MinLength;
+use StrongType\Constraint\NotPattern;
 use StrongType\Constraint\Pattern;
 use StrongType\Exception\ConstraintConfigurationException;
+use StrongType\Exception\ConstraintEvaluationException;
 use StrongType\Exception\ConstraintViolationException;
 use StrongType\Exception\StrongTypeException;
 use StrongType\Int\Integer;
@@ -24,6 +26,22 @@ readonly class AnyOfTestPort extends Integer
 
 #[AnyOf(new MinLength(8), new Pattern('/^[A-Z]/'))]
 readonly class AnyOfTestPasswordOrCapitalized extends StringType
+{
+}
+
+// Unevaluable-child-then-passing-child, in both orders -- exercises that AnyOf's result no
+// longer depends on which child happens to run first (see the class-level docblock on
+// AnyOf::validate()).
+#[AnyOf(new NotPattern('/x/u'), new MinLength(1))]
+readonly class AnyOfEvaluationErrorThenPassTestString extends StringType
+{
+}
+#[AnyOf(new MinLength(1), new NotPattern('/x/u'))]
+readonly class AnyOfPassThenEvaluationErrorTestString extends StringType
+{
+}
+#[AnyOf(new NotPattern('/x/u'), new MinLength(5))]
+readonly class AnyOfEvaluationErrorAndDefiniteFailureTestString extends StringType
 {
 }
 
@@ -181,5 +199,46 @@ class AnyOfTest extends \PHPUnit\Framework\TestCase
 
         // Then
         $this->assertSame(100, $priority);
+    }
+
+    /**
+     * Regression test: a malformed-UTF-8 one-byte-per-char string makes NotPattern's `/u`
+     * pattern throw ConstraintEvaluationException (a regex engine error, not a match
+     * failure), while MinLength(1) genuinely passes. Before this fix, AnyOf let the first
+     * child's exception abort the whole OR immediately, so whichever child ran first
+     * decided the outcome: NotPattern-first rejected, MinLength-first accepted, for the
+     * exact same value. AnyOf must retain the exception, keep evaluating, and accept here
+     * regardless of which child is listed first, since MinLength(1) genuinely passes either way.
+     */
+    #[Test]
+    public function testEvaluationErrorInOneChildDoesNotAbortWhenAnotherChildPasses(): void
+    {
+        // Given / When / Then
+        $this->expectNotToPerformAssertions();
+        new AnyOfEvaluationErrorThenPassTestString("\xB1\x31");
+    }
+
+    #[Test]
+    public function testEvaluationErrorInOneChildDoesNotAbortWhenAnotherChildPassesRegardlessOfOrder(): void
+    {
+        // Given / When / Then
+        $this->expectNotToPerformAssertions();
+        new AnyOfPassThenEvaluationErrorTestString("\xB1\x31");
+    }
+
+    /**
+     * When no child passes -- one throws (indeterminate), the other definitely fails --
+     * AnyOf cannot report a confirmed "must satisfy one of" violation, since the
+     * indeterminate child might have passed. It must surface that uncertainty by throwing,
+     * not by silently downgrading it into an ordinary rejection.
+     */
+    #[Test]
+    public function testEvaluationErrorWithNoPassingChildThrowsRatherThanReportingAnOrdinaryViolation(): void
+    {
+        // Then
+        $this->expectException(ConstraintEvaluationException::class);
+
+        // When
+        new AnyOfEvaluationErrorAndDefiniteFailureTestString("\xB1\x31");
     }
 }

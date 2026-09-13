@@ -8,6 +8,7 @@ use StrongType\Constraint\ConstraintValidator;
 use StrongType\Constraint\ValueType;
 use StrongType\Exception\StrongTypeException;
 use StrongType\HasEquals;
+use StrongType\Util\SerializationStateGuard;
 use StrongType\Util\Stringify;
 use StrongType\Util\ValueEquality;
 
@@ -18,6 +19,8 @@ use StrongType\Util\ValueEquality;
  */
 readonly abstract class ArrayType implements \JsonSerializable, \Countable, \IteratorAggregate, \Stringable, HasEquals
 {
+    use SerializationStateGuard;
+
     final public const ValueType VALUE_TYPE = ValueType::Array;
 
     /** @var array<TKey, TValue> */
@@ -202,7 +205,15 @@ readonly abstract class ArrayType implements \JsonSerializable, \Countable, \Ite
         if (!$other instanceof self || $other::class !== static::class) {
             return false;
         }
-        return $this->values === $other->values;
+        // Routed through ValueEquality::strictSame() rather than bare === -- a
+        // self-referential array is a legal, explicitly supported element (see
+        // __toString() above), and native === throws ("Nesting level too deep") comparing
+        // two distinct ones. strictSame() tries native === first (so every existing
+        // behavior, including the reflexive $a->equals($a) case with NAN, is unchanged)
+        // and only reports false on that specific thrown Error, rather than crash. It
+        // keeps NAN !== NAN, preserving equals()'s existing divergence from
+        // equalsUnordered() (see docs/semantics.md#equality-semantics).
+        return ValueEquality::strictSame($this->values, $other->values);
     }
 
     /**
@@ -253,5 +264,34 @@ readonly abstract class ArrayType implements \JsonSerializable, \Countable, \Ite
     public function withValues(array $values): static
     {
         return new static($values); // @phpstan-ignore new.static, return.type
+    }
+
+    /**
+     * Native unserialize() populates the readonly $values property directly, bypassing
+     * the constructor entirely -- a crafted payload (or a resource silently downgraded to
+     * int(0) by serialize()) would otherwise produce an unvalidated instance.
+     * __unserialize() re-enters via $this->__construct() (virtual dispatch, so a
+     * subclass's own checks run too), which is also the only write this property ever
+     * gets, satisfying readonly's write-once rule. FixedSizeArray overrides both methods
+     * since its constructor also requires $size.
+     *
+     * @return array{values: array<TKey, TValue>}
+     */
+    public function __serialize(): array
+    {
+        $this->assertNoUnhandledSerializationState(['values']);
+        $this->assertConstructorIsSafeToInherit(1);
+        return ['values' => $this->values];
+    }
+
+    /**
+     * @param array{values: array<TKey, TValue>} $data
+     * @psalm-suppress DirectConstructorCall Deliberate: unserialize() creates this object
+     *     without ever initializing it, so this is the sole write this property gets, not
+     *     a re-initialization of an already-constructed instance.
+     */
+    public function __unserialize(array $data): void
+    {
+        $this->__construct($data['values']);
     }
 }

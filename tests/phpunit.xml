@@ -16,6 +16,7 @@
       <directory suffix="Test.php">DateTime</directory>
       <directory suffix="Test.php">Constraint</directory>
       <directory suffix="Test.php">Exception</directory>
+      <file>DeserializationTest.php</file>
       <file>EqualsTest.php</file>
       <file>GlobalNamespaceTypeTest.php</file>
       <file>NullableEqualsTest.php</file>
@@ -24,6 +25,7 @@
       <file>ShortClassNameTest.php</file>
       <file>StringifyTest.php</file>
       <file>TryFromTest.php</file>
+      <file>ValueEqualityTest.php</file>
     </testsuite>
   </testsuites>
   <source>

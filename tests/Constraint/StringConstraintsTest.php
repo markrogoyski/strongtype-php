@@ -18,10 +18,12 @@ use StrongType\Constraint\MaxLength;
 use StrongType\Constraint\MinLength;
 use StrongType\Constraint\Nonblank;
 use StrongType\Constraint\Nonempty;
+use StrongType\Constraint\Not;
 use StrongType\Constraint\NumericDigits;
 use StrongType\Constraint\Pattern;
 use StrongType\Constraint\Uppercase;
 use StrongType\Constraint\Url;
+use StrongType\Exception\ConstraintEvaluationException;
 use StrongType\Exception\StrongTypeException;
 use StrongType\String\StringType;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -40,6 +42,12 @@ use PHPUnit\Framework\Attributes\Test;
 {
 }
 #[Pattern('/^[a-z]+$/')] readonly class PatternTestStr extends StringType
+{
+}
+#[Pattern('/x/u')] readonly class PatternUnicodeTestStr extends StringType
+{
+}
+#[Not(new Pattern('/^unsafe$/u'))] readonly class NotOfPatternUnicodeTestStr extends StringType
 {
 }
 #[Nonempty, Alpha] readonly class AlphaTestStr extends StringType
@@ -205,6 +213,42 @@ class StringConstraintsTest extends \PHPUnit\Framework\TestCase
         // Pattern alone doesn't enforce nonempty - empty string doesn't match but that's the regex
         $this->expectException(StrongTypeException::class);
         new PatternTestStr('');
+    }
+
+    /**
+     * A `/u` pattern against a malformed-UTF-8 subject makes preg_match() return false (a
+     * regex engine error), not 0 (no match). `false` is falsy, so a naive
+     * `if (!preg_match(...))` treats an engine error identically to "matched" and fails
+     * open -- the value must be rejected instead, by throwing rather than returning an
+     * ordinary violation string (see ConstraintEvaluationException and NotPattern, which
+     * guards the same failure mode the same way).
+     */
+    #[Test]
+    public function testPatternRegexEngineErrorFailsClosedRatherThanOpen(): void
+    {
+        // Then
+        $this->expectException(ConstraintEvaluationException::class);
+
+        // When
+        new PatternUnicodeTestStr("\xB1\x31");
+    }
+
+    /**
+     * Regression test: Pattern throws ConstraintEvaluationException (rather than returning
+     * a normal violation string) specifically so a #[Not(new Pattern(...))] composition
+     * can't invert "couldn't tell whether this matches" into "so it must be fine". Before
+     * this fix, malformed UTF-8 under Pattern's own '/u' pattern returned an ordinary
+     * violation string, which Not read as "the inner constraint failed" and inverted into
+     * an accept -- silently admitting a value neither side could actually evaluate.
+     */
+    #[Test]
+    public function testPatternRegexEngineErrorUnderNotStillRejectsRatherThanBeingInvertedToAPass(): void
+    {
+        // Then
+        $this->expectException(ConstraintEvaluationException::class);
+
+        // When
+        new NotOfPatternUnicodeTestStr("\xB1\x31");
     }
 
     // Alpha

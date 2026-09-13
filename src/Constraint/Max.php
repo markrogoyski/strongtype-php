@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace StrongType\Constraint;
 
+use StrongType\Exception\ConstraintConfigurationException;
 use StrongType\Util\ShortClassName;
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
@@ -15,6 +16,13 @@ final readonly class Max implements ConstraintInterface
         private int|float $max,
         private bool $exclusive = false,
     ) {
+        // Every comparison against NAN is false, so a NAN bound would silently accept
+        // every finite value instead of ever engaging -- the same fail-open shape the
+        // value-type applicability check exists to close, just via a bad argument instead
+        // of a misapplied attribute.
+        if (\is_float($this->max) && \is_nan($this->max)) {
+            throw new ConstraintConfigurationException('Max: bound must not be NAN');
+        }
     }
 
     #[\Override]

@@ -17,4 +17,12 @@ readonly class Timestamp extends Integer
             throw new StrongTypeException("Timestamp type must be >= 0, got {$this->value}");
         }
     }
+
+    // Validation-only override: stores $value verbatim via parent::__construct(), never
+    // transforms it, so inherited __serialize()/__unserialize() stays safe to reuse.
+    #[\Override]
+    protected static function constructorPreservesSerializedStateVerbatim(): bool
+    {
+        return true;
+    }
 }

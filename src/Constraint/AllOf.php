@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace StrongType\Constraint;
 
 use StrongType\Exception\ConstraintConfigurationException;
+use StrongType\Exception\ConstraintEvaluationException;
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final readonly class AllOf implements ConstraintInterface
@@ -22,14 +23,34 @@ final readonly class AllOf implements ConstraintInterface
         $this->children = \array_values($children);
     }
 
+    /**
+     * A child that throws ConstraintEvaluationException (couldn't be evaluated at all,
+     * e.g. a regex engine error) does not automatically fail the AND: a *later* child might
+     * still return a definite violation, which is a real, known reason to reject and should
+     * be preferred over an indeterminate result -- and reporting it, rather than the
+     * exception, keeps AllOf's message deterministic regardless of which child happened to
+     * be unevaluable. The exception is retained and re-thrown only if every other child
+     * passes, meaning the indeterminate child's result is the only thing standing between
+     * this value and a confirmed pass.
+     */
     #[\Override]
     public function validate(mixed $value, string $className): ?string
     {
+        $pendingException = null;
         foreach ($this->children as $child) {
-            $error = $child->validate($value, $className);
+            try {
+                $error = $child->validate($value, $className);
+            } catch (ConstraintEvaluationException $e) {
+                $pendingException ??= $e;
+                continue;
+            }
             if ($error !== null) {
                 return $error;
             }
+        }
+
+        if ($pendingException !== null) {
+            throw $pendingException;
         }
 
         return null;

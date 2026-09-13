@@ -50,6 +50,10 @@ $a->equals($a);            // true  — PHP short-circuits identical arrays
 (new ListArray([[\NAN]]))->equalsUnordered(new ListArray([[\NAN]]));  // false
 ```
 
+**Self-referential arrays never crash a comparison.** PHP's native `===` throws `Error: Nesting level too deep` comparing two *different* arrays that each contain a cycle back to themselves (`$a['self'] = &$a;`) — a legal `ArrayType` value (the `__toString()` fallback renderer already supports it). `equals()` and `equalsUnordered()` catch that `Error` and report `false` rather than let it escape: there is no way to verify whether two such structures are "really" equal without risking the same unbounded recursion, so this only ever avoids the crash — it never claims two arrays are equal without having actually compared them.
+
+`Unique` catches the same `Error` but responds differently, because it is a gatekeeper rather than an informational comparison. Silently treating an unprovable pair as "not duplicates" — the same conservative answer `equals()` gives — would let a genuinely duplicated circular structure pass uniqueness undetected. Instead, `Unique` rejects the value outright with a dedicated message (`"... type must not contain elements whose uniqueness cannot be verified (circular array reference)"`) whenever a pairwise comparison it needs to make is indeterminate.
+
 ## Shallow array validation
 
 `ElementType` validates **direct children only** — it does not recurse into nested arrays. `#[ElementType('array')]` accepts `[[1, 'two', 3.0], ['a', null]]` because every top-level element is itself an array; the mixed types inside the nested arrays are not inspected. Likewise `Unique` checks uniqueness at the top level only.

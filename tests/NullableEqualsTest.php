@@ -11,6 +11,10 @@ use StrongType\Int\PositiveInt;
 use StrongType\Nullable;
 use StrongType\String\NonemptyString;
 
+readonly class NullableEqualsTestSubclass extends Nullable
+{
+}
+
 class NullableEqualsTest extends \PHPUnit\Framework\TestCase
 {
     #[Test]
@@ -100,5 +104,39 @@ class NullableEqualsTest extends \PHPUnit\Framework\TestCase
 
         $this->assertFalse($a->equals($b));
         $this->assertFalse($b->equals($a));
+    }
+
+    /**
+     * equals() must check the exact runtime class, not merely `instanceof self` -- a
+     * subclass instance carrying the same wrapped type and value is not the same type as
+     * a plain Nullable.
+     */
+    #[Test]
+    public function testNotEqualSubclassInstanceEvenWithSameWrappedTypeAndValue(): void
+    {
+        // Given
+        $a = new Nullable(PositiveInt::class, 5);
+        $b = new NullableEqualsTestSubclass(PositiveInt::class, 5);
+
+        // When / Then
+        $this->assertFalse($a->equals($b));
+        $this->assertFalse($b->equals($a));
+    }
+
+    /**
+     * The wrapped-type class name is canonicalized before comparing, so a leading '\'
+     * (PositiveInt::class never has one, but a caller-supplied string might) doesn't make
+     * two Nullables wrapping the identical runtime class compare unequal.
+     */
+    #[Test]
+    public function testEqualWhenTypeStringsDifferOnlyByLeadingBackslash(): void
+    {
+        // Given
+        $a = new Nullable(PositiveInt::class, 5);
+        $b = new Nullable('\\' . PositiveInt::class, 5);
+
+        // When / Then
+        $this->assertTrue($a->equals($b));
+        $this->assertTrue($b->equals($a));
     }
 }
