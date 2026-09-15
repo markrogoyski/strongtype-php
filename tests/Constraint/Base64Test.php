@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace StrongType\Tests\Constraint;
 
 use StrongType\Constraint\Base64;
+use StrongType\Constraint\Not;
 use StrongType\Exception\StrongTypeException;
 use StrongType\String\StringType;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -12,6 +13,11 @@ use PHPUnit\Framework\Attributes\Test;
 
 #[Base64]
 readonly class Base64TestString extends StringType
+{
+}
+
+#[Not(new Base64())]
+readonly class NotBase64TestString extends StringType
 {
 }
 
@@ -87,6 +93,40 @@ class Base64Test extends \PHPUnit\Framework\TestCase
             // decode round-trip rejects it.
             'non-canonical trailing bits'      => ['YR=='],
         ];
+    }
+
+    // A regex-based prefilter this constraint previously used could hit PCRE's JIT
+    // stack limit on inputs around 1 MiB (preg_match() returning false -- an engine
+    // error, not "no match" -- for a large repeated-group pattern), which was then
+    // treated as an ordinary violation. Validation is now regex-free (strict decode
+    // + re-encode round trip only), so a large canonical input can no longer fail to
+    // evaluate, and -- critically -- #[Not(new Base64)] can no longer invert that
+    // failure into a false accept.
+
+    #[Test]
+    public function testLargeCanonicalInputIsAccepted(): void
+    {
+        // Given
+        $value = \base64_encode(\str_repeat('a', 1_048_576));
+
+        // When
+        $obj = new Base64TestString($value);
+
+        // Then
+        $this->assertSame($value, $obj->value);
+    }
+
+    #[Test]
+    public function testNotBase64CorrectlyRejectsTheSameLargeCanonicalInput(): void
+    {
+        // Given
+        $value = \base64_encode(\str_repeat('a', 1_048_576));
+
+        // Then
+        $this->expectException(StrongTypeException::class);
+
+        // When
+        new NotBase64TestString($value);
     }
 
     #[Test]

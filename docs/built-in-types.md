@@ -658,15 +658,16 @@ new LanguageCodeString('EN');  // throws StrongTypeException — must be lowerca
 
 ### `MimeTypeString`
 
-`type/subtype` restricted-name format per RFC 6838. Format only — does not verify IANA registry membership.
+`type/subtype` restricted-name format per RFC 6838. Format only — does not verify IANA registry membership. Only the first character of each side is restricted to a letter or digit; the grammar imposes no such restriction on the last, so trailing punctuation (`.`, `+`, `-`, etc.) is syntactically legal.
 
 ```php
 use StrongType\String\MimeTypeString;
 
 new MimeTypeString('application/json');         // OK
+new MimeTypeString('application/vnd.example.'); // OK — trailing punctuation is legal per RFC 6838
 new MimeTypeString('text/plain');               // OK
 new MimeTypeString('text/');                    // throws StrongTypeException
-new MimeTypeString('application/vnd.example.'); // throws StrongTypeException — trailing punctuation
+new MimeTypeString('/plain');                   // throws StrongTypeException — first character must be alphanumeric
 ```
 
 ### `SlugString`

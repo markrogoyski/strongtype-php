@@ -60,6 +60,10 @@ $a->equals($a);            // true  — PHP short-circuits identical arrays
 
 To validate nested element types, wrap the inner arrays in their own strong type. For example, an `ArrayType` of `ArrayOfInts` enforces "list of int-only lists" by validating at each level explicitly rather than depending on a recursive descent the constraint system intentionally does not provide.
 
+## String representation of non-JSON-encodable arrays
+
+`ArrayType::__toString()` tries `json_encode()` first. Values `json_encode()` can't represent — `NAN`/`INF`/`-INF` (legal in `ArrayOfFloats`), resources (legal in `ArrayOfResources`), or a self-referential array (legal — see [element aliasing](#element-aliasing) below) — fall back to a hand-rolled, JSON-*like* renderer instead of throwing (`Stringable::__toString()` must never throw). That renderer bounds both nesting depth (64 levels) and total nodes rendered (10,000), each independently: a self-referential array with only one cycle path per level would eventually hit the depth bound, but one with multiple self-references branching at every level produces exponentially many nodes well before any single path reaches that depth, so a separate total-node budget is what actually stops it. Once either bound is hit, the offending node is replaced with a `"*RECURSION*"` (depth) or `"*TRUNCATED*"` (node budget) marker and rendering continues. The result is diagnostic output, not guaranteed valid JSON — use `jsonSerialize()` / `json_encode($obj)` when you need real JSON.
+
 ## Mutability
 
 Every strong type is **immutable** once constructed. There are no setters, no in-place transforms, and no mutating array methods. Every base class — `Integer`, `FloatingPoint`, `StringType`, `BoolType`, `DateTime`, and `ArrayType` — is a `readonly class`, so the validated value is written once in the constructor and any later assignment is a PHP `Error`. That holds from outside the object *and* from inside a subclass method, so a subclass cannot quietly replace a value that has already passed validation.

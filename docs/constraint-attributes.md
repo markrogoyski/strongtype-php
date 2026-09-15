@@ -939,6 +939,8 @@ Validates a string against a `DateTimeImmutable::createFromFormat()` format with
 
 Validation is **wall-clock-independent**: fields absent from the format (for a partial format such as `m-d`) are reset to the Unix epoch rather than inheriting the current date, so the result is identical on any day. (Consequently `#[DateFormat('m-d')]` rejects `02-29` — the pinned year 1970 is not a leap year.)
 
+It is also **independent of the process's default timezone**: parsing uses a fixed UTC timezone as a fallback for any field the format doesn't specify. Without this, a purely calendar format like `Y-m-d` would parse against whatever `date_default_timezone_set()` happens to be — and for a handful of historical transitions (e.g. `Pacific/Apia` skipped `2011-12-30` entirely when it moved across the International Date Line), that would make the *same input string* pass under one server's timezone and fail under another's. A format that embeds its own timezone info (e.g. `P` or `e`) is unaffected — the fixed UTC only applies when the format carries none.
+
 **Constructor:** `DateFormat(string $format)`
 
 **Constructor invariants:** empty format string raises `ConstraintConfigurationException`; a format containing an unescaped `!` or `|` raises `ConstraintConfigurationException` (both are parse-only reset directives that `format()` echoes literally, so they can never round-trip). A backslash-escaped `\!` or `\|` is a literal character in both directions and is accepted.

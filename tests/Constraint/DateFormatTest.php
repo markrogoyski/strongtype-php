@@ -41,6 +41,11 @@ readonly class DateFormatEscapedPipeTest extends DateTime
 {
 }
 
+#[DateFormat('Y-m-d\TH:i:sP')]
+readonly class DateFormatWithOffsetTest extends DateTime
+{
+}
+
 class DateFormatTest extends TestCase
 {
     // Complete format: Y-m-d
@@ -273,5 +278,50 @@ class DateFormatTest extends TestCase
 
         // When
         new DateFormatCompleteTest("2024-01-01\0");
+    }
+
+    // Timezone independence: a purely calendar format must validate the same
+    // regardless of the process's default timezone.
+
+    #[Test]
+    public function testCompleteFormatIsIndependentOfDefaultTimezone(): void
+    {
+        // Given the process default timezone set to a zone with a historical
+        // calendar gap: Pacific/Apia skipped 2011-12-30 entirely in 2011 when it
+        // moved across the International Date Line.
+        $original = \date_default_timezone_get();
+        \date_default_timezone_set('Pacific/Apia');
+
+        try {
+            // When
+            $dt = new DateFormatCompleteTest('2011-12-30');
+
+            // Then -- matches what it accepts under UTC; the local calendar having
+            // no such day must not leak into a format that never referenced a
+            // timezone at all.
+            $this->assertSame('2011-12-30', $dt->value);
+        } finally {
+            \date_default_timezone_set($original);
+        }
+    }
+
+    #[Test]
+    public function testFormatWithExplicitOffsetStillHonorsThatOffsetUnderAnyDefaultTimezone(): void
+    {
+        // Given a format that embeds its own UTC offset (P) and a default
+        // timezone this constraint's UTC fallback must NOT override.
+        $original = \date_default_timezone_get();
+        \date_default_timezone_set('Pacific/Apia');
+
+        try {
+            // When
+            $dt = new DateFormatWithOffsetTest('2020-01-01T00:00:00+05:00');
+
+            // Then -- the format's own offset is honored, not overridden by the
+            // fallback UTC timezone or by Pacific/Apia.
+            $this->assertSame('2020-01-01T00:00:00+05:00', $dt->value);
+        } finally {
+            \date_default_timezone_set($original);
+        }
     }
 }

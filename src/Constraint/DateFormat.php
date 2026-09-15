@@ -62,8 +62,21 @@ final readonly class DateFormat implements ConstraintInterface
             // createFromFormat() throws ValueError for a NUL byte in $value (it never
             // returns false for that case) -- a shape createFromFormat itself rejects, not
             // a value this constraint should let escape as an uncaught engine exception.
+            //
+            // The $timezone argument is a fallback used only when $format carries no
+            // timezone info of its own (per the DateTimeImmutable::createFromFormat
+            // contract, it's ignored otherwise) -- without it, a purely calendar format
+            // like 'Y-m-d' would parse against the process's default timezone, which for
+            // a handful of historical transitions (e.g. Pacific/Apia skipped 2011-12-30
+            // entirely) makes the same input string pass or fail depending on server
+            // configuration a calendar-only format never referenced. Fixing it to UTC
+            // makes validation deterministic regardless of date_default_timezone_set().
             try {
-                $parsed = \DateTimeImmutable::createFromFormat($this->resetParseFormat, $value);
+                $parsed = \DateTimeImmutable::createFromFormat(
+                    $this->resetParseFormat,
+                    $value,
+                    new \DateTimeZone('UTC'),
+                );
             } catch (\ValueError) {
                 return "{$short} type must match date format {$this->format}, got {$value}";
             }

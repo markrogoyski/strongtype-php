@@ -59,6 +59,19 @@ readonly abstract class ArrayType implements \JsonSerializable, \Countable, \Ite
      */
     private const int STRINGIFY_MAX_DEPTH = 64;
 
+    /**
+     * Maximum total array/scalar nodes rendered across one __toString() call.
+     * STRINGIFY_MAX_DEPTH alone only bounds the length of any single recursive path --
+     * an array holding several self-references (each a legal, independent branch at
+     * every level, e.g. $a['x'] = &$a; $a['y'] = &$a;) still produces exponentially
+     * many nodes within that depth (branching factor ^ depth), which exhausts memory
+     * long before any one path hits the depth cap. A total-node budget bounds
+     * worst-case node count regardless of branching shape. It does not bound total
+     * output bytes (a single huge string or key value is unaffected) or the cost of
+     * the initial json_encode() attempt -- only the fallback path's own node fan-out.
+     */
+    private const int STRINGIFY_MAX_NODES = 10_000;
+
     #[\Override]
     public function __toString(): string
     {
@@ -70,23 +83,29 @@ readonly abstract class ArrayType implements \JsonSerializable, \Countable, \Ite
         try {
             return \json_encode($this->values, \JSON_THROW_ON_ERROR);
         } catch (\Throwable) {
-            return self::stringifyJsonish($this->values, 0);
+            $budget = self::STRINGIFY_MAX_NODES;
+            return self::stringifyJsonish($this->values, 0, $budget);
         }
     }
 
     /**
      * Depth is not re-checked here: stringifyJsonishValue() is the sole gateway
      * into this method (and into every recursive descent), and it enforces
-     * STRINGIFY_MAX_DEPTH before each hop, so the bound is already guaranteed.
+     * STRINGIFY_MAX_DEPTH and STRINGIFY_MAX_NODES before each hop, so both bounds
+     * are already guaranteed.
      *
      * @param array<array-key, mixed> $values
      */
-    private static function stringifyJsonish(array $values, int $depth): string
+    private static function stringifyJsonish(array $values, int $depth, int &$budget): string
     {
         $isList = \array_is_list($values);
         $parts = [];
         foreach ($values as $key => $value) {
-            $rendered = self::stringifyJsonishValue($value, $depth + 1);
+            if ($budget <= 0) {
+                $parts[] = '"*TRUNCATED*"';
+                break;
+            }
+            $rendered = self::stringifyJsonishValue($value, $depth + 1, $budget);
             if ($isList) {
                 $parts[] = $rendered;
                 continue;
@@ -97,13 +116,22 @@ readonly abstract class ArrayType implements \JsonSerializable, \Countable, \Ite
         return ($isList ? '[' : '{') . \implode(',', $parts) . ($isList ? ']' : '}');
     }
 
-    private static function stringifyJsonishValue(mixed $value, int $depth): string
+    private static function stringifyJsonishValue(mixed $value, int $depth, int &$budget): string
     {
+        // Budget is checked first, deliberately: a subtree past STRINGIFY_MAX_DEPTH
+        // still gets visited once per node here (each hop just returns immediately
+        // instead of recursing further), so if depth were checked first, an array
+        // wide enough at that boundary would visit every one of its children --
+        // each returning "*RECURSION*" for free -- without ever decrementing the
+        // budget, defeating the total-node bound this budget exists to provide.
+        if (--$budget <= 0) {
+            return '"*TRUNCATED*"';
+        }
         if ($depth >= self::STRINGIFY_MAX_DEPTH) {
             return '"*RECURSION*"';
         }
         if (\is_array($value)) {
-            return self::stringifyJsonish($value, $depth);
+            return self::stringifyJsonish($value, $depth, $budget);
         }
         if (\is_float($value)) {
             if (\is_nan($value)) {
@@ -127,7 +155,7 @@ readonly abstract class ArrayType implements \JsonSerializable, \Countable, \Ite
             }
             // Increment depth so a jsonSerialize() that returns $this (or any
             // structure that re-enters itself) cannot loop forever.
-            return self::stringifyJsonishValue($serialized, $depth + 1);
+            return self::stringifyJsonishValue($serialized, $depth + 1, $budget);
         }
         if (\is_object($value)) {
             // Plain objects: json_encode public properties rather than

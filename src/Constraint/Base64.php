@@ -21,12 +21,19 @@ final readonly class Base64 implements ConstraintInterface
         $short = ShortClassName::of($className);
         $error = "{$short} type must be valid base64, got {$value}";
 
-        // Canonical RFC 4648 §4: standard alphabet, length is a multiple of 4,
-        // 0–2 padding chars at the end only. Base64URL alphabet (-/_) is rejected.
-        if (\preg_match('#\A(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?\z#', $value) !== 1) {
-            return $error;
-        }
-
+        // RFC 4648 §4 canonical form. base64_decode(..., true) rejects the standard
+        // alphabet's illegal characters, including the base64url alphabet (-/_), but
+        // strict mode alone does not enforce a length that's a multiple of 4 or
+        // correctly placed padding -- e.g. 'YQ' (no padding) and 'YWI' (no padding)
+        // both decode successfully. The re-encode round trip is what actually
+        // enforces canonical length/padding/whitespace, and also catches
+        // non-canonical trailing bits a permissive decoder accepts on its own (e.g.
+        // 'YR==' decodes to a byte that re-encodes as 'YQ=='). No regex prefilter:
+        // PCRE can hit its JIT stack limit on very large inputs, and preg_match()
+        // returning false for that (rather than 0) would otherwise need the same
+        // ConstraintEvaluationException handling Pattern/NotPattern use --
+        // decode+round-trip needs no such escape hatch, since it never fails to
+        // evaluate.
         $decoded = \base64_decode($value, true);
         if ($decoded === false || \base64_encode($decoded) !== $value) {
             return $error;
