@@ -1,3 +1,5 @@
+![StrongType Logo](https://github.com/markrogoyski/strongtype-php/blob/main/docs/image/StrongTypeLogo.png?raw=true)
+
 # StrongType PHP
 
 Strongly typed values for PHP -- validate once at construction, trust everywhere after.
