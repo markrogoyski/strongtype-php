@@ -50,6 +50,9 @@ readonly class Nullable implements \JsonSerializable, \Stringable, HasEquals
         ) {
             throw new ConstraintConfigurationException("Nullable type must reference a valid StrongType class, got {$type}");
         }
+        // The is_subclass_of() guards above establish this template type, but Psalm
+        // can't carry that narrowing from $type into the ReflectionClass it builds.
+        /** @var \ReflectionClass<\JsonSerializable&\Stringable&HasEquals> $reflection */
         $reflection = new \ReflectionClass($type);
         if ($reflection->isAbstract()) {
             throw new ConstraintConfigurationException("Nullable type must reference a concrete StrongType class, got abstract {$type}");
