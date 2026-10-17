@@ -291,7 +291,7 @@ readonly abstract class ArrayType implements \JsonSerializable, \Countable, \Ite
      */
     public function withValues(array $values): static
     {
-        return new static($values); // @phpstan-ignore new.static, return.type
+        return new static($values); // @phpstan-ignore new.static
     }
 
     /**

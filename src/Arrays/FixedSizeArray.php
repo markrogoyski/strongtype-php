@@ -39,7 +39,7 @@ readonly class FixedSizeArray extends ArrayType
     #[\Override]
     public function withValues(array $values): static
     {
-        return new static($values, $this->size); // @phpstan-ignore new.static, return.type
+        return new static($values, $this->size); // @phpstan-ignore new.static
     }
 
     /**
